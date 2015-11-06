@@ -48,6 +48,9 @@ class AmgXSolver
         /// Get the residual at a specific iteration in last solve phase
         double getResidual(const int &iter);
 
+        /// get the memory usage on device
+        int getMemUsage();
+
 
     private:
 

@@ -518,3 +518,23 @@ void AmgXSolver::print_callback(const char *msg, int length)
  * @param length The length of the string
  */
 void AmgXSolver::print_none(const char *msg, int length) { }
+
+
+/**
+ * @brief Get the memory usage on devices
+ *
+ * @return error codes in the future. 
+ */
+int AmgXSolver::getMemUsage()
+{
+    size_t free_byte,
+           total_byte;
+
+    CHECK(cudaMemGetInfo(&free_byte, &total_byte));
+
+    std::cout << "myRank: " << myRank << " "
+              << free_byte / 1024.0 / 1024.0 << " MB "
+              << " / " << total_byte / 1024.0 / 1024.0 << " MB " << std::endl;
+
+    return 0;
+}
