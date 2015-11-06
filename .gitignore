@@ -47,6 +47,7 @@
 **/CMakeFiles/
 **/Makefile
 **/*.cmake
+tests/Poisson3D/bin
 
 # AmgX log file
 **/.logamgx
