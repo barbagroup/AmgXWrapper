@@ -45,14 +45,15 @@ AMGX_resources_handle AmgXSolver::rsrc = nullptr;
  *
  * @return Currently meaningless. May be error codes in the future.
  */
-int AmgXSolver::initialize(MPI_Comm comm, int _Npart, int _myRank,
+int AmgXSolver::initialize(MPI_Comm comm, 
         const std::string &_mode, const std::string &cfg_file)
 {
     count += 1;
 
     AmgXComm = comm;
-    Npart = _Npart;
-    myRank = _myRank;
+
+    MPI_Comm_size(AmgXComm, &Npart);
+    MPI_Comm_rank(AmgXComm, &myRank);
 
     // get the number of total cuda devices
     CHECK(cudaGetDeviceCount(&Ndevs));

@@ -30,7 +30,7 @@ class AmgXSolver
         AmgXSolver() = default;
 
         /// initialization of instance
-        int initialize(MPI_Comm comm, int _Npart, int _myRank,
+        int initialize(MPI_Comm comm, 
                 const std::string &_mode, const std::string &cfg_file);
 
         /// finalization
