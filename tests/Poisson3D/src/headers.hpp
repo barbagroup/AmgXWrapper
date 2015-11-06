@@ -49,6 +49,3 @@ PetscErrorCode generateA(const DM &grid,
 
 PetscErrorCode createKSP(KSP &ksp, Mat &A, char *FN);
 
-int getPartVec(const Vec &p, Vec &PartVec, int myRank);
-
-int getMemUsage(const int &myRank);
