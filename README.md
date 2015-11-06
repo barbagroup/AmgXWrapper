@@ -1,8 +1,10 @@
-# AmgXWrapper - A wrapper of AmgX
+# AmgXWrapper
 
-This wrapper wraps AmgX into a more C++ way in order to simplify the usage of AmgX, especially when using AmgX together with other libraries, like PETSc. Currently we only consider to use it with PETSc, but in the future we may make it works with other libraries.
+This wrapper simplifies the usage of AmgX, especially when using AmgX together with other libraries, like PETSc. Currently we only support its use with PETSc, but in the future we may extend it to work with other libraries.
 
-The usage is simple. Just follow the procedure: ***initialize -> set matrix A -> solve -> finalize***. For example,
+The usage is simple. Just follow the procedure: ***initialize -> set matrix A -> solve -> finalize***. 
+
+For example,
 
 ```c++
 int main(int argc, char **argv)
@@ -33,9 +35,9 @@ int main(int argc, char **argv)
 ```
 
 
-Note, this wrapper, at the beginning, is specifically designed for our CFD solver -- **PetIBM**, so it may lack some features in order to become a more general tool. We are trying to make it more general.
+Note, this wrapper is specifically designed for our CFD solver -- **[PetIBM](https://github.com/barbagroup/PetIBM)**, so it may lack some features.  We are trying to make it more general.
 
-#### Future works:
-* Add functions for the case that the values of entries in A may be changed
+#### Future work:
+* Add support for updating entries of a matrix A on CUDA device
 * Support other matrix structures other than AIJ
-* Add mechanisms for debug and error handling. For example, check whether the instance is initialized if the codes are compiled under debug mode, or return error codes, etc.
+* Add mechanisms for debugging and error handling. For example, check whether the instance is initialized if the codes are compiled under debug mode, or return error codes, etc.
