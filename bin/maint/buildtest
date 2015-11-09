@@ -1,0 +1,131 @@
+#! /usr/bin/env tcsh
+# 
+# Compiles and tests PETSc in our nightly builds.
+# Run as buildtest ARCH where ARCH is one of the default PETSc archs
+# of a configure arch
+#
+# Example usage: ${PETSC_DIR}/bin/maint/buildtest solaris
+#                ./bin/maint/buildtest solaris
+#                ./bin/maint/buildtest 
+#
+set day=`date | cut -f1 -d" "`
+#
+# on cygwin - tcsh gives funky paths - so reset it to normal bash one so 'chkpetsc_dir' doesn't complain
+set nPETSC_DIR=`pwd | sed s~/cygdrive/h~~`
+if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
+  set maintdir=`dirname $0`
+  set nPETSC_DIR=`dirname $maintdir`
+  if ( ( ${nPETSC_DIR} !~ /*) || (! -f ${nPETSC_DIR}/include/petscsys.h )) then
+    if (${?PETSC_DIR}) then 
+      set nPETSC_DIR=${PETSC_DIR}
+      if ( ! -f ${nPETSC_DIR}/include/petscsys.h ) then
+        echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
+        exit
+      endif
+    else
+      echo "Unable to locate PETSc directory, run with full path or in PETSc directory"
+      exit
+    endif
+  endif
+endif
+
+if (${#argv} > 0) then 
+  set ARCH=${1}
+else
+  set ARCH=`${nPETSC_DIR}/bin/configarch`
+endif
+if (${#argv} > 1) then 
+  set CONFIGURE_ARGS="${argv[2-]}"
+else 
+  set CONFIGURE_ARGS=""
+endif
+
+set MACH=`hostname`
+cd $nPETSC_DIR
+rm -f build.log
+echo "Build on $MACH $ARCH $nPETSC_DIR `date` " > build.log
+
+# Note: we are using detatched heads - so 'git fetch/pull' is not done here.
+# Note use 'git clean' intead of manually deleting seleted old files.
+echo "Cleaning throughly at $nPETSC_DIR" >>& build.log
+(git reset --hard; git clean -q -f -d -x -e build.log; git gc -q) >>& build.log
+# externalpackages can be a git repo - so one has to explicitly remove them
+rm -rf ./${ARCH}
+echo "Currently building git branch:" `git describe --contains --all HEAD` >>& build.log
+git log -1 >>& build.log
+
+setenv PETSC_DIR $nPETSC_DIR
+set PETSC_ARCH=${ARCH}
+set CONFIGURE='yes'
+set CONFIGURE_FILE=$PETSC_ARCH
+endif
+
+# Run Configure
+./config/examples/${CONFIGURE_FILE}.py --with-no-output -PETSC_ARCH=$PETSC_ARCH -PETSC_DIR=$nPETSC_DIR ${CONFIGURE_ARGS} >>& build.log
+set err=$?
+echo '****************************************************' >>& build.log
+if ( $err ) exit
+#
+# check if PETSC_ARCH has name builder - if so enable builder runs
+#
+echo $PETSC_ARCH | grep builder > /dev/null
+if ( $? ) then
+  set BUILDER="no"
+else
+  set BUILDER="yes"
+endif
+set GCOV=`grep PETSC_USE_GCOV $nPETSC_DIR/$PETSC_ARCH/include/petscconf.h`
+
+if ( "${GCOV}" != "" ) then
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all-legacy test >>& build.log
+  set err=$?
+else
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR  all test >>& build.log
+  set err=$?
+endif
+echo '****************************************************' >>& build.log
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& build.log
+#if ( $err ) exit
+#
+# Run examples
+#
+grep PETSC_WITH_BATCH ${PETSC_DIR}/${PETSC_ARCH}/lib/petsc/conf/petscvariables > /dev/null
+if ( $? ) then
+  set TESTMODE='testexamples'
+else
+  set TESTMODE='buildexamples'
+endif
+#
+# check if PETSC_ARCH has name valgrind - if so enable valgrind runs
+#
+echo $PETSC_ARCH | grep valgrind > /dev/null
+if ( $? ) then
+  set VALGRIND='DUMMYARGUMENT=foobar'
+else
+  set VALGRIND=`echo MPIEXEC="${PETSC_DIR}/bin/petscmpiexec -valgrind"`
+  setenv PETSCVALGRIND_OPTIONS "--suppressions=${PETSC_DIR}/bin/maint/petsc-val.supp"
+endif
+rm -f examples.log
+echo "Build on $MACH $PETSC_ARCH TESTMODE=$TESTMODE ${VALGRIND}  `date` " > examples.log
+git log -1 >>& examples.log
+if ( -f /usr/bin/cygpath ) then
+  set wnPETSC_DIR=`cygpath -m ${nPETSC_DIR}`
+else
+  set wnPETSC_DIR=${nPETSC_DIR}
+endif
+if ( "${BUILDER}" == "yes" ) then
+  env PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR ./config/builder2.py regression >>& examples.log
+else
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$wnPETSC_DIR  alltests TESTMODE=$TESTMODE "${VALGRIND}" |& grep -v 'up to date' >>& examples.log
+endif
+echo '******************************************************' >>& $nPETSC_DIR/examples.log
+
+if ( "${GCOV}" != "" ) then
+  rm -f gcov.log
+  make PETSC_ARCH=$PETSC_ARCH PETSC_DIR=$nPETSC_DIR gcov  >& gcov.log
+endif
+
+echo "Finished Build on $MACH $PETSC_ARCH `date`" >>& $nPETSC_DIR/examples.log
+echo 'X******************************************************X' >>& $nPETSC_DIR/examples.log
+
+
