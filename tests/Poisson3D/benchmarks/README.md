@@ -1,0 +1,1 @@
+This folder contains benchmarks run on [GW Colonial One](http://ots.columbian.gwu.edu/colonial-one-high-performance-computing-initiative). Use the slurm scripts (\*.qsub) in each case folder to launch the benchmarks.
