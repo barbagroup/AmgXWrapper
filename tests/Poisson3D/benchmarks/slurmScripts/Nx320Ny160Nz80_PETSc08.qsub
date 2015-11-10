@@ -6,7 +6,7 @@
 #SBATCH --time=00:20:00
 #SBATCH --output=results/Nx320Ny160Nz80_PETSc08.result
 #SBATCH --error=errors/Nx320Ny160Nz80_PETSc08.error
-#SBATCH --partition=short
+#SBATCH --partition=defq
 
 source moduleLoad.sh
 
