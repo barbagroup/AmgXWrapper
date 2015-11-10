@@ -11,23 +11,29 @@ cd ../../extra/petsc
 export PETSC_DIR=${PWD}
 export PETSC_ARCH=forBenchmarks
 ./configure                             		\
-    --with-petsc-arch=${PETSC_ARCH}
-    --with-mpi=1                                        \
-    --download-openmpi=no                               \
+    --with-petsc-arch=${PETSC_ARCH} 			\
     --with-debugging=0                                  \
     --COPTFLAGS='-O3 -m64'                              \
     --CXXOPTFLAGS='-O3 -m64'                            \
     --FOPTFLAGS='-O3 -m64'                              \
     --with-shared-libraries=0 				\
-    --with-valgrind=1 					\
-    --with-valgrind-dir=/c1/apps/valgrind/3.10.0 	\
-    --with-blas-lib=/c1/apps/blas/gcc/1/lib64/libblas.a \
-    --with-lapack-lib=/c1/apps/lapack/gcc/3.4.1/lib/liblapack.a \
     --with-x=0 						\
     --with-precision=double                             \
+    \
+    --with-mpi=1                                        \
+    --download-openmpi=no                               \
+    \
+    --with-valgrind=1 					\
+    --with-valgrind-dir=/c1/apps/valgrind/3.10.0 	\
+    \
+    --download-fblaslapack=yes 				\
+    \
+    --download-f2cblaslapack=yes 			\
+    \
     --download-hypre=yes				\
-    --with-boost=1					\
-    --with-boost-dir=/c1/libs/boost/boost_1_56_0        \
+    \
+    --download-boost=yes 				\
+    \
     --download-sowing=yes
 
 echo "Building PETSc..."
@@ -44,7 +50,10 @@ export CC=gcc
 export CXX=g++
 cd ../../Poisson3D
 rm bin cmake_install.cmake CMakeFiles/ CMakeCache.txt Makefile -rf
-cmake . -DAMGX_DIR=/groups/barbalab/pychuang/AmgX
+cmake . 						\
+	-DAMGX_DIR=/groups/barbalab/pychuang/AmgX 	\
+	-DBOOST_ROOT=${PETSC_DIR}/${PETSC_ARCH}		\
+	-DCUDA_TOOLKIT_ROOT_DIR=/c1/apps/cuda/toolkit/6.5.14
 make
 
 cd benchmarks 
