@@ -11,7 +11,7 @@
 source moduleLoad.sh
 
 export LM_LICENSE_FILE=/groups/barbalab/pychuang/AmgX/amgx_trial-exp-Mar-31-2016.lic
-export LD_LIBRARY_PATH=/groups/barbalab/pychuang/AmgX/lib:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/groups/barbalab/pychuang/AmgX/lib:/home/pychuang/myPackages/lib
 
 export BIN=../bin/Poisson3D
 export MODE=PETSc
