@@ -1,0 +1,390 @@
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+myRank: 1 1181.82 MB  / 5119.81 MB 
+myRank: 0 1622.1 MB  / 5119.81 MB 
+myRank: 11 1269.21 MB  / 5119.81 MB 
+myRank: 18 1421.34 MB  / 5119.81 MB 
+myRank: 2 1319.46 MB  / 5119.81 MB 
+myRank: 20 1427.34 MB  / 5119.81 MB 
+myRank: 10 1376.96 MB  / 5119.81 MB 
+myRank: 19 1063.57 MB  / 5119.81 MB 
+myRank: 13 1274.21 MB  / 5119.81 MB 
+myRank: 15 1462.46 MB  / 5119.81 MB 
+myRank: 3 1371.21 MB  / 5119.81 MB 
+myRank: 27 1185.57 MB  / 5119.81 MB 
+myRank: 22 1421.46 MB  / 5119.81 MB 
+myRank: 21 1413.33 MB  / 5119.81 MB 
+myRank: 12 1403.96 MB  / 5119.81 MB 
+myRank: 6 1400.46 MB  / 5119.81 MB 
+myRank: 14 1400.09 MB  / 5119.81 MB 
+myRank: 26 1380.84 MB  / 5119.81 MB 
+myRank: 23 1449.84 MB  / 5119.81 MB 
+myRank: 7 1325.96 MB  / 5119.81 MB 
+myRank: 9 1422.21 MB  / 5119.81 MB 
+myRank: 28 1379.84 MB  / 5119.81 MB 
+myRank: 30 1402.34 MB  / 5119.81 MB 
+myRank: 8 1605.6 MB  / 5119.81 MB 
+myRank: 29 1401.21 MB  / 5119.81 MB 
+myRank: 31 1476.71 MB  / 5119.81 MB 
+myRank: 16 1617.22 MB  / 5119.81 MB 
+myRank: 4 1406.96 MB  / 5119.81 MB 
+myRank: 17 1335.33 MB  / 5119.81 MB 
+myRank: 5 1310.08 MB  / 5119.81 MB 
+myRank: 24 1606.6 MB  / 5119.81 MB 
+myRank: 25 1688.36 MB  / 5119.81 MB 
+
+Case Name: Nx1000Ny500Nz200_GPU32
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  1.792404s wall, 1.610000s user + 0.180000s system = 1.790000s CPU (99.9%)
+	L2-Norm: 0.350601
+	Max-Norm: 6.59684e-05
+	Iterations 31
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+myRank: 1 1181.82 MB  / 5119.81 MB 
+myRank: 0 1622.1 MB  / 5119.81 MB 
+myRank: 16 1617.22 MB  / 5119.81 MB 
+myRank: 19 1063.57 MB  / 5119.81 MB 
+myRank: 25 1688.36 MB  / 5119.81 MB 
+myRank: 17 1335.33 MB  / 5119.81 MB 
+myRank: 10 1376.96 MB  / 5119.81 MB 
+myRank: 18 1421.34 MB  / 5119.81 MB 
+myRank: 24 1606.6 MB  / 5119.81 MB 
+myRank: 11 1269.21 MB  / 5119.81 MB 
+myRank: 20 1427.34 MB  / 5119.81 MB 
+myRank: 2 1319.46 MB  / 5119.81 MB 
+myRank: 22 1421.46 MB  / 5119.81 MB 
+myRank: 27 1185.57 MB  / 5119.81 MB 
+myRank: 14 1400.09 MB  / 5119.81 MB 
+myRank: 21 1413.33 MB  / 5119.81 MB 
+myRank: 3 1371.21 MB  / 5119.81 MB 
+myRank: 15 1462.46 MB  / 5119.81 MB 
+myRank: 12 1403.96 MB  / 5119.81 MB 
+myRank: 23 1449.84 MB  / 5119.81 MB 
+myRank: 26 1380.84 MB  / 5119.81 MB 
+myRank: 13 1274.21 MB  / 5119.81 MB 
+myRank: 9 1422.21 MB  / 5119.81 MB 
+myRank: 8 1605.6 MB  / 5119.81 MB 
+myRank: 6 1400.46 MB  / 5119.81 MB 
+myRank: 31 1476.71 MB  / 5119.81 MB 
+myRank: 28 1379.84 MB  / 5119.81 MB 
+myRank: 7 1325.96 MB  / 5119.81 MB 
+myRank: 30 1402.34 MB  / 5119.81 MB 
+myRank: 29 1401.21 MB  / 5119.81 MB 
+myRank: 4 1406.96 MB  / 5119.81 MB 
+myRank: 5 1310.08 MB  / 5119.81 MB 
+
+Case Name: Nx1000Ny500Nz200_GPU32
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  1.784530s wall, 1.560000s user + 0.220000s system = 1.780000s CPU (99.7%)
+	L2-Norm: 0.347413
+	Max-Norm: 6.56302e-05
+	Iterations 31
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+License acquired, proceeding
+License acquired, proceeding
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+myRank: 1 1181.82 MB  / 5119.81 MB 
+myRank: 0 1622.1 MB  / 5119.81 MB 
+myRank: 26 1380.84 MB  / 5119.81 MB 
+myRank: 23 1449.84 MB  / 5119.81 MB 
+myRank: 30 1402.34 MB  / 5119.81 MB 
+myRank: 28 1379.84 MB  / 5119.81 MB 
+myRank: 6 1400.46 MB  / 5119.81 MB 
+myRank: 27 1185.57 MB  / 5119.81 MB 
+myRank: 13 1274.21 MB  / 5119.81 MB 
+myRank: 22 1421.46 MB  / 5119.81 MB 
+myRank: 16 1617.22 MB  / 5119.81 MB 
+myRank: 4 1406.96 MB  / 5119.81 MB 
+myRank: 9 1422.21 MB  / 5119.81 MB 
+myRank: 31 1476.71 MB  / 5119.81 MB 
+myRank: 29 1401.21 MB  / 5119.81 MB 
+myRank: 11 1269.21 MB  / 5119.81 MB 
+myRank: 7 1325.96 MB  / 5119.81 MB 
+myRank: 25 1688.36 MB  / 5119.81 MB 
+myRank: 12 1403.96 MB  / 5119.81 MB 
+myRank: 18 1421.34 MB  / 5119.81 MB 
+myRank: 2 1319.46 MB  / 5119.81 MB 
+myRank: 17 1335.33 MB  / 5119.81 MB 
+myRank: 5 1310.08 MB  / 5119.81 MB 
+myRank: 8 1605.6 MB  / 5119.81 MB 
+myRank: 20 1427.34 MB  / 5119.81 MB 
+myRank: 21 1413.33 MB  / 5119.81 MB 
+myRank: 10 1376.96 MB  / 5119.81 MB 
+myRank: 24 1606.6 MB  / 5119.81 MB 
+myRank: 19 1063.57 MB  / 5119.81 MB 
+myRank: 3 1371.21 MB  / 5119.81 MB 
+myRank: 15 1462.46 MB  / 5119.81 MB 
+myRank: 14 1400.09 MB  / 5119.81 MB 
+
+Case Name: Nx1000Ny500Nz200_GPU32
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  1.806262s wall, 1.590000s user + 0.220000s system = 1.810000s CPU (100.2%)
+	L2-Norm: 0.352265
+	Max-Norm: 6.61448e-05
+	Iterations 31
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+myRank: 1 1181.82 MB  / 5119.81 MB 
+myRank: 0 1622.1 MB  / 5119.81 MB 
+myRank: 18 1421.34 MB  / 5119.81 MB 
+myRank: 10 1376.96 MB  / 5119.81 MB 
+myRank: 11 1269.21 MB  / 5119.81 MB 
+myRank: 20 1427.34 MB  / 5119.81 MB 
+myRank: 19 1063.57 MB  / 5119.81 MB 
+myRank: 2 1319.46 MB  / 5119.81 MB 
+myRank: 30 1402.34 MB  / 5119.81 MB 
+myRank: 14 1400.09 MB  / 5119.81 MB 
+myRank: 12 1403.96 MB  / 5119.81 MB 
+myRank: 6 1400.46 MB  / 5119.81 MB 
+myRank: 22 1421.46 MB  / 5119.81 MB 
+myRank: 9 1422.21 MB  / 5119.81 MB 
+myRank: 16 1617.22 MB  / 5119.81 MB 
+myRank: 28 1379.84 MB  / 5119.81 MB 
+myRank: 21 1413.33 MB  / 5119.81 MB 
+myRank: 26 1380.84 MB  / 5119.81 MB 
+myRank: 3 1371.21 MB  / 5119.81 MB 
+myRank: 31 1476.71 MB  / 5119.81 MB 
+myRank: 15 1462.46 MB  / 5119.81 MB 
+myRank: 13 1274.21 MB  / 5119.81 MB 
+myRank: 25 1688.36 MB  / 5119.81 MB 
+myRank: 7 1325.96 MB  / 5119.81 MB 
+myRank: 23 1449.84 MB  / 5119.81 MB 
+myRank: 4 1406.96 MB  / 5119.81 MB 
+myRank: 8 1605.6 MB  / 5119.81 MB 
+myRank: 17 1335.33 MB  / 5119.81 MB 
+myRank: 29 1401.21 MB  / 5119.81 MB 
+myRank: 27 1185.57 MB  / 5119.81 MB 
+myRank: 24 1606.6 MB  / 5119.81 MB 
+myRank: 5 1310.08 MB  / 5119.81 MB 
+
+Case Name: Nx1000Ny500Nz200_GPU32
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  1.782652s wall, 1.570000s user + 0.220000s system = 1.790000s CPU (100.4%)
+	L2-Norm: 0.347361
+	Max-Norm: 6.56248e-05
+	Iterations 31
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+myRank: 1 1181.82 MB  / 5119.81 MB 
+myRank: 0 1622.1 MB  / 5119.81 MB 
+myRank: 13 1274.21 MB  / 5119.81 MB 
+myRank: 6 1400.46 MB  / 5119.81 MB 
+myRank: 30 1402.34 MB  / 5119.81 MB 
+myRank: 5 1310.08 MB  / 5119.81 MB 
+myRank: 24 1606.6 MB  / 5119.81 MB 
+myRank: 12 1403.96 MB  / 5119.81 MB 
+myRank: 16 1617.22 MB  / 5119.81 MB 
+myRank: 9 1422.21 MB  / 5119.81 MB 
+myRank: 7 1325.96 MB  / 5119.81 MB 
+myRank: 11 1269.21 MB  / 5119.81 MB 
+myRank: 28 1379.84 MB  / 5119.81 MB 
+myRank: 29 1401.21 MB  / 5119.81 MB 
+myRank: 31 1476.71 MB  / 5119.81 MB 
+myRank: 4 1406.96 MB  / 5119.81 MB 
+myRank: 19 1063.57 MB  / 5119.81 MB 
+myRank: 25 1688.36 MB  / 5119.81 MB 
+myRank: 17 1335.33 MB  / 5119.81 MB 
+myRank: 21 1413.33 MB  / 5119.81 MB 
+myRank: 8 1605.6 MB  / 5119.81 MB 
+myRank: 10 1376.96 MB  / 5119.81 MB 
+myRank: 18 1421.34 MB  / 5119.81 MB 
+myRank: 2 1319.46 MB  / 5119.81 MB 
+myRank: 20 1427.34 MB  / 5119.81 MB 
+myRank: 3 1371.21 MB  / 5119.81 MB 
+myRank: 14 1400.09 MB  / 5119.81 MB 
+myRank: 15 1462.46 MB  / 5119.81 MB 
+myRank: 23 1449.84 MB  / 5119.81 MB 
+myRank: 22 1421.46 MB  / 5119.81 MB 
+myRank: 26 1380.84 MB  / 5119.81 MB 
+myRank: 27 1185.57 MB  / 5119.81 MB 
+
+Case Name: Nx1000Ny500Nz200_GPU32
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  1.809137s wall, 1.620000s user + 0.190000s system = 1.810000s CPU (100.0%)
+	L2-Norm: 0.345856
+	Max-Norm: 6.5465e-05
+	Iterations 31
