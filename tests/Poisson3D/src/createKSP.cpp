@@ -6,7 +6,8 @@ PetscErrorCode createKSP(KSP &ksp, Mat &A, char *FN)
     PetscErrorCode  ierr;
 
     // create ksp solver
-    ierr = PetscOptionsInsertFile(PETSC_COMM_WORLD, FN, PETSC_FALSE);   CHKERRQ(ierr);
+    ierr = PetscOptionsInsertFile(
+            PETSC_COMM_WORLD, nullptr, FN, PETSC_FALSE);                CHKERRQ(ierr);
 
     // create KSP for intermaediate fluxes system
     ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);                           CHKERRQ(ierr);

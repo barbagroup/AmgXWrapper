@@ -1,0 +1,32 @@
+#!/bin/bash
+
+sbatch slurmScripts/Nx160Ny160Nz160_GPU01.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_GPU02.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_GPU04.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_GPU08.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_GPU16.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_GPU32.qsub
+
+sbatch slurmScripts/Nx320Ny160Nz80_GPU01.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_GPU02.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_GPU04.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_GPU08.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_GPU16.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_GPU32.qsub
+
+sbatch slurmScripts/Nx160Ny160Nz160_PETSc01.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_PETSc02.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_PETSc04.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_PETSc08.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_PETSc16.qsub
+sbatch slurmScripts/Nx160Ny160Nz160_PETSc32.qsub
+
+sbatch slurmScripts/Nx320Ny160Nz80_PETSc01.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_PETSc02.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_PETSc04.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_PETSc08.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_PETSc16.qsub
+sbatch slurmScripts/Nx320Ny160Nz80_PETSc32.qsub
+
+sbatch slurmScripts/Nx1000Ny500Nz200_GPU32.qsub
+sbatch slurmScripts/Nx1000Ny500Nz200_PETSc32.qsub

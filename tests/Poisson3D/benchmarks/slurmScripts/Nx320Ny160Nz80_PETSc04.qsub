@@ -1,0 +1,32 @@
+#!/bin/bash
+
+#SBATCH --job-name="Nx320Ny160Nz80_PETSc04"
+#SBATCH --nodes=4
+#SBATCH --ntasks-per-node=16
+#SBATCH --time=00:20:00
+#SBATCH --output=results/Nx320Ny160Nz80_PETSc04.result
+#SBATCH --error=errors/Nx320Ny160Nz80_PETSc04.error
+#SBATCH --partition=short
+
+source moduleLoad.sh
+module spider openmpi/1.8/gcc/4.7/cuda
+
+export LM_LICENSE_FILE=/groups/barbalab/pychuang/AmgX/amgx_trial-exp-Mar-31-2016.lic
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/groups/barbalab/pychuang/AmgX/lib:/home/pychuang/myPackages/lib
+
+export BIN=../bin/Poisson3D
+export MODE=PETSc
+export CONF=../configs/PETSc_SolverOptions.info
+export Nx=320
+export Ny=160
+export Nz=80
+export CASE=Nx${Nx}Ny${Ny}Nz${Nz}_${MODE}
+
+for((i=1;i<=5;i++))
+do
+
+export NPROC=64
+
+mpiexec -n ${NPROC} -map-by ppr:16:node ${BIN} -caseName ${CASE}${NPROC} -mode ${MODE} -Nx ${Nx} -Ny ${Ny} -Nz ${Nz} -cfgFileName ${CONF} -optFileName logs/perf_${CASE}${NPROC}_Loop${i}.log
+
+done

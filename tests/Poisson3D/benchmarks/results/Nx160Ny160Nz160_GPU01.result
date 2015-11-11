@@ -1,0 +1,80 @@
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+myRank: 0 421.137 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU1
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.810117s wall, 0.700000s user + 0.110000s system = 0.810000s CPU (100.0%)
+	L2-Norm: 0.27572
+	Max-Norm: 0.00025688
+	Iterations 14
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+myRank: 0 421.137 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU1
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.810115s wall, 0.680000s user + 0.120000s system = 0.800000s CPU (98.8%)
+	L2-Norm: 0.27572
+	Max-Norm: 0.00025688
+	Iterations 14
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+myRank: 0 421.137 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU1
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.810712s wall, 0.700000s user + 0.100000s system = 0.800000s CPU (98.7%)
+	L2-Norm: 0.27572
+	Max-Norm: 0.00025688
+	Iterations 14
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+myRank: 0 421.137 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU1
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.810450s wall, 0.690000s user + 0.120000s system = 0.810000s CPU (99.9%)
+	L2-Norm: 0.27572
+	Max-Norm: 0.00025688
+	Iterations 14
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+myRank: 0 421.137 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU1
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.810720s wall, 0.680000s user + 0.120000s system = 0.800000s CPU (98.7%)
+	L2-Norm: 0.27572
+	Max-Norm: 0.00025688
+	Iterations 14

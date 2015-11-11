@@ -1,0 +1,7 @@
+
+Currently Loaded Modules:
+  1) gcc/4.9.2                   5) cuda/drivers/331.89   9) cmake/3.3.1
+  2) slurm/15.08.3               6) cuda/toolkit/6.5     10) git/2.1.0
+  3) blas/gcc/1                  7) python/2.7.6
+  4) openmpi/1.8/gcc/4.9.2/cpu   8) valgrind/3.10.0
+

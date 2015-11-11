@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#SBATCH --job-name="Nx160Ny160Nz160_PETSc08"
+#SBATCH --nodes=8
+#SBATCH --ntasks-per-node=16
+#SBATCH --time=00:20:00
+#SBATCH --output=results/Nx160Ny160Nz160_PETSc08.result
+#SBATCH --error=errors/Nx160Ny160Nz160_PETSc08.error
+#SBATCH --partition=short
+
+source moduleLoad.sh
+
+export LM_LICENSE_FILE=/groups/barbalab/pychuang/AmgX/amgx_trial-exp-Mar-31-2016.lic
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/groups/barbalab/pychuang/AmgX/lib:/home/pychuang/myPackages/lib
+
+export BIN=../bin/Poisson3D
+export MODE=PETSc
+export CONF=../configs/PETSc_SolverOptions.info
+export Nx=160
+export Ny=160
+export Nz=160
+export CASE=Nx${Nx}Ny${Ny}Nz${Nz}_${MODE}
+
+for((i=1;i<=5;i++))
+do
+
+export NPROC=128
+
+mpiexec -n ${NPROC} -map-by ppr:16:node ${BIN} -caseName ${CASE}${NPROC} -mode ${MODE} -Nx ${Nx} -Ny ${Ny} -Nz ${Nz} -cfgFileName ${CONF} -optFileName logs/perf_${CASE}${NPROC}_Loop${i}.log
+
+done
