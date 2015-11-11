@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#SBATCH --job-name="Nx320Ny160Nz80_GPU04"
+#SBATCH --nodes=2
+#SBATCH --ntasks-per-node=2
+#SBATCH --time=00:15:00
+#SBATCH --output=results/Nx320Ny160Nz80_GPU04.result
+#SBATCH --error=errors/Nx320Ny160Nz80_GPU04.error
+#SBATCH --partition=ivygpu-noecc
+
+source moduleLoad.sh
+
+export LM_LICENSE_FILE=/groups/barbalab/pychuang/AmgX/amgx_trial-exp-Mar-31-2016.lic
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/groups/barbalab/pychuang/AmgX/lib
+
+export BIN=../bin/Poisson3D
+export MODE=GPU
+export CONF=../configs/AmgX_V_HMIS_LU_0.8.info
+export Nx=320
+export Ny=160
+export Nz=80
+export CASE=Nx${Nx}Ny${Ny}Nz${Nz}_${MODE}
+
+export NPROC=4
+
+for((i=1;i<=5;i++))
+do
+
+mpiexec -n ${NPROC} -map-by ppr:2:node ${BIN} -caseName ${CASE}${NPROC} -mode ${MODE} -Nx ${Nx} -Ny ${Ny} -Nz ${Nz} -cfgFileName ${CONF} -optFileName logs/perf_${CASE}${NPROC}_Loop${i}.log
+
+done

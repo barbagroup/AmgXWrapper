@@ -1,0 +1,10 @@
+<HTML>
+<HEAD>
+<TITLE>IS Manual Pages</TITLE>
+</HEAD>
+<BODY BGCOLOR="FFFFFF">
+
+<H2> IS Manual Pages 
+</H2>
+
+IS objects are used to index into vectors and matrices and to setup vector scatters.

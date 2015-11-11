@@ -1,0 +1,111 @@
+% Acknowledgements for PETSc Users Manual
+%
+%   this information is a DUPLICATE of misc/acknwldg.htm
+%                MAKE SURE THEY MATCH!!!
+%
+\noindent {\bf Acknowledgments:}
+
+\medskip \medskip \noindent
+We thank all PETSc users for their many suggestions, bug reports, and
+encouragement.  We especially thank David Keyes
+for his valuable comments on the source code,
+functionality, and documentation for PETSc.
+
+
+\vspace{.3in}
+\noindent
+Some of the source code and utilities in PETSc
+have been written by
+\begin{itemize}
+  \item Asbjorn Hoiland Aarrestad - the explicit Runge-Kutta implementations;
+  \item G. Anciaux and J. Roman - the interfaces to the partitioning packages PTScotch, Chaco, and Party;
+  \item Allison Baker - the flexible GMRES code and LGMRES;
+  \item Chad Carroll - Win32 graphics;
+  \item Ethan Coon - the PetscBag and many bug fixes;
+  \item Cameron Cooper - portions of the VecScatter routines;
+  \item Patrick Farrell - nleqerr line search for SNES
+  \item Paulo Goldfeld - balancing Neumann-Neumann preconditioner;
+  \item Matt Hille;
+  \item Joel Malard - the BICGStab(l) implementation;
+  \item Paul Mullowney, enhancements to portions of the Nvidia GPU interface;
+  \item Dave May - the GCR implementation
+  \item Peter Mell - portions of the DA routines;
+  \item Richard Mills - the AIJPERM matrix format for the Cray X1 and universal F90 array interface;
+  \item Victor Minden - the NVidia GPU interface;
+  \item Todd Munson - the LUSOL (sparse solver in MINOS) interface and several Krylov methods;
+  \item Adam Powell - the PETSc Debian package,
+  \item Robert Scheichl - the MINRES implementation,
+  \item Kerry Stevens - the pthread based Vec and Mat classes plus the various thread pools
+  \item Karen Toonen - designed and implemented much of the PETSc web pages,
+  \item Desire Nuentsa Wakam - the deflated GMRES implementation,
+  \item Liyang Xu - the interface to PVODE (now Sundials/CVODE).
+\end{itemize}
+
+\vspace{.3in}
+\noindent
+PETSc source code contains modfied routines from the following public domain software packages
+\begin{itemize}
+  \item LINPACK -    dense matrix factorization and solve; converted to C using {\tt f2c} and then
+                     hand-optimized for small matrix sizes, for block matrix data structures;
+  \item MINPACK -    see page \pageref{sec_fdmatrix}, sequential matrix coloring routines for finite difference Jacobian
+                     evaluations; converted to C using {\tt f2c};
+  \item SPARSPAK -   see page \pageref{sec_factorization}, matrix reordering routines, converted to C using {\tt f2c};
+  \item libtfs     - the efficient, parallel direct solver developed by Henry Tufo and Paul Fischer for the direct solution of a coarse grid problem
+                     (a linear system with very few degrees of freedom per processor).
+\end{itemize}
+
+
+\vspace{.3in}
+\noindent
+PETSc interfaces to the following external software:
+\begin{itemize}
+  \item ADIFOR -  automatic differentiation for the computation of sparse Jacobians,\\
+                     \href{http://www.mcs.anl.gov/adifor}{http://www.mcs.anl.gov/adifor},
+  \item BLAS and LAPACK - numerical linear algebra,
+  \item Chaco -     A graph partitioning package, \href{ http://www.cs.sandia.gov/CRF/chac.html}{ http://www.cs.sandia.gov/CRF/chac.html}
+  \item ESSL -         IBM's math library for fast sparse direct LU factorization,
+  \item Elemental -  Jack Poulson's parallel dense matrix solver package,
+  \item hypre -    the LLNL preconditioner library, \href{http://www.llnl.gov/CASC/hypre}{http://www.llnl.gov/CASC/hypre}
+  \item LUSOL -       sparse LU factorization code (part of MINOS) developed by Michael Saunders,
+                      Systems Optimization Laboratory, Stanford University,
+                     \href{http://www.sbsi-sol-optimize.com/}{http://www.sbsi-sol-optimize.com/},
+  \item Mathematica -  see page \pageref{ch_mathematica},
+  \item MATLAB -      see page \pageref{ch_matlab},
+  \item MUMPS -      see page \pageref{sec_externalsol}, MUltifrontal Massively Parallel sparse direct Solver developed by Patrick Amestoy,
+                     Iain Duff, Jacko Koster, and Jean-Yves L'Excellent, \\
+                     \href{http://www.enseeiht.fr/lima/apo/MUMPS/credits.html}{http://www.enseeiht.fr/lima/apo/MUMPS/credits.html},
+  \item Metis/ParMeTiS - see page \pageref{sec_partitioning}, parallel graph partitioner,
+                     \href{http://www-users.cs.umn.edu/~karypis/metis/}{http://www-users.cs.umn.edu/~karypis/metis/},
+  \item Party -     A graph partitioning package, \\ 
+               \href{http://www2.cs.uni-paderborn.de/cs/ag-monien/PERSONAL/ROBSY/party.html}{http://www2.cs.uni-paderborn.de/cs/ag-monien/PERSONAL/ROBSY/party.html},
+  \item PaStiX -     Parallel LU and Cholesky solvers,
+  \item PTScotch -    A graph partitioning package, \href{http://www.labri.fr/Perso/~pelegrin/scotch/}{http://www.labri.fr/Perso/~pelegrin/scotch/}
+  \item SPAI -        for parallel sparse approximate inverse preconditiong,
+  \item SparseSuite - see page \pageref{sec_externalsol},  developed by Timothy A. Davis,
+                    \href{http://faculty.cse.tamu.edu/davis/suitesparse.html}{http://faculty.cse.tamu.edu/davis/suitesparse.html}.
+  \item Sundial/CVODE - see page \pageref{sec_sundials}, parallel ODE integrator,
+                     \href{http://www.llnl.gov/CASC/sundials/}{http://www.llnl.gov/CASC/sundials/},
+  \item SuperLU and SuperLU\_Dist - see page \pageref{sec_externalsol},
+                    the efficient sparse LU codes developed by Jim Demmel,  Xiaoye S. Li, and John Gilbert,
+                    \href{http://crd-legacy.lbl.gov/~xiaoye/SuperLU}{http://crd-legacy.lbl.gov/~xiaoye/SuperLU},
+  \item Triangle and Tetgen - mesh generation packages,
+  \item Trilinos/ML - Sandia's main multigrid preconditioning package, \href{http://software.sandia.gov/trilinos/}{http://software.sandia.gov/trilinos/},
+  \item Zoltan - graph partitioners from Sandia National Laboratory
+\end{itemize}
+These are all optional packages and do not need to be installed to use PETSc.
+
+PETSc software is developed and maintained using
+\begin{itemize}
+\item Emacs editor
+\item \href{http://git-scm.com/}{Git} revision control system
+\item Python
+\end{itemize}
+
+PETSc documentation has been generated using
+\begin{itemize}
+\item the \href{http://www.cs.uiuc.edu/~wgropp/projects/software/sowing/index.htm}{text processing tools} developed by Bill Gropp
+\item c2html
+\item pdflatex
+\item python
+\end{itemize}
+

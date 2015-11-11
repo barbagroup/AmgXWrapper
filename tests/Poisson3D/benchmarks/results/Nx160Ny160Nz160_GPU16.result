@@ -1,0 +1,230 @@
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+myRank: 0 4671.8 MB  / 5119.81 MB 
+myRank: 1 4685.06 MB  / 5119.81 MB 
+myRank: 12 4674.06 MB  / 5119.81 MB 
+myRank: 7 4629.93 MB  / 5119.81 MB 
+myRank: 13 4665.43 MB  / 5119.81 MB 
+myRank: 8 4645.8 MB  / 5119.81 MB 
+myRank: 6 4636.43 MB  / 5119.81 MB 
+myRank: 5 4635.05 MB  / 5119.81 MB 
+myRank: 4 4635.68 MB  / 5119.81 MB 
+myRank: 10 4566.18 MB  / 5119.81 MB 
+myRank: 9 4622.3 MB  / 5119.81 MB 
+myRank: 11 4627.8 MB  / 5119.81 MB 
+myRank: 2 4636.68 MB  / 5119.81 MB 
+myRank: 3 4619.93 MB  / 5119.81 MB 
+myRank: 15 4674.06 MB  / 5119.81 MB 
+myRank: 14 4647.93 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU16
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.259929s wall, 0.240000s user + 0.020000s system = 0.260000s CPU (100.0%)
+	L2-Norm: 0.275731
+	Max-Norm: 0.000256886
+	Iterations 30
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+myRank: 1 4685.06 MB  / 5119.81 MB 
+myRank: 0 4671.8 MB  / 5119.81 MB 
+myRank: 14 4647.93 MB  / 5119.81 MB 
+myRank: 15 4674.06 MB  / 5119.81 MB 
+myRank: 13 4665.43 MB  / 5119.81 MB 
+myRank: 8 4645.8 MB  / 5119.81 MB 
+myRank: 5 4635.05 MB  / 5119.81 MB 
+myRank: 6 4636.43 MB  / 5119.81 MB 
+myRank: 4 4635.68 MB  / 5119.81 MB 
+myRank: 7 4629.93 MB  / 5119.81 MB 
+myRank: 12 4674.06 MB  / 5119.81 MB 
+myRank: 9 4622.3 MB  / 5119.81 MB 
+myRank: 11 4627.8 MB  / 5119.81 MB 
+myRank: 10 4566.18 MB  / 5119.81 MB 
+myRank: 2 4636.68 MB  / 5119.81 MB 
+myRank: 3 4619.93 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU16
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.259133s wall, 0.240000s user + 0.020000s system = 0.260000s CPU (100.3%)
+	L2-Norm: 0.275731
+	Max-Norm: 0.000256886
+	Iterations 30
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+myRank: 1 4685.06 MB  / 5119.81 MB 
+myRank: 0 4671.8 MB  / 5119.81 MB 
+myRank: 8 4645.8 MB  / 5119.81 MB 
+myRank: 5 4635.05 MB  / 5119.81 MB 
+myRank: 9 4622.3 MB  / 5119.81 MB 
+myRank: 10 4566.18 MB  / 5119.81 MB 
+myRank: 4 4635.68 MB  / 5119.81 MB 
+myRank: 15 4674.06 MB  / 5119.81 MB 
+myRank: 2 4636.68 MB  / 5119.81 MB 
+myRank: 11 4627.8 MB  / 5119.81 MB 
+myRank: 14 4647.93 MB  / 5119.81 MB 
+myRank: 3 4619.93 MB  / 5119.81 MB 
+myRank: 6 4636.43 MB  / 5119.81 MB 
+myRank: 7 4629.93 MB  / 5119.81 MB 
+myRank: 12 4674.06 MB  / 5119.81 MB 
+myRank: 13 4665.43 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU16
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.259695s wall, 0.240000s user + 0.020000s system = 0.260000s CPU (100.1%)
+	L2-Norm: 0.275731
+	Max-Norm: 0.000256886
+	Iterations 30
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+myRank: 1 4685.06 MB  / 5119.81 MB 
+myRank: 0 4671.8 MB  / 5119.81 MB 
+myRank: 5 4635.05 MB  / 5119.81 MB 
+myRank: 8 4645.8 MB  / 5119.81 MB 
+myRank: 4 4635.68 MB  / 5119.81 MB 
+myRank: 11 4627.8 MB  / 5119.81 MB 
+myRank: 9 4622.3 MB  / 5119.81 MB 
+myRank: 10 4566.18 MB  / 5119.81 MB 
+myRank: 2 4636.68 MB  / 5119.81 MB 
+myRank: 15 4674.06 MB  / 5119.81 MB 
+myRank: 3 4619.93 MB  / 5119.81 MB 
+myRank: 14 4647.93 MB  / 5119.81 MB 
+myRank: 6 4636.43 MB  / 5119.81 MB 
+myRank: 7 4629.93 MB  / 5119.81 MB 
+myRank: 12 4674.06 MB  / 5119.81 MB 
+myRank: 13 4665.43 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU16
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.259250s wall, 0.240000s user + 0.010000s system = 0.250000s CPU (96.4%)
+	L2-Norm: 0.275731
+	Max-Norm: 0.000256886
+	Iterations 30
+License acquired, proceeding
+License acquired, proceeding
+AMGX version 1.2.0-build108
+Built on Dec 22 2014, 10:33:38
+Compiled with CUDA Runtime 6.5, using CUDA driver 6.5
+Cannot read file as JSON object, trying as AMGX config
+Cannot read file as JSON object, trying as AMGX config
+Converting config string to current config version
+Parsing configuration string: exception_handling=1 ; 
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+License acquired, proceeding
+myRank: 1 4685.06 MB  / 5119.81 MB 
+myRank: 0 4671.8 MB  / 5119.81 MB 
+myRank: 6 4636.43 MB  / 5119.81 MB 
+myRank: 12 4674.06 MB  / 5119.81 MB 
+myRank: 5 4635.05 MB  / 5119.81 MB 
+myRank: 8 4645.8 MB  / 5119.81 MB 
+myRank: 7 4629.93 MB  / 5119.81 MB 
+myRank: 13 4665.43 MB  / 5119.81 MB 
+myRank: 10 4566.18 MB  / 5119.81 MB 
+myRank: 4 4635.68 MB  / 5119.81 MB 
+myRank: 9 4622.3 MB  / 5119.81 MB 
+myRank: 11 4627.8 MB  / 5119.81 MB 
+myRank: 2 4636.68 MB  / 5119.81 MB 
+myRank: 3 4619.93 MB  / 5119.81 MB 
+myRank: 15 4674.06 MB  / 5119.81 MB 
+myRank: 14 4647.93 MB  / 5119.81 MB 
+
+Case Name: Nx160Ny160Nz160_GPU16
+	Nx: 160 Ny: 160 Nz: 160
+	Solve Time:  0.268201s wall, 0.250000s user + 0.020000s system = 0.270000s CPU (100.7%)
+	L2-Norm: 0.275731
+	Max-Norm: 0.000256886
+	Iterations 30
