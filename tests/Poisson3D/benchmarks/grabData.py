@@ -1,5 +1,6 @@
 import os
 import numpy
+import re
 
 
 slurmFiles = []
@@ -26,6 +27,8 @@ for file in slurmFiles:
             n1 = line.find(keyword1)
             n2 = line.find("\n")
             caseName = line[n1+len(keyword1):n2]
+            caseName = re.sub('GPU(?P<num>\d{1}$)', 'GPU0\g<1>', caseName)
+            caseName = re.sub('PETSc(?P<num>\d{2}$)', 'PETSc0\g<1>', caseName)
             if caseName in runCount:
                 runCount[caseName] += 1
             else:
