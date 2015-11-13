@@ -1,0 +1,9 @@
+
+Case Name: Nx1000Ny500Nz200_PETSc512
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  15.892116s wall, 15.800000s user + 0.070000s system = 15.870000s CPU (99.9%)
+	L2-Norm: 0.116315
+	Max-Norm: 3.28973e-05
+	Iterations 858
+ Data for JOB [35740,1] offset 0
+
