@@ -41,6 +41,7 @@
 
 # Vim backup file
 *~
+.*.swp
 
 # cmake files other than CMakeLists.txt
 **/CMakeCache.txt
@@ -50,6 +51,7 @@
 tests/Poisson3D/bin
 tests/Poisson2D/bin
 **/*.log
+**/*.vts
 
 # AmgX log file
 **/.logamgx
