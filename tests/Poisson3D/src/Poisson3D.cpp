@@ -213,6 +213,8 @@ int main(int argc, char **argv)
     {
         PetscViewer         viewer; // PETSc viewer
 
+        std::strcat(args.optFileName ,".log");
+
         ierr = PetscViewerASCIIOpen(
                 PETSC_COMM_WORLD, args.optFileName, &viewer);                CHK;
         ierr = PetscLogView(viewer);                                         CHK;
@@ -224,11 +226,13 @@ int main(int argc, char **argv)
     {
         PetscViewer         viewerVTK;
 
+        std::strcat(args.VTKFileName ,".vts");
+
         ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewerVTK);              CHK;
         ierr = PetscViewerSetType(viewerVTK, PETSCVIEWERVTK);                CHK;
         ierr = PetscViewerSetFormat(viewerVTK, PETSC_VIEWER_VTK_VTS);        CHK;
         ierr = PetscViewerFileSetMode(viewerVTK, FILE_MODE_WRITE);           CHK;
-        ierr = PetscViewerFileSetName(viewerVTK, "test.vts");                CHK;
+        ierr = PetscViewerFileSetName(viewerVTK, args.VTKFileName);          CHK;
 
         ierr = VecView(u_exact, viewerVTK);                                  CHK;
 
