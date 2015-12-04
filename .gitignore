@@ -48,6 +48,8 @@
 **/Makefile
 **/*.cmake
 tests/Poisson3D/bin
+tests/Poisson2D/bin
+**/*.log
 
 # AmgX log file
 **/.logamgx
