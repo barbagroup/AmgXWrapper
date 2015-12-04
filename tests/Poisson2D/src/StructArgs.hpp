@@ -14,8 +14,12 @@ struct StructArgs
     PetscInt            Nx,     // number of elements in x-direction
                         Ny;     // number of elements in y-direction
 
+    PetscBool           optFileBool,
+                        VTKFileBool;
+
     char                mode[MAX_LEN],        // either GPU, CPU, or PETSc
                         cfgFileName[MAX_LEN], // config file
                         optFileName[MAX_LEN], // output file
-                        caseName[MAX_LEN];    // case name
+                        caseName[MAX_LEN],    // case name
+                        VTKFileName[MAX_LEN];
 };

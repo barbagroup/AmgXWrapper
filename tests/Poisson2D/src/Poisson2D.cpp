@@ -29,7 +29,8 @@ int main(int argc, char **argv)
     Vec                 u,      // unknowns
                         rhs,    // RHS
                         bc,     // boundary conditions
-                        u_exact;// exact solution
+                        u_exact,// exact solution
+                        err;    // errors
 
     Mat                 A;      // coefficient matrix
 
@@ -49,9 +50,6 @@ int main(int argc, char **argv)
 
 
     KSPConvergedReason  reason; // to store the KSP convergence reason
-
-    PetscViewer         viewer; // PETSc viewer
-
 
     std::string         solveTime;
 
@@ -93,6 +91,7 @@ int main(int argc, char **argv)
     ierr = DMCreateGlobalVector(grid, &rhs);                                 CHK;
     ierr = DMCreateGlobalVector(grid, &bc);                                  CHK;
     ierr = DMCreateGlobalVector(grid, &u_exact);                             CHK;
+    ierr = DMCreateGlobalVector(grid, &err);                                 CHK;
 
     ierr = PetscObjectSetName((PetscObject) x, "x coordinates");             CHK;
     ierr = PetscObjectSetName((PetscObject) y, "y coordinates");             CHK;
@@ -100,6 +99,7 @@ int main(int argc, char **argv)
     ierr = PetscObjectSetName((PetscObject) rhs, "RHS");                     CHK;
     ierr = PetscObjectSetName((PetscObject) bc, "boundary conditions");      CHK;
     ierr = PetscObjectSetName((PetscObject) u_exact, "exact solution");      CHK;
+    ierr = PetscObjectSetName((PetscObject) err, "errors");                  CHK;
 
 
     // set values of dx, dy, dx, x, y, and z
@@ -183,9 +183,10 @@ int main(int argc, char **argv)
     }
 
     // calculate norms of errors
-    ierr = VecAXPY(u, -1.0, u_exact);                                        CHK;
-    ierr = VecNorm(u, NORM_2, &norm2);                                       CHK;
-    ierr = VecNorm(u, NORM_INFINITY, &normM);                                CHK;
+    ierr = VecCopy(u, err);                                                  CHK;
+    ierr = VecAXPY(err, -1.0, u_exact);                                      CHK;
+    ierr = VecNorm(err, NORM_2, &norm2);                                     CHK;
+    ierr = VecNorm(err, NORM_INFINITY, &normM);                              CHK;
 
 
     ierr = PetscPrintf(PETSC_COMM_WORLD, "\nCase Name: %s\n", args.caseName);CHK;
@@ -198,39 +199,49 @@ int main(int argc, char **argv)
     ierr = PetscPrintf(PETSC_COMM_WORLD, "\tIterations %D\n", Niters);       CHK; 
 
 
-    ierr = PetscViewerASCIIOpen(PETSC_COMM_WORLD, args.optFileName, &viewer); CHK;
-    ierr = PetscLogView(viewer); CHK;
-    ierr = PetscViewerDestroy(&viewer); CHK;
+    // output a file for petsc performance
+    if (args.optFileBool == PETSC_TRUE)
+    {
+        PetscViewer         viewer; // PETSc viewer
+
+        std::strcat(args.optFileName ,".log");
+
+        ierr = PetscViewerASCIIOpen(
+                PETSC_COMM_WORLD, args.optFileName, &viewer);                CHK;
+        ierr = PetscLogView(viewer);                                         CHK;
+        ierr = PetscViewerDestroy(&viewer);                                  CHK;
+    }
+    
+    // output VTK file for post-processing
+    if (args.VTKFileBool == PETSC_TRUE)
+    {
+        PetscViewer         viewerVTK;
+
+        std::strcat(args.VTKFileName ,".vts");
+
+        ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewerVTK);              CHK;
+        ierr = PetscViewerSetType(viewerVTK, PETSCVIEWERVTK);                CHK;
+        ierr = PetscViewerSetFormat(viewerVTK, PETSC_VIEWER_VTK_VTS);        CHK;
+        ierr = PetscViewerFileSetMode(viewerVTK, FILE_MODE_WRITE);           CHK;
+        ierr = PetscViewerFileSetName(viewerVTK, args.VTKFileName);          CHK;
+
+        ierr = VecView(u_exact, viewerVTK);                                  CHK;
+
+        ierr = PetscViewerFileSetMode(viewerVTK, FILE_MODE_APPEND);          CHK;
+
+        ierr = VecView(u, viewerVTK);                                        CHK;
+        ierr = VecView(err, viewerVTK);                                      CHK;
+
+        ierr = PetscViewerDestroy(&viewerVTK);                               CHK;
+    }
     
 
+    // destroy solver
     if (std::strcmp(args.mode, "PETSc") == 0)
         ierr = KSPDestroy(&ksp);
     else
         amgx.finalize();
 
-
-    ierr = VecView(u_exact, PETSC_VIEWER_DRAW_WORLD); CHKERRQ(ierr);
-    ierr = VecView(u, PETSC_VIEWER_DRAW_WORLD); CHKERRQ(ierr);
-
-    // finalize PETSc
-    
-    {
-        PetscViewer         viewer2;
-
-        ierr = PetscViewerCreate(PETSC_COMM_WORLD, &viewer2); CHKERRQ(ierr);
-        ierr = PetscViewerSetType(viewer2, PETSCVIEWERVTK); CHKERRQ(ierr);
-        ierr = PetscViewerSetFormat(viewer2, PETSC_VIEWER_ASCII_VTK); CHKERRQ(ierr);
-        ierr = PetscViewerFileSetMode(viewer2, FILE_MODE_WRITE); CHKERRQ(ierr);
-        ierr = PetscViewerFileSetName(viewer2, "test.vtk"); CHKERRQ(ierr);
-
-        ierr = PetscViewerView(viewer2, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-
-        //ierr = DMPlexVTKWriteAll((PetscObject) dm, viewer); CHKERRQ(ierr);
-        ierr = DMView(grid, PETSC_VIEWER_STDOUT_WORLD); CHKERRQ(ierr);
-        ierr = DMView(grid, viewer2); CHKERRQ(ierr);
-
-        ierr = PetscViewerDestroy(&viewer2); CHKERRQ(ierr);
-    }
 
     ierr = PetscFinalize();                                                  CHK;
 
