@@ -48,42 +48,25 @@ AMGX_resources_handle AmgXSolver::rsrc = nullptr;
 int AmgXSolver::initialize(MPI_Comm comm, 
         const std::string &_mode, const std::string &cfg_file)
 {
-    count += 1;
 
-    AmgXComm = comm;
-
-    MPI_Comm_size(AmgXComm, &Npart);
-    MPI_Comm_rank(AmgXComm, &myRank);
 
     // get the number of total cuda devices
-    CHECK(cudaGetDeviceCount(&Ndevs));
+    CHECK(cudaGetDeviceCount(&nDevs));
 
-    // use round-robin to assign devices to processes
-    //devs = new int(myRank % Ndevs);
-    
-    // another way to assign devices
-    if (Npart == 1)
+    // Check whether there is at least one CUDA device on this node
+    if (nDevs == 0) 
     {
-        devs = new int(0);
-    }
-    else
-    {
-        int         lclSize,
-                    lclRank,
-                    nPerDev,
-                    remain;
+        std::cerr << "There are no CUDA devices on the node " 
+                  << nodeName << " !!" << std::endl;
 
-        lclSize = std::atoi(std::getenv("OMPI_COMM_WORLD_LOCAL_SIZE"));
-        lclRank = std::atoi(std::getenv("OMPI_COMM_WORLD_LOCAL_RANK"));
-
-        nPerDev = lclSize / Ndevs;
-        remain = lclSize % Ndevs;
-        
-        if (lclRank < (nPerDev+1)*remain)
-            devs = new int(lclRank / (nPerDev + 1));
-        else
-            devs = new int((lclRank - (nPerDev + 1) * remain) / nPerDev + remain);
+        exit(EXIT_FAILURE);
     }
+
+    initMPIcomms(comm);
+
+
+    count += 1;
+
 
 
     // only the first instance is in charge of initializing AmgX
@@ -142,6 +125,113 @@ int AmgXSolver::initialize(MPI_Comm comm,
     return 0;
 }
 
+
+/**
+ * @brief Initialize different MPI communicators
+ *
+ * This private initializes all communicators needed:
+ *
+ * 1. globalCpuWorld is the communicator for all cpu processors, which is 
+ *    usually the same with MPI_COMM_WORLD
+ * 2. localCpuWorld is the communicaotr for cpu processors located in the same 
+ *    node, which can use CUDA devices on that node
+ * 3. gpuWorld is the communicator for the cpu processors that involved in AmgX
+ *    function calls, i.e., those who will call AmgX functions
+ * 4. devWorld is the communicator for the cpu processors that share one CUDA
+ *    device. The first processor in this communicator will also be in gpuWorld.
+ *    And all other processors in this communicator will transfer their data to 
+ *    that fisrt processor.
+ * 
+ * XXXXXXXSize and XXXXXXXRank represent the size and rank obtained from these
+ * communicators.
+ *
+ * @param comm A communicator for all processes
+ *
+ * @return Currently meaningless. May be error codes in the future.
+ */
+int AmgXSolver::initMPIcomms(MPI_Comm &comm)
+{
+    // Get the name of this node
+    MPI_Get_processor_name(nodeName, &nodeNameLen);
+
+    // Copy communicator for all processors
+    globalCpuWorld = comm;
+
+    // get size and rank for global communicator
+    MPI_Comm_size(globalCpuWorld, &globalSize);
+    MPI_Comm_rank(globalCpuWorld, &myGlobalRank);
+
+    // Get the communicator for processors on the same node (local world)
+    MPI_Comm_split_type(globalCpuWorld, 
+            MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &localCpuWorld);
+
+    // get size and rank for local communicator
+    MPI_Comm_size(localCpuWorld, &localSize);
+    MPI_Comm_rank(localCpuWorld, &myLocalRank);
+
+
+    if (nDevs == localSize)
+    {
+        devID = myLocalRank;
+        gpuProc = 0;
+    }
+    else if (nDevs > localSize)
+    {
+        if (myLocalRank == 0)
+            std::cout << "CUDA devices on the node " << nodeName 
+                      << " are more than the MPI processes launched. " 
+                      << "Only " << localSize << " CUDA devices will be used."
+                      << std::endl;
+
+        devID = myLocalRank;
+        gpuProc = 0;
+    }
+    else
+    {
+        int     nBasic = localSize / nDevs,
+                nRemain = localSize % nDevs;
+
+        if (myLocalRank < (nBasic+1)*nRemain)
+        {
+            devID = myLocalRank / (nBasic + 1);
+            if (myLocalRank % (nBasic + 1) == 0)  gpuProc = 0;
+        }
+        else
+        {
+            devID = (myLocalRank - (nBasic+1)*nRemain) / nBasic + nRemain;
+            if ((myLocalRank - (nBasic+1)*nRemain) % nBasic == 0) gpuProc = 0;
+        }
+    }
+
+    MPI_Barrier(globalCpuWorld);
+
+    // split the global world into a world involved in AmgX and a null world
+    MPI_Comm_split(globalCpuWorld, gpuProc, 0, &gpuWorld);
+
+    // get size and rank for the communicator corresponding to gpuWorld
+    if (gpuWorld != MPI_COMM_NULL)
+    {
+        MPI_Comm_size(gpuWorld, &gpuWorldSize);
+        MPI_Comm_rank(gpuWorld, &myGpuWorldRank);
+    }
+    else
+    {
+        gpuWorldSize = MPI_UNDEFINED;
+        myGpuWorldRank = MPI_UNDEFINED;
+    }
+    
+
+    // split local world into worlds corresponding to each CUDA device
+    MPI_Comm_split(localCpuWorld, devID, 0, &devWorld);
+
+    // get size and rank for the communicator corresponding to myWorld
+    MPI_Comm_size(devWorld, &devWorldSize);
+    MPI_Comm_rank(devWorld, &myDevWorldRank);
+
+    MPI_Barrier(globalCpuWorld);
+
+    return 0;
+}
 
 /**
  * @brief Finalizing the instance.
