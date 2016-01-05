@@ -62,16 +62,38 @@ class AmgXSolver
                                 isUploaded_P = false,   /*< as its name*/
                                 isUploaded_B = false;   /*< as its name*/
 
-        int                     Ndevs,      /*< # of cuda devices*/
-                                Npart,      /*< # of partitions*/
-                                myRank,     /*< rank of current process*/
-                                ring;       /*< a parameter used by AmgX*/
-
-        int                    *devs = nullptr;     /*< list of devices used by
-                                                        current process*/
 
 
-        MPI_Comm                AmgXComm;   /*< MPI communicator*/
+
+
+
+        int                     nDevs,      /*< # of cuda devices*/
+                                devID;
+
+        int                     gpuProc = MPI_UNDEFINED;
+
+        MPI_Comm                globalCpuWorld,
+                                localCpuWorld,
+                                gpuWorld,
+                                devWorld;
+
+        int                     globalSize,
+                                localSize,
+                                gpuWorldSize,
+                                devWorldSize;
+
+        int                     myGlobalRank,
+                                myLocalRank,
+                                myGpuWorldRank,
+                                myDevWorldRank;
+
+        int                     nodeNameLen;
+        char                    nodeName[MPI_MAX_PROCESSOR_NAME];
+
+
+
+        int                     ring;       /*< a parameter used by AmgX*/
+
         AMGX_Mode               mode;       /*< AmgX mode*/
         AMGX_config_handle      cfg;        /*< AmgX config object*/
         AMGX_matrix_handle      AmgXA;      /*< AmgX coeff mat*/
@@ -91,5 +113,8 @@ class AmgXSolver
 
         /// a printing function that prints nothing, used by AmgX
         static void print_none(const char *msg, int length);
+
+
+        int initMPIcomms(MPI_Comm &comm);
 
 };
