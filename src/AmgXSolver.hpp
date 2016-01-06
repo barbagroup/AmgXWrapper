@@ -11,6 +11,7 @@
 # include <iostream>
 # include <string>
 # include <cstring>
+# include <functional>
 # include <petscmat.h>
 # include <petscvec.h>
 # include <amgx_c.h>
@@ -54,17 +55,6 @@ class AmgXSolver
 
     private:
 
-        static int              count;      /*!< only one instance allowed*/
-        static AMGX_resources_handle   rsrc;       /*< AmgX resource object*/
-
-        bool                    isInitialized = false,  /*< as its name*/
-                                isUploaded_A = false,   /*< as its name*/
-                                isUploaded_P = false,   /*< as its name*/
-                                isUploaded_B = false;   /*< as its name*/
-
-
-
-
 
 
         int                     nDevs,      /*< # of cuda devices*/
@@ -92,14 +82,24 @@ class AmgXSolver
 
 
 
+        static int              count;      /*!< only one instance allowed*/
         int                     ring;       /*< a parameter used by AmgX*/
 
-        AMGX_Mode               mode;       /*< AmgX mode*/
-        AMGX_config_handle      cfg;        /*< AmgX config object*/
-        AMGX_matrix_handle      AmgXA;      /*< AmgX coeff mat*/
-        AMGX_vector_handle      AmgXP,      /*< AmgX unknowns vec*/
-                                AmgXRHS;    /*< AmgX RHS vec*/
-        AMGX_solver_handle      solver;     /*< AmgX solver object*/
+        AMGX_Mode               mode;               /*< AmgX mode*/
+        AMGX_config_handle      cfg = nullptr;      /*< AmgX config object*/
+        AMGX_matrix_handle      AmgXA = nullptr;    /*< AmgX coeff mat*/
+        AMGX_vector_handle      AmgXP = nullptr,    /*< AmgX unknowns vec*/
+                                AmgXRHS = nullptr;  /*< AmgX RHS vec*/
+        AMGX_solver_handle      solver = nullptr;   /*< AmgX solver object*/
+        static AMGX_resources_handle   rsrc;        /*< AmgX resource object*/
+
+
+
+        bool                    isInitialized = false,  /*< as its name*/
+                                isUploaded_A = false,   /*< as its name*/
+                                isUploaded_P = false,   /*< as its name*/
+                                isUploaded_B = false;   /*< as its name*/
+
 
 
         /// set up the mode of AmgX solver
@@ -116,5 +116,7 @@ class AmgXSolver
 
 
         int initMPIcomms(MPI_Comm &comm);
+        int initAmgX(const std::string &_mode, const std::string &_cfg);
+
 
 };
