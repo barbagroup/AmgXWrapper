@@ -33,13 +33,7 @@ AMGX_resources_handle AmgXSolver::rsrc = nullptr;
 /**
  * @brief Initialization of AmgXSolver instance
  *
- * This function initializes the current instance. Based on the count, only the 
- * instance initialized first is in charge of initializing AmgX and the 
- * resource instance.
- *
- * @param comm MPI communicator
- * @param _Npart The number of processes involved in this solver
- * @param _myRank The rank of current process
+ * @param comm MPI communicator for all processes
  * @param _mode The mode this solver will run in. Please refer to AmgX manual.
  * @param cfg_file A file containing the configurations of this solver
  *
@@ -48,8 +42,6 @@ AMGX_resources_handle AmgXSolver::rsrc = nullptr;
 int AmgXSolver::initialize(MPI_Comm comm, 
         const std::string &_mode, const std::string &cfg_file)
 {
-
-
     // get the number of total cuda devices
     CHECK(cudaGetDeviceCount(&nDevs));
 
@@ -62,66 +54,11 @@ int AmgXSolver::initialize(MPI_Comm comm,
         exit(EXIT_FAILURE);
     }
 
+    // initialize other communicators
     initMPIcomms(comm);
 
+    if (gpuProc == 0) initAmgX(_mode, cfg_file);
 
-    count += 1;
-
-
-
-    // only the first instance is in charge of initializing AmgX
-    if (count == 1)
-    {
-        // initialize AmgX
-        AMGX_SAFE_CALL(AMGX_initialize());
-
-        // intialize AmgX plugings
-        AMGX_SAFE_CALL(AMGX_initialize_plugins());
-
-        // use user defined output mechanism. only the master process can output
-        // something on the screen
-        if (myRank == 0) 
-        { 
-            AMGX_SAFE_CALL(
-                AMGX_register_print_callback(&(AmgXSolver::print_callback))); 
-        }
-        else 
-        { 
-            AMGX_SAFE_CALL(
-                AMGX_register_print_callback(&(AmgXSolver::print_none))); 
-        }
-
-        // let AmgX to handle errors returned
-        AMGX_SAFE_CALL(AMGX_install_signal_handler());
-    }
-
-    // create an AmgX configure object
-    AMGX_SAFE_CALL(AMGX_config_create_from_file(&cfg, cfg_file.c_str()));
-
-    // let AmgX handle returned error codes internally
-    AMGX_SAFE_CALL(AMGX_config_add_parameters(&cfg, "exception_handling=1"));
-
-    // create an AmgX resource object, only the first instance is in charge
-    if (count == 1) AMGX_resources_create(&rsrc, cfg, &AmgXComm, 1, devs);
-
-    // set mode
-    setMode(_mode);
-
-    // create AmgX vector object for unknowns and RHS
-    AMGX_vector_create(&AmgXP, rsrc, mode);
-    AMGX_vector_create(&AmgXRHS, rsrc, mode);
-
-    // create AmgX matrix object for unknowns and RHS
-    AMGX_matrix_create(&AmgXA, rsrc, mode);
-
-    // create an AmgX solver object
-    AMGX_solver_create(&solver, rsrc, mode, cfg);
-
-    // obtain the default number of rings based on current configuration
-    AMGX_config_get_default_number_of_rings(cfg, &ring);
-
-    isInitialized = true;
-    
     return 0;
 }
 
@@ -232,6 +169,82 @@ int AmgXSolver::initMPIcomms(MPI_Comm &comm)
 
     return 0;
 }
+
+
+
+/**
+ * @brief Initialize the AmgX library
+ *
+ * This function initializes the current instance (solver). Based on the count, 
+ * only the instance initialized first is in charge of initializing AmgX and the 
+ * resource instance.
+ *
+ * @param _mode The mode this solver will run in. Please refer to AmgX manual.
+ * @param _cfg A file containing the configurations of this solver
+ *
+ * @return Currently meaningless. May be error codes in the future.
+ */
+int AmgXSolver::initAmgX(const std::string &_mode, const std::string &_cfg)
+{
+    count += 1;
+
+    // only the first instance (AmgX solver) is in charge of initializing AmgX
+    if (count == 1)
+    {
+        // initialize AmgX
+        AMGX_SAFE_CALL(AMGX_initialize());
+
+        // intialize AmgX plugings
+        AMGX_SAFE_CALL(AMGX_initialize_plugins());
+
+        // use user-defined output mechanism. only the master process can output
+        // something on the screen
+        if (myGpuWorldRank == 0) 
+        { 
+            AMGX_SAFE_CALL(
+                AMGX_register_print_callback(&(AmgXSolver::print_callback))); 
+        }
+        else 
+        { 
+            AMGX_SAFE_CALL(
+                AMGX_register_print_callback(&(AmgXSolver::print_none))); 
+        }
+
+        // let AmgX to handle errors returned
+        AMGX_SAFE_CALL(AMGX_install_signal_handler());
+    }
+
+    // create an AmgX configure object
+    AMGX_SAFE_CALL(AMGX_config_create_from_file(&cfg, _cfg.c_str()));
+
+    // let AmgX handle returned error codes internally
+    AMGX_SAFE_CALL(AMGX_config_add_parameters(&cfg, "exception_handling=1"));
+
+    // create an AmgX resource object, only the first instance is in charge
+    if (count == 1) AMGX_resources_create(&rsrc, cfg, &gpuWorld, 1, &devID);
+
+    // set mode
+    setMode(_mode);
+
+    // create AmgX vector object for unknowns and RHS
+    AMGX_vector_create(&AmgXP, rsrc, mode);
+    AMGX_vector_create(&AmgXRHS, rsrc, mode);
+
+    // create AmgX matrix object for unknowns and RHS
+    AMGX_matrix_create(&AmgXA, rsrc, mode);
+
+    // create an AmgX solver object
+    AMGX_solver_create(&solver, rsrc, mode, cfg);
+
+    // obtain the default number of rings based on current configuration
+    AMGX_config_get_default_number_of_rings(cfg, &ring);
+
+    isInitialized = true;
+
+    return 0;
+}
+
+
 
 /**
  * @brief Finalizing the instance.
