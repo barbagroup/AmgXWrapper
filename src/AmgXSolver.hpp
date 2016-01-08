@@ -11,9 +11,18 @@
 # include <iostream>
 # include <string>
 # include <cstring>
+# include <functional>
+# include <vector>
+# include <cstdlib>
+
+# include <cuda_runtime.h>
+# include <amgx_c.h>
+
 # include <petscmat.h>
 # include <petscvec.h>
-# include <amgx_c.h>
+# include <petscis.h>
+
+# include "check.hpp"
 
 /**
  * @brief A wrapper class for an interface between PETSc and AmgX
@@ -37,7 +46,7 @@ class AmgXSolver
         int finalize();
 
         /// convert PETSc matrix into AmgX matrix and pass it to solver
-        int setA(Mat &A);
+        int setA(const Mat &A);
 
         /// solve the problem, soultion vector will be updated in the end
         int solve(Vec &p, Vec &b);
@@ -54,42 +63,80 @@ class AmgXSolver
 
     private:
 
+
+
+        int                     nDevs,      /*< # of cuda devices*/
+                                devID;
+
+        int                     gpuProc = MPI_UNDEFINED;
+
+        MPI_Comm                globalCpuWorld,
+                                localCpuWorld,
+                                gpuWorld,
+                                devWorld;
+
+        int                     globalSize,
+                                localSize,
+                                gpuWorldSize,
+                                devWorldSize;
+
+        int                     myGlobalRank,
+                                myLocalRank,
+                                myGpuWorldRank,
+                                myDevWorldRank;
+
+        int                     nodeNameLen;
+        char                    nodeName[MPI_MAX_PROCESSOR_NAME];
+
+
+
         static int              count;      /*!< only one instance allowed*/
-        static AMGX_resources_handle   rsrc;       /*< AmgX resource object*/
+        int                     ring;       /*< a parameter used by AmgX*/
 
-        bool                    isInitialized = false,  /*< as its name*/
-                                isUploaded_A = false,   /*< as its name*/
-                                isUploaded_P = false,   /*< as its name*/
-                                isUploaded_B = false;   /*< as its name*/
-
-        int                     Ndevs,      /*< # of cuda devices*/
-                                Npart,      /*< # of partitions*/
-                                myRank,     /*< rank of current process*/
-                                ring;       /*< a parameter used by AmgX*/
-
-        int                    *devs = nullptr;     /*< list of devices used by
-                                                        current process*/
+        AMGX_Mode               mode;               /*< AmgX mode*/
+        AMGX_config_handle      cfg = nullptr;      /*< AmgX config object*/
+        AMGX_matrix_handle      AmgXA = nullptr;    /*< AmgX coeff mat*/
+        AMGX_vector_handle      AmgXP = nullptr,    /*< AmgX unknowns vec*/
+                                AmgXRHS = nullptr;  /*< AmgX RHS vec*/
+        AMGX_solver_handle      solver = nullptr;   /*< AmgX solver object*/
+        static AMGX_resources_handle   rsrc;        /*< AmgX resource object*/
 
 
-        MPI_Comm                AmgXComm;   /*< MPI communicator*/
-        AMGX_Mode               mode;       /*< AmgX mode*/
-        AMGX_config_handle      cfg;        /*< AmgX config object*/
-        AMGX_matrix_handle      AmgXA;      /*< AmgX coeff mat*/
-        AMGX_vector_handle      AmgXP,      /*< AmgX unknowns vec*/
-                                AmgXRHS;    /*< AmgX RHS vec*/
-        AMGX_solver_handle      solver;     /*< AmgX solver object*/
+
+        bool                    isInitialized = false;  /*< as its name*/
+
 
 
         /// set up the mode of AmgX solver
         int setMode(const std::string &_mode);
-
-        /// generate a partition vector required by AmgX
-        int getPartVec(const Mat &A, int *& partVec);
 
         /// a printing function using stdout
         static void print_callback(const char *msg, int length);
 
         /// a printing function that prints nothing, used by AmgX
         static void print_none(const char *msg, int length);
+
+
+        int initMPIcomms(MPI_Comm &comm);
+        int initAmgX(const std::string &_mode, const std::string &_cfg);
+
+
+        VecScatter      redistScatter = nullptr;
+        Vec             redistLhs = nullptr,
+                        redistRhs = nullptr;
+
+        int getLocalMatRawData(Mat &localA, PetscInt &localN,
+                std::vector<PetscInt> &row, std::vector<Petsc64bitInt> &col,
+                std::vector<PetscScalar> &data);
+
+        int getDevIS(const Mat &A, IS &devIS);
+        int getLocalA(const Mat &A, const IS &devIS, Mat &localA);
+        int redistMat(const Mat &A, const IS &devIS, Mat &newA);
+        int getPartVec(
+                const IS &devIS, const PetscInt &N, std::vector<PetscInt> &partVec);
+        int destroyLocalA(const Mat &A, Mat &localA);
+        int getVecScatter(const Mat &A1, const Mat &A2, const IS &devIS);
+
+        int solve_real(Vec &p, Vec &b);
 
 };
