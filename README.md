@@ -37,7 +37,22 @@ int main(int argc, char **argv)
 
 Note, this wrapper is specifically designed for our CFD solver -- **[PetIBM](https://github.com/barbagroup/PetIBM)**, so it may lack some features.  We are trying to make it more general.
 
-#### Future work:
-* Add support for updating entries of a matrix A on CUDA device
+## Update: 
+
+### 01/08/2016
+
+Now the wrapper has better performance on the cases that MPI ranks are more than GPUs on computing nodes.
+It has poor performance when we have multiple MPI ranks on one GPU. 
+So this wrapper will now only call AmgX solver on part of MPI ranks when there are more MPI ranks than GPUs.
+For example, 
+if there are totally 18 MPI ranks and 6 GPUs (while 12 MPI ranks and 2 GPUs on node 1, and 6 MPI ranks and 4 GPUs on node 2), 
+only the rank 0, 6, 12, 14, 16, 17 will call AmgX solvers.
+Data on other ranks will be transferred to those launching AmgX solvers.
+In the abovementioned example, data on rank 1-5 will be transfer to rank 0; data on rank 7-11 go to rank 6; 13 to 12; and 15 to 14.
+This causes some penalties on computing time because of data transfer between MPI ranks.
+However, the overall performance is much better than calling AmgX solvers on ALL ranks directly.
+
+## Future work:
+* Add support of updating entries of a matrix A which is already on CUDA device
 * Support other matrix structures other than AIJ
-* Add mechanisms for debugging and error handling. For example, check whether the instance is initialized if the codes are compiled under debug mode, or return error codes, etc.
+* Add mechanisms for debugging and error handling.
