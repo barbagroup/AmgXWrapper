@@ -132,7 +132,8 @@ class AmgXSolver
         int getDevIS(const Mat &A, IS &devIS);
         int getLocalA(const Mat &A, const IS &devIS, Mat &localA);
         int redistMat(const Mat &A, const IS &devIS, Mat &newA);
-        int getPartVec(const IS &devIS, std::vector<PetscInt> &partVec);
+        int getPartVec(
+                const IS &devIS, const PetscInt &N, std::vector<PetscInt> &partVec);
         int destroyLocalA(const Mat &A, Mat &localA);
         int getVecScatter(const Mat &A1, const Mat &A2, const IS &devIS);
 
