@@ -49,9 +49,10 @@ int AmgXSolver::setMode(const std::string &_mode)
  */
 int AmgXSolver::getIters()
 {
-    int         iter;
+    int         iter = 0;
 
-    AMGX_solver_get_iterations_number(solver, &iter);
+    if (gpuProc == 0)
+        AMGX_solver_get_iterations_number(solver, &iter); 
 
     return iter;
 }
@@ -66,9 +67,10 @@ int AmgXSolver::getIters()
  */
 double AmgXSolver::getResidual(const int &iter)
 {
-    double      res;
+    double      res = 0;
 
-    AMGX_solver_get_iteration_residual(solver, iter, 0, &res);
+    if (gpuProc == 0)
+        AMGX_solver_get_iteration_residual(solver, iter, 0, &res);
 
     return res;
 }
@@ -105,11 +107,14 @@ int AmgXSolver::getMemUsage()
     size_t free_byte,
            total_byte;
 
-    CHECK(cudaMemGetInfo(&free_byte, &total_byte));
+    if (gpuProc == 0)
+    {
+        CHECK(cudaMemGetInfo(&free_byte, &total_byte));
 
-    std::cout << "myGlobalRank: " << myGlobalRank << " "
-              << free_byte / 1024.0 / 1024.0 << " MB "
-              << " / " << total_byte / 1024.0 / 1024.0 << " MB " << std::endl;
+        std::cout << "myGlobalRank: " << myGlobalRank << " "
+                  << free_byte / 1024.0 / 1024.0 << " MB "
+                  << " / " << total_byte / 1024.0 / 1024.0 << " MB " << std::endl;
+    }
 
     return 0;
 }
