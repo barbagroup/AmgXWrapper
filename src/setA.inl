@@ -51,7 +51,7 @@ int AmgXSolver::setA(const Mat &A)
     ierr = getLocalMatRawData(localA, nLocalRows, row, col, data); CHKERRQ(ierr);
     ierr = destroyLocalA(A, localA); CHKERRQ(ierr);
 
-    ierr = getPartVec(devIS, partVec); CHKERRQ(ierr);
+    ierr = getPartVec(devIS, nGlobalRows, partVec); CHKERRQ(ierr);
 
 
     // upload matrix A to AmgX
@@ -160,7 +160,8 @@ int AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
 }
 
 
-int AmgXSolver::getPartVec(const IS &devIS, std::vector<PetscInt> &partVec)
+int AmgXSolver::getPartVec(
+        const IS &devIS, const PetscInt &N, std::vector<PetscInt> &partVec)
 {
     PetscErrorCode      ierr;
 
@@ -168,12 +169,11 @@ int AmgXSolver::getPartVec(const IS &devIS, std::vector<PetscInt> &partVec)
     Vec                 tempMPI,
                         tempSEQ;
     
-    PetscInt            n, N;
+    PetscInt            n;
 
     PetscScalar         *tempPartVec; 
 
     ierr = ISGetLocalSize(devIS, &n); CHKERRQ(ierr);
-    ierr = ISGetSize(devIS, &N); CHKERRQ(ierr);
 
     if (gpuWorld != MPI_COMM_NULL)
     {
@@ -195,6 +195,7 @@ int AmgXSolver::getPartVec(const IS &devIS, std::vector<PetscInt> &partVec)
         partVec.assign(tempPartVec, tempPartVec+N);
 
         ierr = VecRestoreArray(tempSEQ, &tempPartVec);                CHKERRQ(ierr);
+
         ierr = VecDestroy(&tempSEQ);                                  CHKERRQ(ierr);
     }
     MPI_Barrier(globalCpuWorld);
@@ -230,13 +231,14 @@ int AmgXSolver::getLocalMatRawData(Mat &localA, PetscInt &localN,
         std::vector<PetscScalar> &data)
 {
     PetscErrorCode      ierr;
+    PetscInt            tempN;
     const PetscInt      *rawCol, 
                         *rawRow;
     PetscScalar         *rawData;
     PetscBool           done;
 
     ierr = MatGetRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
-            &localN, &rawRow, &rawCol, &done);                     CHKERRQ(ierr);
+            &tempN, &rawRow, &rawCol, &done);                     CHKERRQ(ierr);
 
     if (! done)
     {
@@ -246,13 +248,15 @@ int AmgXSolver::getLocalMatRawData(Mat &localA, PetscInt &localN,
 
     ierr = MatSeqAIJGetArray(localA, &rawData);                    CHKERRQ(ierr);
 
+    localN = tempN;
+
     col.assign(rawCol, rawCol+rawRow[localN]);
     row.assign(rawRow, rawRow+localN+1);
     data.assign(rawData, rawData+rawRow[localN]);
 
 
     ierr = MatRestoreRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
-            &localN, &rawRow, &rawCol, &done);                     CHKERRQ(ierr);
+            &tempN, &rawRow, &rawCol, &done);                     CHKERRQ(ierr);
 
     // check whether MatRestoreRowIJ worked
     if (! done)
