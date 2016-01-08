@@ -1,5 +1,4 @@
 # pragma once
-# include <cuda_runtime.h>
 
 # define CHECK(call)                                                            \
 {                                                                               \
@@ -11,3 +10,5 @@
         exit(1);                                                                \
     }                                                                           \
 }
+
+# define CHK CHKERRQ(ierr)
