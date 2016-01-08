@@ -143,6 +143,18 @@ ENDIF()
 
 
 MESSAGE("\n===================================================================")
+MESSAGE("Trying to find Boost...\n")
+FIND_PACKAGE(Boost REQUIRED COMPONENTS timer system)
+
+IF(${Boost_FOUND})
+    MESSAGE("\tBoost_INCLUDE_DIRS: " ${Boost_INCLUDE_DIRS})
+    MESSAGE("\tBoost_LIBRARY_DIRS: " ${Boost_LIBRARY_DIRS})
+    MESSAGE("\tBoost_LIBRARIES: " ${Boost_LIBRARIES})
+ENDIF()
+
+
+
+MESSAGE("\n===================================================================")
 MESSAGE("Trying to find CUDA 6.5...")
 MESSAGE("\nNOTE: If you have several different versions of CUDA, and if CMake ")
 MESSAGE("can not find CUDA 6.5, please define CUDA_TOOLKIT_ROOT_DIR manually ")
@@ -180,12 +192,14 @@ SET(SOURCE
     ${AmgXWrapperSRC}/AmgXSolver.cpp)
 
 INCLUDE_DIRECTORIES(
+    ${Boost_INCLUDE_DIRS}
     ${PETSC_INCLUDES} 
     ${AMGX_INCLUDE_DIRS} 
     ${CUDA_INCLUDE_DIRS} 
     ${AmgXWrapperSRC})
 
 LINK_DIRECTORIES(
+    ${Boost_LIBRARY_DIRS}
     ${CUDA_LIBRARY_DIRS} 
     ${AMGX_LIBRARY_DIRS}
     ${PETSC_LIBRARY_DIRS})
@@ -193,6 +207,7 @@ LINK_DIRECTORIES(
 ADD_EXECUTABLE(Poisson2D ${SOURCE})
 
 TARGET_LINK_LIBRARIES(Poisson2D 
+    ${Boost_LIBRARIES}
     ${PETSC_LIBRARIES} 
     ${AMGX_LIBRARIES} 
     ${CUDA_LIBRARIES}) 
