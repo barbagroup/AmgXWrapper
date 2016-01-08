@@ -12,9 +12,17 @@
 # include <string>
 # include <cstring>
 # include <functional>
+# include <vector>
+# include <cstdlib>
+
+# include <cuda_runtime.h>
+# include <amgx_c.h>
+
 # include <petscmat.h>
 # include <petscvec.h>
-# include <amgx_c.h>
+# include <petscis.h>
+
+# include "check.hpp"
 
 /**
  * @brief A wrapper class for an interface between PETSc and AmgX
@@ -38,7 +46,7 @@ class AmgXSolver
         int finalize();
 
         /// convert PETSc matrix into AmgX matrix and pass it to solver
-        int setA(Mat &A);
+        int setA(const Mat &A);
 
         /// solve the problem, soultion vector will be updated in the end
         int solve(Vec &p, Vec &b);
@@ -95,18 +103,12 @@ class AmgXSolver
 
 
 
-        bool                    isInitialized = false,  /*< as its name*/
-                                isUploaded_A = false,   /*< as its name*/
-                                isUploaded_P = false,   /*< as its name*/
-                                isUploaded_B = false;   /*< as its name*/
+        bool                    isInitialized = false;  /*< as its name*/
 
 
 
         /// set up the mode of AmgX solver
         int setMode(const std::string &_mode);
-
-        /// generate a partition vector required by AmgX
-        int getPartVec(const Mat &A, int *& partVec);
 
         /// a printing function using stdout
         static void print_callback(const char *msg, int length);
@@ -118,5 +120,22 @@ class AmgXSolver
         int initMPIcomms(MPI_Comm &comm);
         int initAmgX(const std::string &_mode, const std::string &_cfg);
 
+
+        VecScatter      redistScatter = nullptr;
+        Vec             redistLhs = nullptr,
+                        redistRhs = nullptr;
+
+        int getLocalMatRawData(Mat &localA, PetscInt &localN,
+                std::vector<PetscInt> &row, std::vector<Petsc64bitInt> &col,
+                std::vector<PetscScalar> &data);
+
+        int getDevIS(const Mat &A, IS &devIS);
+        int getLocalA(const Mat &A, const IS &devIS, Mat &localA);
+        int redistMat(const Mat &A, const IS &devIS, Mat &newA);
+        int getPartVec(const IS &devIS, std::vector<PetscInt> &partVec);
+        int destroyLocalA(const Mat &A, Mat &localA);
+        int getVecScatter(const Mat &A1, const Mat &A2, const IS &devIS);
+
+        int solve_real(Vec &p, Vec &b);
 
 };
