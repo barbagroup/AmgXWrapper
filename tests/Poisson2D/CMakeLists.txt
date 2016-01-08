@@ -143,18 +143,6 @@ ENDIF()
 
 
 MESSAGE("\n===================================================================")
-MESSAGE("Trying to find Boost...\n")
-FIND_PACKAGE(Boost REQUIRED COMPONENTS timer system)
-
-IF(${Boost_FOUND})
-    MESSAGE("\tBoost_INCLUDE_DIRS: " ${Boost_INCLUDE_DIRS})
-    MESSAGE("\tBoost_LIBRARY_DIRS: " ${Boost_LIBRARY_DIRS})
-    MESSAGE("\tBoost_LIBRARIES: " ${Boost_LIBRARIES})
-ENDIF()
-
-
-
-MESSAGE("\n===================================================================")
 MESSAGE("Trying to find CUDA 6.5...")
 MESSAGE("\nNOTE: If you have several different versions of CUDA, and if CMake ")
 MESSAGE("can not find CUDA 6.5, please define CUDA_TOOLKIT_ROOT_DIR manually ")
@@ -170,22 +158,6 @@ IF(${CUDA_FOUND})
     MESSAGE("\tCUDA_INCLUDE_DIRS: " ${CUDA_INCLUDE_DIRS})
     MESSAGE("\tCUDA_LIBRARY_DIRS: " ${CUDA_LIBRARY_DIRS})
     MESSAGE("\tCUDA_LIBRARIES: " ${CUDA_LIBRARIES})
-ENDIF()
-
-
-
-MESSAGE("\n===================================================================")
-MESSAGE("Trying to find MPI")
-
-FIND_PACKAGE(MPI REQUIRED)
-
-IF(${MPI_CXX_FOUND})
-    MESSAGE("\tFound MPI: " ${MPI_CXX_FOUND})
-    MESSAGE("\tMPI_CXX_COMPILER: " ${MPI_CXX_COMPILER})
-    MESSAGE("\tMPI_CXX_COMPILE_FLAGS: " ${MPI_CXX_COMPILE_FLAGS})
-    MESSAGE("\tMPI_CXX_INCLUDE_PATH: " ${MPI_CXX_INCLUDE_PATH})
-    MESSAGE("\tMPI_CXX_LINK_FLAGS: " ${MPI_CXX_LINK_FLAGS})
-    MESSAGE("\tMPI_CXX_LIBRARIES: " ${MPI_CXX_LIBRARIES})
 ENDIF()
 
 
@@ -208,15 +180,12 @@ SET(SOURCE
     ${AmgXWrapperSRC}/AmgXSolver.cpp)
 
 INCLUDE_DIRECTORIES(
-    ${Boost_INCLUDE_DIRS}
     ${PETSC_INCLUDES} 
     ${AMGX_INCLUDE_DIRS} 
     ${CUDA_INCLUDE_DIRS} 
-    ${MPI_CXX_INCLUDE_PATH}
     ${AmgXWrapperSRC})
 
 LINK_DIRECTORIES(
-    ${Boost_LIBRARY_DIRS}
     ${CUDA_LIBRARY_DIRS} 
     ${AMGX_LIBRARY_DIRS}
     ${PETSC_LIBRARY_DIRS})
@@ -224,8 +193,6 @@ LINK_DIRECTORIES(
 ADD_EXECUTABLE(Poisson2D ${SOURCE})
 
 TARGET_LINK_LIBRARIES(Poisson2D 
-    ${Boost_LIBRARIES}
     ${PETSC_LIBRARIES} 
     ${AMGX_LIBRARIES} 
-    ${CUDA_LIBRARIES} 
-    ${MPI_CXX_LIBRARIES})
+    ${CUDA_LIBRARIES}) 
