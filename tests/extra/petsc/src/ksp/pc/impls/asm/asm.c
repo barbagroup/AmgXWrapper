@@ -31,7 +31,7 @@ typedef struct {
   PetscBool  dm_subdomains;       /* whether DM is allowed to define subdomains */
   PCCompositeType loctype;        /* the type of composition for local solves */
   /* For multiplicative solve */
-  Mat       *lmat;                /* submatrix for overlapping multiplicative (process) subdomain */
+  Mat       *lmats;               /* submatrices for overlapping multiplicative (process) subdomain */
   Vec        lx, ly;              /* work vectors */
   IS         lis;                 /* index set that defines each overlapping multiplicative (process) subdomain */
 } PC_ASM;
@@ -389,7 +389,13 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
     }
   }
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
-    ierr = MatGetSubMatrices(pc->pmat, 1, &osm->lis, &osm->lis, scall, &osm->lmat);CHKERRQ(ierr);
+    IS      *cis;
+    PetscInt c;
+
+    ierr = PetscMalloc1(osm->n_local_true, &cis);CHKERRQ(ierr);
+    for (c = 0; c < osm->n_local_true; ++c) cis[c] = osm->lis;
+    ierr = MatGetSubMatrices(pc->pmat, osm->n_local_true, osm->is, cis, scall, &osm->lmats);CHKERRQ(ierr);
+    ierr = PetscFree(cis);CHKERRQ(ierr);
   }
 
   /* Return control to the user so that the submatrices can be modified (e.g., to apply
@@ -408,6 +414,7 @@ static PetscErrorCode PCSetUp_ASM(PC pc)
   PetscFunctionReturn(0);
 }
 
+#include <petsc/private/kspimpl.h>  
 #undef __FUNCT__
 #define __FUNCT__ "PCSetUpOnBlocks_ASM"
 static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
@@ -419,6 +426,9 @@ static PetscErrorCode PCSetUpOnBlocks_ASM(PC pc)
   PetscFunctionBegin;
   for (i=0; i<osm->n_local_true; i++) {
     ierr = KSPSetUp(osm->ksp[i]);CHKERRQ(ierr);
+    if (osm->ksp[i]->reason == KSP_DIVERGED_PCSETUP_FAILED) {
+      pc->failedreason = PC_SUBPC_ERROR;
+    }
   }
   PetscFunctionReturn(0);
 }
@@ -497,7 +507,9 @@ static PetscErrorCode PCApply_ASM(PC pc,Vec x,Vec y)
         ierr = VecScatterBegin(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
         ierr = VecScatterEnd(osm->prolongation[i], osm->y_local[i], osm->ly, INSERT_VALUES, reverse);CHKERRQ(ierr);
         ierr = VecScale(osm->ly, -1.0);CHKERRQ(ierr);
-        ierr = MatMult(osm->lmat[0], osm->ly, osm->lx);CHKERRQ(ierr);
+        ierr = MatMult(osm->lmats[i+1], osm->ly, osm->y[i+1]);CHKERRQ(ierr);
+        ierr = VecScatterBegin(osm->restriction[i+1], osm->y[i+1], osm->lx, INSERT_VALUES, reverse);CHKERRQ(ierr);
+        ierr = VecScatterEnd(osm->restriction[i+1], osm->y[i+1], osm->lx, INSERT_VALUES, reverse);CHKERRQ(ierr);
       }
     }
     /* handle the rest of the scatters that do not have local solves */
@@ -602,7 +614,7 @@ static PetscErrorCode PCReset_ASM(PC pc)
   ierr = PCASMDestroySubdomains(osm->n_local_true,osm->is,osm->is_local);CHKERRQ(ierr);
   if (osm->loctype == PC_COMPOSITE_MULTIPLICATIVE) {
     ierr = ISDestroy(&osm->lis);CHKERRQ(ierr);
-    ierr = MatDestroyMatrices(1, &osm->lmat);CHKERRQ(ierr);
+    ierr = MatDestroyMatrices(osm->n_local_true, &osm->lmats);CHKERRQ(ierr);
     ierr = VecDestroy(&osm->lx);CHKERRQ(ierr);
     ierr = VecDestroy(&osm->ly);CHKERRQ(ierr);
   }
@@ -1242,11 +1254,10 @@ PetscErrorCode  PCASMGetSubKSP(PC pc,PetscInt *n_local,PetscInt *first_local,KSP
    Concepts: additive Schwarz method
 
     References:
-    An additive variant of the Schwarz alternating method for the case of many subregions
-    M Dryja, OB Widlund - Courant Institute, New York University Technical report
-
-    Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
-    Barry Smith, Petter Bjorstad, and William Gropp, Cambridge University Press, ISBN 0-521-49589-X.
++   1. - M Dryja, OB Widlund, An additive variant of the Schwarz alternating method for the case of many subregions
+     Courant Institute, New York University Technical report
+-   1. - Barry Smith, Petter Bjorstad, and William Gropp, Domain Decompositions: Parallel Multilevel Methods for Elliptic Partial Differential Equations,
+    Cambridge University Press.
 
 .seealso:  PCCreate(), PCSetType(), PCType (for list of available types), PC,
            PCBJACOBI, PCASMGetSubKSP(), PCASMSetLocalSubdomains(),
