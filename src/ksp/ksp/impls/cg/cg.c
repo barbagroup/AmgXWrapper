@@ -248,6 +248,7 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     }
     ksp->rnorm = dp;
     CHKERRQ(ierr);KSPLogResidualHistory(ksp,dp);CHKERRQ(ierr);
+    if (eigs) cg->ned = ksp->its;
     ierr = KSPMonitor(ksp,i+1,dp);CHKERRQ(ierr);
     ierr = (*ksp->converged)(ksp,i+1,dp,&ksp->reason,ksp->cnvP);CHKERRQ(ierr);
     if (ksp->reason) break;
@@ -274,7 +275,6 @@ PetscErrorCode  KSPSolve_CG(KSP ksp)
     i++;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  if (eigs) cg->ned = ksp->its;
   PetscFunctionReturn(0);
 }
 
@@ -397,9 +397,8 @@ static PetscErrorCode  KSPCGUseSingleReduction_CG(KSP ksp,PetscBool flg)
    indicate it to the KSP object.
 
    References:
-   Methods of Conjugate Gradients for Solving Linear Systems, Magnus R. Hestenes and Eduard Stiefel,
+.   1. - Magnus R. Hestenes and Eduard Stiefel, Methods of Conjugate Gradients for Solving Linear Systems,
    Journal of Research of the National Bureau of Standards Vol. 49, No. 6, December 1952 Research Paper 2379
-   pp. 409--436.
 
 .seealso:  KSPCreate(), KSPSetType(), KSPType (for list of available types), KSP,
            KSPCGSetType(), KSPCGUseSingleReduction(), KSPPIPECG, KSPGROPPCG

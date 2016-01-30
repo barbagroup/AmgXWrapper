@@ -134,10 +134,18 @@ typedef __float128 PetscReal;
 #define PetscCosComplex(a)           complexlib::cos(a)
 #define PetscAsinComplex(a)          complexlib::asin(a)
 #define PetscAcosComplex(a)          complexlib::acos(a)
+#if defined(PETSC_HAVE_TANCOMPLEX)
 #define PetscTanComplex(a)           complexlib::tan(a)
+#else
+#define PetscTanComplex(a)           PetscSinComplex(a)/PetscCosComplex(a)
+#endif
 #define PetscSinhComplex(a)          complexlib::sinh(a)
 #define PetscCoshComplex(a)          complexlib::cosh(a)
+#if defined(PETSC_HAVE_TANHCOMPLEX)
 #define PetscTanhComplex(a)          complexlib::tanh(a)
+#else
+#define PetscTanhComplex(a)          PetscSinhComplex(a)/PetscCoshComplex(a)
+#endif
 
 #if defined(PETSC_USE_REAL_SINGLE)
 typedef complexlib::complex<float> PetscComplex;
@@ -576,7 +584,7 @@ PETSC_STATIC_INLINE PetscScalar PetscPowScalarReal(PetscScalar base,PetscReal po
 #ifndef PETSC_HAVE_LOG2
 PETSC_STATIC_INLINE PetscReal PetscLog2Real(PetscReal n)
 {
-  return PetscLogReal(n)/PetscLogReal(2);
+  return PetscLogReal(n)/PetscLogReal(2.0);
 }
 #endif
 #endif
