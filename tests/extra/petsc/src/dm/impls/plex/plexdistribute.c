@@ -1,4 +1,5 @@
-#include <petsc/private/dmpleximpl.h>   /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmpleximpl.h>    /*I      "petscdmplex.h"   I*/
+#include <petsc/private/dmlabelimpl.h>   /*I      "petscdmlabel.h"  I*/
 
 #undef __FUNCT__
 #define __FUNCT__ "DMPlexSetAdjacencyUseCone"
@@ -842,6 +843,7 @@ PetscErrorCode DMPlexDistributeField(DM dm, PetscSF pointSF, PetscSection origin
   ierr = VecGetArray(originalVec, &originalValues);CHKERRQ(ierr);
   ierr = VecGetArray(newVec, &newValues);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(fieldSF, MPIU_SCALAR, originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(fieldSF, MPIU_SCALAR, originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
@@ -888,6 +890,7 @@ PetscErrorCode DMPlexDistributeFieldIS(DM dm, PetscSF pointSF, PetscSection orig
 
   ierr = ISGetIndices(originalIS, &originalValues);CHKERRQ(ierr);
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(fieldSF, MPIU_INT, (PetscInt *) originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(fieldSF, MPIU_INT, (PetscInt *) originalValues, newValues);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
@@ -935,6 +938,7 @@ PetscErrorCode DMPlexDistributeData(DM dm, PetscSF pointSF, PetscSection origina
   ierr = PetscMalloc(fieldSize * dataSize, newData);CHKERRQ(ierr);
 
   ierr = PetscSFCreateSectionSF(pointSF, originalSection, remoteOffsets, newSection, &fieldSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = PetscSFBcastBegin(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
   ierr = PetscSFBcastEnd(fieldSF, datatype, originalData, *newData);CHKERRQ(ierr);
   ierr = PetscSFDestroy(&fieldSF);CHKERRQ(ierr);
@@ -978,6 +982,7 @@ PetscErrorCode DMPlexDistributeCones(DM dm, PetscSF migrationSF, ISLocalToGlobal
   }
   /* Communicate and renumber cones */
   ierr = PetscSFCreateSectionSF(migrationSF, originalConeSection, remoteOffsets, newConeSection, &coneSF);CHKERRQ(ierr);
+  ierr = PetscFree(remoteOffsets);CHKERRQ(ierr);
   ierr = DMPlexGetCones(dm, &cones);CHKERRQ(ierr);
   if (original) {
     PetscInt numCones;
@@ -1098,11 +1103,11 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
   lsendDepth = mesh->depthState != depthState ? PETSC_TRUE : PETSC_FALSE;
   ierr = MPIU_Allreduce(&lsendDepth, &sendDepth, 1, MPIU_BOOL, MPI_LOR, comm);CHKERRQ(ierr);
   if (sendDepth) {
-    ierr = DMPlexRemoveLabel(dmParallel, "depth", &depth);CHKERRQ(ierr);
+    ierr = DMRemoveLabel(dmParallel, "depth", &depth);CHKERRQ(ierr);
     ierr = DMLabelDestroy(&depth);CHKERRQ(ierr);
   }
   /* Everyone must have either the same number of labels, or none */
-  ierr = DMPlexGetNumLabels(dm, &numLocalLabels);CHKERRQ(ierr);
+  ierr = DMGetNumLabels(dm, &numLocalLabels);CHKERRQ(ierr);
   numLabels = numLocalLabels;
   ierr = MPI_Bcast(&numLabels, 1, MPIU_INT, 0, comm);CHKERRQ(ierr);
   if (numLabels == numLocalLabels) hasLabels = PETSC_TRUE;
@@ -1111,14 +1116,14 @@ PetscErrorCode DMPlexDistributeLabels(DM dm, PetscSF migrationSF, DM dmParallel)
     PetscBool   isdepth;
 
     if (hasLabels) {
-      ierr = DMPlexGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
+      ierr = DMGetLabelByNum(dm, l, &label);CHKERRQ(ierr);
       /* Skip "depth" because it is recreated */
       ierr = PetscStrcmp(label->name, "depth", &isdepth);CHKERRQ(ierr);
     }
     ierr = MPI_Bcast(&isdepth, 1, MPIU_BOOL, 0, comm);CHKERRQ(ierr);
     if (isdepth && !sendDepth) continue;
     ierr = DMLabelDistribute(label, migrationSF, &labelNew);CHKERRQ(ierr);
-    ierr = DMPlexAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
+    ierr = DMAddLabel(dmParallel, labelNew);CHKERRQ(ierr);
   }
   ierr = PetscLogEventEnd(DMPLEX_DistributeLabels,dm,0,0,0);CHKERRQ(ierr);
   PetscFunctionReturn(0);
@@ -1200,6 +1205,7 @@ PetscErrorCode DMPlexDistributeSetupTree(DM dm, PetscSF migrationSF, ISLocalToGl
     ierr = PetscSectionSetChart(newParentSection,pStart,pEnd);CHKERRQ(ierr);
     ierr = PetscSFDistributeSection(migrationSF, origParentSection, &remoteOffsetsParents, newParentSection);CHKERRQ(ierr);
     ierr = PetscSFCreateSectionSF(migrationSF, origParentSection, remoteOffsetsParents, newParentSection, &parentSF);CHKERRQ(ierr);
+    ierr = PetscFree(remoteOffsetsParents);CHKERRQ(ierr);
     ierr = PetscSectionGetStorageSize(newParentSection,&newParentSize);CHKERRQ(ierr);
     ierr = PetscMalloc2(newParentSize,&newParents,newParentSize,&newChildIDs);CHKERRQ(ierr);
     if (original) {

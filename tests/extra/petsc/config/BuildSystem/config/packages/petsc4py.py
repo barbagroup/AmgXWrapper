@@ -3,7 +3,7 @@ import config.package
 class Configure(config.package.Package):
   def __init__(self, framework):
     config.package.Package.__init__(self, framework)
-    self.gitcommit         = 'c60fc5ec55762f30cd92fab4a749cff93286338e'
+    self.gitcommit         = '94a52a891996fe5a1db39c0a1eaac11601561d2b'
     self.download          = ['git://https://bitbucket.org/petsc/petsc4py'] #'http://ftp.mcs.anl.gov/pub/petsc/externalpackages/petsc4py-'+self.gitcommit+'.tar.gz'
     self.functions         = []
     self.includes          = []
@@ -77,7 +77,7 @@ class Configure(config.package.Package):
     return self.installDir
 
   def configureLibrary(self):
-    if not self.sharedLibraries.useShared:
+    if not self.sharedLibraries.useShared and not self.setCompilers.isCygwin(self.log):
         raise RuntimeError('petsc4py requires PETSc be built with shared libraries; rerun with --with-shared-libraries')
     self.checkDownload()
     if self.setCompilers.isDarwin(self.log):
