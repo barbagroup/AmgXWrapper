@@ -1,6 +1,6 @@
 /**
- * @file Poisson3D.cpp
- * @brief An example and benchmark of AmgX and PETSc
+ * @file Poisson2D.cpp
+ * @brief An example and benchmark of AmgX and PETSc: 2D Poisson
  * @author Pi-Yueh Chuang (pychuang@gwu.edu)
  * @version alpha
  * @date 2015-09-01
