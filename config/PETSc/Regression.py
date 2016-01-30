@@ -26,8 +26,10 @@ class Configure(config.base.Configure):
     self.compilers      = framework.require('config.compilers', self)
     self.mpi            = framework.require('config.packages.MPI', self)
     self.elemental      = framework.require('config.packages.elemental', self)
+    self.superlu_dist   = framework.require('config.packages.SuperLU_DIST', self)
     self.x              = framework.require('config.packages.X', self)
     self.fortrancpp     = framework.require('PETSc.options.fortranCPP', self)
+    self.libraryOptions = framework.require('PETSc.options.libraryOptions', self)
     return
 
   def configureRegression(self):
@@ -41,6 +43,8 @@ class Configure(config.base.Configure):
         jobs.append('Fortran_MPIUni')
     else:
       jobs.append('C')
+      if self.libraryOptions.useInfo:
+        jobs.append('C_Info')
       if not self.scalartypes.precision == 'single':
         jobs.append('C_NotSingle')
       if hasattr(self.compilers, 'CXX'):
@@ -97,8 +101,8 @@ class Configure(config.base.Configure):
                 ejobs.append('MOAB_HDF5')
       else:
         for i in self.framework.packages:
-          if i.name.upper() == 'FFTW':
-            jobs.append('FFTW_COMPLEX')
+          if i.name.upper() in ['FFTW','SUPERLU_DIST']:
+            jobs.append(i.name.upper()+ '_COMPLEX')
 
     self.addMakeMacro('TEST_RUNS',' '.join(jobs)+' '+' '.join(ejobs)+' '+' '.join(rjobs))
     return

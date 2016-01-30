@@ -253,11 +253,11 @@ PetscErrorCode KSPSolve_FCG(KSP ksp)
       } else {
         d[i] = PetscSqrtReal(PetscAbsScalar(beta))*e[i] + 1.0/alpha;
       }
+      fcg->ned = ksp->its-1;
     }
     ++i;
   } while (i<ksp->max_it);
   if (i >= ksp->max_it) ksp->reason = KSP_DIVERGED_ITS;
-  if (eigs) fcg->ned = ksp->its-1;
   PetscFunctionReturn(0);
 }
 
@@ -551,10 +551,9 @@ PetscErrorCode KSPSetFromOptions_FCG(PetscOptionItems *PetscOptionsObject,KSP ks
    Level: beginner
 
   References:
-    1) Notay, Y."Flexible Conjugate Gradients", SIAM J. Sci. Comput. 22:4, pp 1444-1460, 2000
-
-    2) Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable-Step Preconditioning",
-    SIAM J. Matrix Anal. Appl. 12:4, pp 625-44, 1991
++    1. - Notay, Y."Flexible Conjugate Gradients", SIAM J. Sci. Comput. 22:4, 2000
+-    2. - Axelsson, O. and Vassilevski, P. S. "A Black Box Generalized Conjugate Gradient Solver with Inner Iterations and Variable step Preconditioning",
+    SIAM J. Matrix Anal. Appl. 12:4, 1991
 
  .seealso : KSPGCR, KSPFGMRES, KSPCG, KSPFCGSetMmax(), KSPFCGGetMmax(), KSPFCGSetNprealloc(), KSPFCGGetNprealloc(), KSPFCGSetTruncationType(), KSPFCGGetTruncationType()
 

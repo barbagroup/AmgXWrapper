@@ -87,6 +87,7 @@ typedef const char* MatType;
 #define MATSUBMATRIX       "submatrix"
 #define MATLOCALREF        "localref"
 #define MATNEST            "nest"
+#define MATPREALLOCATOR    "preallocator"
 
 /*J
     MatSolverPackage - String with the name of a PETSc matrix solver type.
@@ -183,7 +184,7 @@ PETSC_EXTERN PetscErrorCode MatRegisterBaseName(const char[],const char[],const 
 PETSC_EXTERN PetscErrorCode MatSetOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatAppendOptionsPrefix(Mat,const char[]);
 PETSC_EXTERN PetscErrorCode MatGetOptionsPrefix(Mat,const char*[]);
-PETSC_EXTERN PetscErrorCode MatSetErrorIfFPE(Mat,PetscBool);
+PETSC_EXTERN PetscErrorCode MatSetErrorIfFailure(Mat,PetscBool);
 
 PETSC_EXTERN PetscFunctionList MatList;
 PETSC_EXTERN PetscFunctionList MatColoringList;
@@ -997,6 +998,15 @@ PETSC_EXTERN const char *const MatFactorShiftTypes[];
 PETSC_EXTERN const char *const MatFactorShiftTypesDetail[];
 
 /*S
+    MatFactorError - indicates what type of error in matrix factor
+
+    Level: beginner
+
+    Any additions/changes here MUST also be made in include/petsc/finclude/petscmat.h
+S*/
+typedef enum {MAT_FACTOR_NOERROR,MAT_FACTOR_STRUCT_ZEROPIVOT,MAT_FACTOR_NUMERIC_ZEROPIVOT,MAT_FACTOR_OUTMEMORY,MAT_FACTOR_OTHER} MatFactorError;
+
+/*S
    MatFactorInfo - Data passed into the matrix factorization routines, and information about the resulting factorization
 
    In Fortran these are simply double precision arrays of size MAT_FACTORINFO_SIZE, that is use
@@ -1514,7 +1524,7 @@ PETSC_EXTERN PetscErrorCode MatShellSetContext(Mat,void*);
 /*
    Codes for matrices stored on disk. By default they are
    stored in a universal format. By changing the format with
-   PetscViewerSetFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
+   PetscViewerPushFormat(viewer,PETSC_VIEWER_NATIVE); the matrices will
    be stored in a way natural for the matrix, for example dense matrices
    would be stored as dense. Matrices stored this way may only be
    read into matrices of the same type.
@@ -1786,5 +1796,7 @@ PETSC_EXTERN PetscErrorCode MatChop(Mat,PetscReal);
 PETSC_EXTERN PetscErrorCode MatComputeBandwidth(Mat,PetscReal,PetscInt*);
 
 PETSC_EXTERN PetscErrorCode MatSubdomainsCreateCoalesce(Mat,PetscInt,PetscInt*,IS**);
+
+PETSC_EXTERN PetscErrorCode MatPreallocatorPreallocate(Mat,PetscBool,Mat);
 
 #endif
