@@ -2,7 +2,7 @@ config_version=2
 
 communicator=MPI
 
-solver(pcgf)=PBICGSTAB
+solver(pcgf)=PCG
 determinism_flag=1
 pcgf:preconditioner(prec)=AMG
 pcgf:use_scalar_norm=1
@@ -10,9 +10,9 @@ pcgf:max_iters=10000
 pcgf:convergence=ABSOLUTE
 pcgf:tolerance=1e-8
 pcgf:norm=L2
-pcgf:print_solve_stats=1
+pcgf:print_solve_stats=0
 pcgf:monitor_residual=1
-pcgf:obtain_timings=1
+pcgf:obtain_timings=0
 
 prec:error_scaling=0
 prec:print_grid_stats=1
