@@ -144,7 +144,7 @@ int AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
 {
     PetscErrorCode      ierr;
 
-    if (gpuWorld == globalCpuWorld)
+    if (gpuWorldSize == globalSize)
     {
         newA = A;
     }
