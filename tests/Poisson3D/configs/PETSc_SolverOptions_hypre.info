@@ -1,8 +1,7 @@
--ksp_type bcgs
--ksp_atol 1e-8
+-ksp_type cg
+-ksp_atol 1e-12
 -ksp_rtol 1e-14
 -ksp_max_it 10000
-#-ksp_monitor
 
 -pc_type hypre
 -pc_hypre_type boomeramg
@@ -19,9 +18,9 @@
 -pc_hypre_boomeramg_grid_sweeps_down 1
 -pc_hypre_boomeramg_grid_sweeps_up 1
 -pc_hypre_boomeramg_grid_sweeps_coarse 1
--pc_hypre_boomeramg_relax_type_all symmetric-SOR/Jacobi
--pc_hypre_boomeramg_relax_type_coarse symmetric-SOR/Jacobi
--pc_hypre_boomeramg_relax_weight_all 0.8
+-pc_hypre_boomeramg_relax_type_all Jacobi
+-pc_hypre_boomeramg_relax_type_coarse Gaussian-elimination
+-pc_hypre_boomeramg_relax_weight_all 1.0
 -pc_hypre_boomeramg_outer_relax_weight_all 1.0
 -pc_hypre_boomeramg_measure_type local
 -pc_hypre_boomeramg_coarsen_type HMIS
