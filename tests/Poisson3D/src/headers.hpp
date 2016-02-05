@@ -15,10 +15,9 @@
 # include <cstring>
 
 # include <petscsys.h>
+# include <petsctime.h>
 # include <petscksp.h>
 # include <petscdmda.h>
-
-# include <boost/timer/timer.hpp>
 
 # include "StructArgs.hpp"
 # include "AmgXSolver.hpp"
@@ -49,3 +48,8 @@ PetscErrorCode generateA(const DM &grid,
 
 PetscErrorCode createKSP(KSP &ksp, Mat &A, char *FN);
 
+PetscErrorCode solve(KSP &ksp, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
+        StructArgs &args, PetscLogEvent &warmUpEvent, PetscLogEvent &solvingEvent);
+
+PetscErrorCode solve(AmgXSolver &amgx, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
+        StructArgs &args, PetscLogEvent &warmUpEvent, PetscLogEvent &solvingEvent);

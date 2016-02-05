@@ -1,9 +1,9 @@
 /**
  * @file Poisson3D.cpp
- * @brief An example and benchmark of AmgX and PETSc
+ * @brief An example and benchmark of AmgX and PETSc: 3D Poisson
  * @author Pi-Yueh Chuang (pychuang@gwu.edu)
- * @version alpha
- * @date 2015-09-01
+ * @version beta
+ * @date 2015-02-01
  */
 # include "headers.hpp"
 
@@ -11,8 +11,6 @@ static std::string help = "Test PETSc and AmgX solvers.";
 
 int main(int argc, char **argv)
 {
-    using namespace boost;
-
     StructArgs          args;   // a structure containing CMD arguments
 
     PetscReal           Lx = 1.0, // Lx
@@ -41,31 +39,24 @@ int main(int argc, char **argv)
 
     AmgXSolver          amgx;   // AmgX wrapper instance
 
-    PetscReal           norm2,  // L2 norm of solution errors
-                        normM;  // infinity norm of solution errors
-
-    PetscInt            Niters; // iterations used to converge
-
     PetscErrorCode      ierr;   // error codes returned by PETSc routines
 
     PetscMPIInt         size,   // MPI size
                         myRank; // rank of current process
 
+    PetscClassId        solvingID,
+                        warmUpID;
 
-    KSPConvergedReason  reason; // to store the KSP convergence reason
+    PetscLogEvent       solvingEvent,
+                        warmUpEvent;
 
 
-    std::string         solveTime;
 
-    PetscLogStage       stageSolving;
-
-    timer::cpu_timer    timer;
 
 
     // initialize PETSc and MPI
     ierr = PetscInitialize(&argc, &argv, nullptr, help.c_str());             CHK;
     ierr = PetscLogDefaultBegin();                                           CHK;
-    ierr = PetscLogStageRegister("solving", &stageSolving);                  CHK;
 
 
     // obtain the rank and size of MPI
@@ -76,6 +67,24 @@ int main(int argc, char **argv)
     // get parameters from command-line arguments
     ierr = getArgs(args);                                                    CHK;
 
+
+    // pring case information
+    {
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "=");
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "-");
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+
+        if (myRank == 0) args.print();
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+
+        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "-");
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "=");
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+
+    }
 
     // create DMDA object
     ierr = DMDACreate3d(PETSC_COMM_WORLD, 
@@ -91,29 +100,42 @@ int main(int argc, char **argv)
             
 
     // create vectors (x, y, p, b, u)
-    ierr = DMCreateGlobalVector(grid, &x);                                   CHK;
-    ierr = DMCreateGlobalVector(grid, &y);                                   CHK;
-    ierr = DMCreateGlobalVector(grid, &z);                                   CHK;
-    ierr = DMCreateGlobalVector(grid, &u);                                   CHK;
-    ierr = DMCreateGlobalVector(grid, &rhs);                                 CHK;
-    ierr = DMCreateGlobalVector(grid, &bc);                                  CHK;
-    ierr = DMCreateGlobalVector(grid, &u_exact);                             CHK;
-    ierr = DMCreateGlobalVector(grid, &err);                                 CHK;
+    {
+        ierr = DMCreateGlobalVector(grid, &x);                               CHK;
+        ierr = DMCreateGlobalVector(grid, &y);                               CHK;
+        ierr = DMCreateGlobalVector(grid, &z);                               CHK;
+        ierr = DMCreateGlobalVector(grid, &u);                               CHK;
+        ierr = DMCreateGlobalVector(grid, &rhs);                             CHK;
+        ierr = DMCreateGlobalVector(grid, &bc);                              CHK;
+        ierr = DMCreateGlobalVector(grid, &u_exact);                         CHK;
+        ierr = DMCreateGlobalVector(grid, &err);                             CHK;
 
-    ierr = PetscObjectSetName((PetscObject) x, "x coordinates");             CHK;
-    ierr = PetscObjectSetName((PetscObject) y, "y coordinates");             CHK;
-    ierr = PetscObjectSetName((PetscObject) z, "z coordinates");             CHK;
-    ierr = PetscObjectSetName((PetscObject) u, "vec for unknowns");          CHK;
-    ierr = PetscObjectSetName((PetscObject) rhs, "RHS");                     CHK;
-    ierr = PetscObjectSetName((PetscObject) bc, "boundary conditions");      CHK;
-    ierr = PetscObjectSetName((PetscObject) u_exact, "exact solution");      CHK;
-    ierr = PetscObjectSetName((PetscObject) err, "errors");                  CHK;
+        ierr = PetscObjectSetName((PetscObject) x, "x coordinates");         CHK;
+        ierr = PetscObjectSetName((PetscObject) y, "y coordinates");         CHK;
+        ierr = PetscObjectSetName((PetscObject) z, "z coordinates");         CHK;
+        ierr = PetscObjectSetName((PetscObject) u, "vec for unknowns");      CHK;
+        ierr = PetscObjectSetName((PetscObject) rhs, "RHS");                 CHK;
+        ierr = PetscObjectSetName((PetscObject) bc, "boundary conditions");  CHK;
+        ierr = PetscObjectSetName((PetscObject) u_exact, "exact solution");  CHK;
+        ierr = PetscObjectSetName((PetscObject) err, "errors");              CHK;
+    }
 
 
     // set values of dx, dy, dx, x, y, and z
     ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
     ierr = generateGrid(grid, args.Nx, args.Ny, args.Nz, 
             Lx, Ly, Lz, dx, dy, dz, x, y, z);                                CHK;
+
+
+    // initialize and set up the coefficient matrix A
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
+    ierr = DMSetMatType(grid, MATAIJ);                                       CHK;
+    ierr = DMCreateMatrix(grid, &A);                                         CHK;
+    ierr = MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);        CHK;
+    ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);      CHK;
+    ierr = PetscObjectSetName((PetscObject) A, "matrix A");                  CHK;
+
+    ierr = generateA(grid, dx, dy, dz, A);                                   CHK;
 
 
     // set values of RHS -- the vector rhs
@@ -126,42 +148,23 @@ int main(int argc, char **argv)
     ierr = generateExt(grid, x, y, z, u_exact);                              CHK;
 
 
-    // set all entries as zeros in the vector of unknows
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
-    ierr = VecSet(u, 0.0);                                                   CHK;
-
-
-    // initialize and set up the coefficient matrix A
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
-    ierr = DMSetMatType(grid, MATAIJ);                                       CHK;
-    ierr = DMCreateMatrix(grid, &A);                                         CHK;
-    ierr = MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);        CHK;
-    ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);      CHK;
-
-    ierr = generateA(grid, dx, dy, dz, A);                                   CHK;
-
+    // register a PETSc event for warm-up and solving
+    ierr = PetscClassIdRegister("SolvingClass", &solvingID);                 CHK;
+    ierr = PetscClassIdRegister("WarmUpClass", &warmUpID);                   CHK;
+    ierr = PetscLogEventRegister("Solving", solvingID, &solvingEvent);       CHK;
+    ierr = PetscLogEventRegister("WarmUp", warmUpID, &warmUpEvent);          CHK;
 
     // create a solver and solve based whether it is AmgX or PETSc
     if (std::strcmp(args.mode, "PETSc") == 0) // PETSc mode
     {
         ierr = createKSP(ksp, A, args.cfgFileName);                          CHK;
 
-        ierr = PetscLogStagePush(stageSolving);                              CHK;
+        ierr = solve(ksp, A, u, rhs, u_exact, err, 
+                args, warmUpEvent, solvingEvent);                            CHK;
 
-        timer.start();
-        ierr = KSPSolve(ksp, rhs, u);                                        CHK;
-        solveTime = timer.format();
+        // destroy KSP
+        ierr = KSPDestroy(&ksp);                                             CHK;
 
-        ierr = PetscLogStagePop();                                           CHK;
-
-        ierr = KSPGetConvergedReason(ksp, &reason);                          CHK;
-        if (reason < 0)
-        {
-            ierr = PetscPrintf(PETSC_COMM_WORLD, "\nDiverged: %d\n", reason);CHK;
-            exit(EXIT_FAILURE);
-        }
-
-        ierr = KSPGetIterationNumber(ksp, &Niters);                          CHK;
     }
     else // CPU and GPU modes using AmgX library
     {
@@ -177,35 +180,13 @@ int main(int argc, char **argv)
         ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
         amgx.setA(A);
 
-        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
-        ierr = PetscLogStagePush(stageSolving);                              CHK;
+        ierr = solve(amgx, A, u, rhs, u_exact, err, 
+                args, warmUpEvent, solvingEvent);                            CHK;
 
-        amgx.getMemUsage();
+        // destroy solver
+        ierr = amgx.finalize();                                              CHK;
 
-        timer.start();
-        amgx.solve(u, rhs);
-        solveTime = timer.format();
-
-        ierr = PetscLogStagePop();
-
-        Niters = amgx.getIters();
     }
-
-    // calculate norms of errors
-    ierr = VecCopy(u, err);                                                  CHK;
-    ierr = VecAXPY(err, -1.0, u_exact);                                      CHK;
-    ierr = VecNorm(err, NORM_2, &norm2);                                     CHK;
-    ierr = VecNorm(err, NORM_INFINITY, &normM);                              CHK;
-
-
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "\nCase Name: %s\n", args.caseName);CHK;
-    ierr = PetscPrintf(PETSC_COMM_WORLD, 
-            "\tNx: %D Ny: %D Nz: %D\n", args.Nx, args.Ny, args.Nz);          CHK;
-    ierr = PetscPrintf(PETSC_COMM_WORLD, 
-            "\tSolve Time: %s", solveTime.c_str());                          CHK;
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "\tL2-Norm: %g\n", (double)norm2);  CHK;
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "\tMax-Norm: %g\n", (double)normM); CHK;
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "\tIterations %D\n", Niters);       CHK; 
 
 
     // output a file for petsc performance
@@ -245,12 +226,36 @@ int main(int argc, char **argv)
     }
     
 
-    // destroy solver
-    if (std::strcmp(args.mode, "PETSc") == 0)
-        ierr = KSPDestroy(&ksp);
-    else
-        amgx.finalize();
+    // destroy vectors, matrix, dmda
+    {
+        ierr = VecDestroy(&x);                                               CHK;
+        ierr = VecDestroy(&y);                                               CHK;
+        ierr = VecDestroy(&z);                                               CHK;
+        ierr = VecDestroy(&u);                                               CHK;
+        ierr = VecDestroy(&rhs);                                             CHK;
+        ierr = VecDestroy(&bc);                                              CHK;
+        ierr = VecDestroy(&u_exact);                                         CHK;
+        ierr = VecDestroy(&err);                                             CHK;
 
+        ierr = MatDestroy(&A);                                               CHK;
+
+        ierr = DMDestroy(&grid);                                             CHK;
+    }
+
+
+    {
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "=");
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "-");
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+        ierr = PetscPrintf(PETSC_COMM_WORLD, 
+                "End of %s\n", args.caseName);                               CHK;
+        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "-");
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "=");
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHK;
+    }
 
     // finalize PETSc
     ierr = PetscFinalize();                                                  CHK;
