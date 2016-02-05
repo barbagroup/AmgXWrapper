@@ -19,6 +19,11 @@ int AmgXSolver::solve(Vec &p, Vec &b)
         ierr = VecScatterEnd(redistScatter, 
                 b, redistRhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
 
+        ierr = VecScatterBegin(redistScatter, 
+                p, redistLhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
+        ierr = VecScatterEnd(redistScatter, 
+                p, redistLhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
+
         if (gpuWorld != MPI_COMM_NULL)
         {
             ierr = solve_real(redistLhs, redistRhs); CHK;
