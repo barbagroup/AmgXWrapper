@@ -39,7 +39,7 @@ PetscErrorCode generateRHS(const DM &grid,
     }
 
     if (zbg == 0 && ybg == 0 && xbg ==0) 
-            rhs_arry[0][0][0] += std::cos(c1 * x_arry[0][0][0]) * 
+            rhs_arry[0][0][0] -= std::cos(c1 * x_arry[0][0][0]) * 
                 std::cos(c1 * y_arry[0][0][0]) * std::cos(c1 * z_arry[0][0][0]);
 
     ierr = DMDAVecRestoreArray(grid, x, &x_arry);                  CHKERRQ(ierr);
