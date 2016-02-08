@@ -51,7 +51,7 @@ SET(CMAKE_C_FLAGS_DEBUG "-g" CACHE STRING "")
 MESSAGE("\n===================================================================")
 MESSAGE("Specifying other variables...")
 SET(CMAKE_VERBOSE_MAKEFILE ON)
-SET(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
+SET(EXECUTABLE_OUTPUT_PATH ./bin)
 
 IF(NOT DEFINED CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE RELEASE CACHE STRING "")
