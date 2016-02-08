@@ -48,8 +48,7 @@
 **/CMakeFiles/
 **/Makefile
 **/*.cmake
-tests/Poisson3D/bin
-tests/Poisson2D/bin
+**/bin
 **/*.log
 **/*.vts
 
