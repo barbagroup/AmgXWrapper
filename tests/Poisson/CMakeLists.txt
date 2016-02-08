@@ -196,3 +196,8 @@ TARGET_LINK_LIBRARIES(Poisson
     ${AMGX_LIBRARIES} 
     ${CUDA_LIBRARIES})
 
+ADD_CUSTOM_COMMAND(
+    TARGET Poisson
+    POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory configs
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/configs configs/)
