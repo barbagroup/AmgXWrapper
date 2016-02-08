@@ -13,11 +13,11 @@ int main(int argc, char **argv)
 {
     StructArgs          args;   // a structure containing CMD arguments
 
-    PetscReal           Lx = 1.0, // Lx
+    PetscScalar           Lx = 1.0, // Lx
                         Ly = 1.0, // Ly
                         Lz = 1.0; // Lz
 
-    PetscReal           dx,     // dx, calculated using Lx=1.0
+    PetscScalar           dx,     // dx, calculated using Lx=1.0
                         dy,     // dy, calculated using Ly=1.0
                         dz;     // dy, calculated using Ly=1.0
 

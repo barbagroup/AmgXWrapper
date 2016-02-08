@@ -30,14 +30,14 @@
 
 PetscErrorCode generateGrid(const DM &grid, 
         const PetscInt &Nx, const PetscInt &Ny, const PetscInt &Nz,
-        const PetscReal &Lx, const PetscReal &Ly, const PetscReal &Lz,
-        PetscReal &dx, PetscReal &dy, PetscReal &dz,
+        const PetscScalar &Lx, const PetscScalar &Ly, const PetscScalar &Lz,
+        PetscScalar &dx, PetscScalar &dy, PetscScalar &dz,
         Vec &x, Vec &y, Vec &z);
 
 PetscErrorCode generateGrid(const DM &grid, 
         const PetscInt &Nx, const PetscInt &Ny,
-        const PetscReal &Lx, const PetscReal &Ly,
-        PetscReal &dx, PetscReal &dy,
+        const PetscScalar &Lx, const PetscScalar &Ly,
+        PetscScalar &dx, PetscScalar &dy,
         Vec &x, Vec &y);
 
 PetscErrorCode generateRHS(const DM &grid, 
@@ -53,10 +53,10 @@ PetscErrorCode generateExt(const DM &grid,
         const Vec &x, const Vec &y, Vec &exact);
 
 PetscErrorCode generateA(const DM &grid, 
-        const PetscReal &dx, const PetscReal &dy, const PetscReal &dz, Mat &A);
+        const PetscScalar &dx, const PetscScalar &dy, const PetscScalar &dz, Mat &A);
 
 PetscErrorCode generateA(const DM &grid, 
-        const PetscReal &dx, const PetscReal &dy, Mat &A);
+        const PetscScalar &dx, const PetscScalar &dy, Mat &A);
 
 PetscErrorCode createKSP(KSP &ksp, Mat &A, char *FN);
 

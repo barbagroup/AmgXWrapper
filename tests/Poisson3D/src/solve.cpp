@@ -26,7 +26,7 @@ PetscErrorCode solve(KSP &ksp, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
 
             PetscInt                Niters; // iterations used to converge
 
-            PetscReal               norm2,  // L2 norm of solution errors
+            PetscScalar               norm2,  // L2 norm of solution errors
                                     normM;  // infinity norm of solution errors
 
             ierr = KSPGetConvergedReason(ksp, &reason);                      CHK;
@@ -136,7 +136,7 @@ PetscErrorCode solve(AmgXSolver &amgx, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, V
         {
             PetscInt                Niters; // iterations used to converge
 
-            PetscReal               norm2,  // L2 norm of solution errors
+            PetscScalar               norm2,  // L2 norm of solution errors
                                     normM;  // infinity norm of solution errors
 
             Niters = amgx.getIters();

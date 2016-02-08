@@ -12,7 +12,7 @@
  * @return 
  */
 PetscErrorCode generateA(const DM &grid, 
-        const PetscReal &dx, const PetscReal &dy, const PetscReal &dz, Mat &A)
+        const PetscScalar &dx, const PetscScalar &dy, const PetscScalar &dz, Mat &A)
 {
     PetscErrorCode      ierr;   // error codes returned by PETSc routines
 
@@ -597,7 +597,7 @@ PetscErrorCode generateA(const DM &grid,
  * @return 
  */
 PetscErrorCode generateA(const DM &grid, 
-        const PetscReal &dx, const PetscReal &dy, Mat &A)
+        const PetscScalar &dx, const PetscScalar &dy, Mat &A)
 {
     PetscErrorCode      ierr;   // error codes returned by PETSc routines
 
