@@ -26,6 +26,7 @@ PetscErrorCode generateRHS(const DM &grid,
                         ***z_arry,
                         ***rhs_arry;
 
+    PetscScalar         c2 = -3.0 * c1 * c1;
 
     // get indices for left-bottom and right-top corner
     ierr = DMDAGetCorners(grid, &xbg, &ybg, &zbg, &xed, &yed, &zed); CHKERRQ(ierr);
@@ -84,6 +85,8 @@ PetscErrorCode generateRHS(const DM &grid,
     PetscReal           **x_arry,
                         **y_arry,
                         **rhs_arry;
+
+    PetscScalar         c2 = -2.0 * c1 * c1;
 
 
     // get indices for left-bottom and right-top corner
