@@ -66,7 +66,7 @@ echo "Building Poisson test exectuable file..."
 export CC=gcc
 export CXX=g++
 
-rm bin cmake_install.cmake CMakeFiles/ CMakeCache.txt Makefile -rf
+rm bin configs cmake_install.cmake CMakeFiles/ CMakeCache.txt Makefile -rf
 
 #cmake ../Poisson                                       \
 #    -DAMGX_DIR=/groups/barbalab/pychuang/AmgX     \
