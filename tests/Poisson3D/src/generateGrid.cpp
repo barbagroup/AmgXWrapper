@@ -22,8 +22,8 @@
  */
 PetscErrorCode generateGrid(const DM &grid, 
         const PetscInt &Nx, const PetscInt &Ny, const PetscInt &Nz,
-        const PetscReal &Lx, const PetscReal &Ly, const PetscReal &Lz,
-        PetscReal &dx, PetscReal &dy, PetscReal &dz,
+        const PetscScalar &Lx, const PetscScalar &Ly, const PetscScalar &Lz,
+        PetscScalar &dx, PetscScalar &dy, PetscScalar &dz,
         Vec &x, Vec &y, Vec &z)
 {
     PetscErrorCode      ierr;   // error codes returned by PETSc routines
@@ -32,14 +32,14 @@ PetscErrorCode generateGrid(const DM &grid,
                         ybg, yed,
                         zbg, zed;
 
-    PetscReal           ***x_arry,
+    PetscScalar           ***x_arry,
                         ***y_arry,
                         ***z_arry;
 
     // calculate spacing
-    dx = Lx / (PetscReal) Nx;
-    dy = Ly / (PetscReal) Ny;
-    dz = Lz / (PetscReal) Nz;
+    dx = Lx / (PetscScalar) Nx;
+    dy = Ly / (PetscScalar) Ny;
+    dz = Lz / (PetscScalar) Nz;
 
 
     // get indices for left-bottom and right-top corner
@@ -56,7 +56,7 @@ PetscErrorCode generateGrid(const DM &grid,
         for(int j=ybg; j<yed; ++j)
         {
             for(int i=xbg; i<xed; ++i)
-                x_arry[k][j][i] = (0.5 + (PetscReal)i) * dx;
+                x_arry[k][j][i] = (0.5 + (PetscScalar)i) * dx;
         }
     }
     ierr = DMDAVecRestoreArray(grid, x, &x_arry);                  CHKERRQ(ierr);
@@ -68,7 +68,7 @@ PetscErrorCode generateGrid(const DM &grid,
         for(int j=ybg; j<yed; ++j)
         {
             for(int i=xbg; i<xed; ++i)
-                y_arry[k][j][i] = (0.5 + (PetscReal)j) * dy;
+                y_arry[k][j][i] = (0.5 + (PetscScalar)j) * dy;
         }
     }
     ierr = DMDAVecRestoreArray(grid, y, &y_arry);                  CHKERRQ(ierr);
@@ -80,7 +80,7 @@ PetscErrorCode generateGrid(const DM &grid,
         for(int j=ybg; j<yed; ++j)
         {
             for(int i=xbg; i<xed; ++i)
-                z_arry[k][j][i] = (0.5 + (PetscReal)k) * dz;
+                z_arry[k][j][i] = (0.5 + (PetscScalar)k) * dz;
         }
     }
     ierr = DMDAVecRestoreArray(grid, z, &z_arry);                  CHKERRQ(ierr);
@@ -106,20 +106,20 @@ PetscErrorCode generateGrid(const DM &grid,
  */
 PetscErrorCode generateGrid(const DM &grid, 
         const PetscInt &Nx, const PetscInt &Ny,
-        const PetscReal &Lx, const PetscReal &Ly,
-        PetscReal &dx, PetscReal &dy, Vec &x, Vec &y)
+        const PetscScalar &Lx, const PetscScalar &Ly,
+        PetscScalar &dx, PetscScalar &dy, Vec &x, Vec &y)
 {
     PetscErrorCode      ierr;   // error codes returned by PETSc routines
 
     PetscInt            xbg, xed,
                         ybg, yed;
 
-    PetscReal           **x_arry,
+    PetscScalar           **x_arry,
                         **y_arry;
 
     // calculate spacing
-    dx = Lx / (PetscReal) Nx;
-    dy = Ly / (PetscReal) Ny;
+    dx = Lx / (PetscScalar) Nx;
+    dy = Ly / (PetscScalar) Ny;
 
 
     // get indices for left-bottom and right-top corner
@@ -133,7 +133,7 @@ PetscErrorCode generateGrid(const DM &grid,
     for(int j=ybg; j<yed; ++j)
     {
         for(int i=xbg; i<xed; ++i)
-            x_arry[j][i] = (0.5 + (PetscReal)i) * dx;
+            x_arry[j][i] = (0.5 + (PetscScalar)i) * dx;
     }
     ierr = DMDAVecRestoreArray(grid, x, &x_arry);                  CHKERRQ(ierr);
 
@@ -142,7 +142,7 @@ PetscErrorCode generateGrid(const DM &grid,
     for(int j=ybg; j<yed; ++j)
     {
         for(int i=xbg; i<xed; ++i)
-            y_arry[j][i] = (0.5 + (PetscReal)j) * dy;
+            y_arry[j][i] = (0.5 + (PetscScalar)j) * dy;
     }
     ierr = DMDAVecRestoreArray(grid, y, &y_arry);                  CHKERRQ(ierr);
 

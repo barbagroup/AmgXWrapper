@@ -21,7 +21,7 @@ PetscErrorCode generateRHS(const DM &grid,
                         ybg, yed,
                         zbg, zed;
 
-    PetscReal           ***x_arry,
+    PetscScalar           ***x_arry,
                         ***y_arry,
                         ***z_arry,
                         ***rhs_arry;
@@ -82,7 +82,7 @@ PetscErrorCode generateRHS(const DM &grid,
     PetscInt            xbg, xed,
                         ybg, yed;
 
-    PetscReal           **x_arry,
+    PetscScalar           **x_arry,
                         **y_arry,
                         **rhs_arry;
 

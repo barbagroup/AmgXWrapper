@@ -21,7 +21,7 @@ PetscErrorCode generateExt(const DM &grid,
                         ybg, yed,
                         zbg, zed;
 
-    PetscReal           ***x_arry,
+    PetscScalar           ***x_arry,
                         ***y_arry,
                         ***z_arry,
                         ***exact_arry;
@@ -75,7 +75,7 @@ PetscErrorCode generateExt(const DM &grid,
     PetscInt            xbg, xed,
                         ybg, yed;
 
-    PetscReal           **x_arry,
+    PetscScalar           **x_arry,
                         **y_arry,
                         **exact_arry;
 
