@@ -48,7 +48,6 @@ PetscErrorCode getArgs(StructArgs & args)
 
     ierr = PetscOptionsGetInt(nullptr, nullptr, 
             "-Nz", &args.Nz, &set);                                CHKERRQ(ierr);
-    CHKMSG(set, "Nz not yet set!");
 
     ierr = PetscOptionsGetInt(nullptr, nullptr, 
             "-Nruns", &args.Nruns, &set);                          CHKERRQ(ierr);
