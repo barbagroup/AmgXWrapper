@@ -15,7 +15,7 @@ class StructArgs
     public: 
         PetscInt            Nx,     // number of elements in x-direction
                             Ny,     // number of elements in y-direction
-                            Nz;     // number of elements in z-direction
+                            Nz = 0;     // number of elements in z-direction
 
         PetscInt            Nruns = 10; // number of runs of solving
 
