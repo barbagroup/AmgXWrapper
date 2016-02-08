@@ -175,7 +175,6 @@ SET(SOURCE
     ${SRC}/generateRHS.cpp
     ${SRC}/generateExt.cpp
     ${SRC}/createKSP.cpp
-    ${SRC}/getArgs.cpp
     ${SRC}/solve.cpp
     ${AmgXWrapperSRC}/AmgXSolver.cpp)
 

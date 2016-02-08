@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
 
     // get parameters from command-line arguments
-    ierr = getArgs(args);                                                    CHK;
+    ierr = args.getArgs();                                                   CHK;
 
 
     // pring case information
