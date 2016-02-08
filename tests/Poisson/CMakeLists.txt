@@ -63,7 +63,7 @@ SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
 
 MESSAGE("\n===================================================================")
 MESSAGE("Starting generator...")
-PROJECT(Poisson3D)
+PROJECT(Poisson)
 
 
 MESSAGE("\n===================================================================")
@@ -169,7 +169,7 @@ SET(SRC ${CMAKE_SOURCE_DIR}/src)
 SET(AmgXWrapperSRC ${CMAKE_SOURCE_DIR}/../../src)
 
 SET(SOURCE
-    ${SRC}/Poisson3D.cpp 
+    ${SRC}/Poisson.cpp 
     ${SRC}/generateA.cpp
     ${SRC}/generateGrid.cpp
     ${SRC}/generateRHS.cpp
@@ -189,9 +189,9 @@ LINK_DIRECTORIES(
     ${AMGX_LIBRARY_DIRS}
     ${PETSC_LIBRARY_DIRS})
 
-ADD_EXECUTABLE(Poisson3D ${SOURCE})
+ADD_EXECUTABLE(Poisson ${SOURCE})
 
-TARGET_LINK_LIBRARIES(Poisson3D 
+TARGET_LINK_LIBRARIES(Poisson 
     ${PETSC_LIBRARIES} 
     ${AMGX_LIBRARIES} 
     ${CUDA_LIBRARIES})
