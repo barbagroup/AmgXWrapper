@@ -10,6 +10,15 @@
 
 # define MAX_LEN PETSC_MAX_PATH_LEN
 
+# define CHKMSG(flag, message)                  \
+    if (!flag)                                  \
+    {                                           \
+        PetscPrintf(PETSC_COMM_WORLD, message); \
+        PetscPrintf(PETSC_COMM_WORLD, "\n");    \
+        exit(EXIT_FAILURE);                     \
+    }
+
+
 class StructArgs
 {
     public: 
@@ -47,5 +56,45 @@ class StructArgs
             if (VTKFileBool == PETSC_TRUE)
                 std::cout << "Output VTK File Name: " 
                           << VTKFileName << std::endl;
+        }
+
+        PetscErrorCode getArgs()
+        {
+            PetscErrorCode      ierr;   // error codes returned by PETSc routines
+            PetscBool           set;    // temporary booling variable
+
+            ierr = PetscOptionsGetString(nullptr, nullptr, "-caseName", 
+                    caseName, MAX_LEN, &set);                         CHKERRQ(ierr);
+            CHKMSG(set, "caseName not yet set!");
+
+            ierr = PetscOptionsGetString(nullptr, nullptr, "-mode", 
+                    mode, MAX_LEN, &set);                             CHKERRQ(ierr);
+            CHKMSG(set, "mode not yet set!");
+
+            ierr = PetscOptionsGetString(nullptr, nullptr, "-cfgFileName", 
+                    cfgFileName, MAX_LEN, &set);                      CHKERRQ(ierr);
+            CHKMSG(set, "cfgFileName (configuration file) not yet set!");
+
+            ierr = PetscOptionsGetString(nullptr, nullptr, "-optFileName", 
+                    optFileName, MAX_LEN, &(optFileBool));       CHKERRQ(ierr);
+
+            ierr = PetscOptionsGetString(nullptr, nullptr, "-VTKFileName", 
+                    VTKFileName, MAX_LEN, &(VTKFileBool));       CHKERRQ(ierr);
+
+            ierr = PetscOptionsGetInt(nullptr, nullptr, 
+                    "-Nx", &Nx, &set);                                CHKERRQ(ierr);
+            CHKMSG(set, "Nx not yet set!");
+
+            ierr = PetscOptionsGetInt(nullptr, nullptr, 
+                    "-Ny", &Ny, &set);                                CHKERRQ(ierr);
+            CHKMSG(set, "Ny not yet set!");
+
+            ierr = PetscOptionsGetInt(nullptr, nullptr, 
+                    "-Nz", &Nz, &set);                                CHKERRQ(ierr);
+
+            ierr = PetscOptionsGetInt(nullptr, nullptr, 
+                    "-Nruns", &Nruns, &set);                          CHKERRQ(ierr);
+
+            return 0;
         }
 };
