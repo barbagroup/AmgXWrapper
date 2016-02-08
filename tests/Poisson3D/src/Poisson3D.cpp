@@ -87,65 +87,104 @@ int main(int argc, char **argv)
     }
 
     // create DMDA object
-    ierr = DMDACreate3d(PETSC_COMM_WORLD, 
-            DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
-            DMDA_STENCIL_STAR, 
-            args.Nx, args.Ny, args.Nz,
-            PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
-            1, 1, nullptr, nullptr, nullptr, &grid);                         CHK;
+    if (args.Nz > 0)
+    {
+        ierr = DMDACreate3d(PETSC_COMM_WORLD, 
+                DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, DM_BOUNDARY_NONE,
+                DMDA_STENCIL_STAR, 
+                args.Nx, args.Ny, args.Nz,
+                PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
+                1, 1, nullptr, nullptr, nullptr, &grid);                     CHK;
+
+        ierr = DMDASetUniformCoordinates(grid, 0., 1., 0., 1., 0., 1.);      CHK;
+    }
+    else if (args.Nz == 0)
+    {
+        ierr = DMDACreate2d(PETSC_COMM_WORLD, 
+                DM_BOUNDARY_NONE, DM_BOUNDARY_NONE, 
+                DMDA_STENCIL_STAR, 
+                args.Nx, args.Ny,
+                PETSC_DECIDE, PETSC_DECIDE,
+                1, 1, nullptr, nullptr, &grid);                              CHK;
+
+        ierr = DMDASetUniformCoordinates(grid, 0., 1., 0., 1., 0., 0.);      CHK;
+    }
 
     ierr = PetscObjectSetName((PetscObject) grid, "DMDA grid");              CHK;
+    ierr = DMSetMatType(grid, MATAIJ);                                       CHK;
 
-    ierr = DMDASetUniformCoordinates(grid, 0., 1., 0., 1., 0., 1.);          CHK;
             
 
-    // create vectors (x, y, p, b, u)
+    // create vectors (x, y, p, b, u) and matrix A
     {
         ierr = DMCreateGlobalVector(grid, &x);                               CHK;
         ierr = DMCreateGlobalVector(grid, &y);                               CHK;
-        ierr = DMCreateGlobalVector(grid, &z);                               CHK;
         ierr = DMCreateGlobalVector(grid, &u);                               CHK;
         ierr = DMCreateGlobalVector(grid, &rhs);                             CHK;
         ierr = DMCreateGlobalVector(grid, &bc);                              CHK;
         ierr = DMCreateGlobalVector(grid, &u_exact);                         CHK;
         ierr = DMCreateGlobalVector(grid, &err);                             CHK;
+        ierr = DMCreateMatrix(grid, &A);                                     CHK;
 
         ierr = PetscObjectSetName((PetscObject) x, "x coordinates");         CHK;
         ierr = PetscObjectSetName((PetscObject) y, "y coordinates");         CHK;
-        ierr = PetscObjectSetName((PetscObject) z, "z coordinates");         CHK;
         ierr = PetscObjectSetName((PetscObject) u, "vec for unknowns");      CHK;
         ierr = PetscObjectSetName((PetscObject) rhs, "RHS");                 CHK;
         ierr = PetscObjectSetName((PetscObject) bc, "boundary conditions");  CHK;
         ierr = PetscObjectSetName((PetscObject) u_exact, "exact solution");  CHK;
         ierr = PetscObjectSetName((PetscObject) err, "errors");              CHK;
+        ierr = PetscObjectSetName((PetscObject) A, "matrix A");              CHK;
+
+        ierr = MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);    CHK;
+        ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);  CHK;
     }
 
 
-    // set values of dx, dy, dx, x, y, and z
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
-    ierr = generateGrid(grid, args.Nx, args.Ny, args.Nz, 
-            Lx, Ly, Lz, dx, dy, dz, x, y, z);                                CHK;
 
 
-    // initialize and set up the coefficient matrix A
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
-    ierr = DMSetMatType(grid, MATAIJ);                                       CHK;
-    ierr = DMCreateMatrix(grid, &A);                                         CHK;
-    ierr = MatSetOption(A, MAT_NEW_NONZERO_LOCATION_ERR, PETSC_TRUE);        CHK;
-    ierr = MatSetOption(A, MAT_NEW_NONZERO_ALLOCATION_ERR, PETSC_TRUE);      CHK;
-    ierr = PetscObjectSetName((PetscObject) A, "matrix A");                  CHK;
+    if (args.Nz == 0)
+    {
+        // set values of dx, dy, dx, x, y, and z
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+        ierr = generateGrid(grid, args.Nx, args.Ny, 
+                Lx, Ly, dx, dy, x, y);                                       CHK;
 
-    ierr = generateA(grid, dx, dy, dz, A);                                   CHK;
+        // set values of RHS -- the vector rhs
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+        ierr = generateRHS(grid, x, y, rhs);                                 CHK;
 
+        // generate exact solution
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+        ierr = generateExt(grid, x, y, u_exact);                             CHK;
 
-    // set values of RHS -- the vector rhs
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
-    ierr = generateRHS(grid, x, y, z, rhs);                                  CHK;
+        // initialize and set up the coefficient matrix A
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+        ierr = generateA(grid, dx, dy, A);                                   CHK;
+    }
+    else if (args.Nz > 0)
+    {
 
+        ierr = DMCreateGlobalVector(grid, &z);                               CHK;
+        ierr = PetscObjectSetName((PetscObject) z, "z coordinates");         CHK;
 
-    // generate exact solution
-    ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
-    ierr = generateExt(grid, x, y, z, u_exact);                              CHK;
+        // set values of dx, dy, dx, x, y, and z
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+        ierr = generateGrid(grid, args.Nx, args.Ny, args.Nz,
+                Lx, Ly, Lz, dx, dy, dz, x, y, z);                            CHK;
+
+        // set values of RHS -- the vector rhs
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+        ierr = generateRHS(grid, x, y, z, rhs);                              CHK;
+
+        // generate exact solution
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+        ierr = generateExt(grid, x, y, z, u_exact);                          CHK;
+
+        // initialize and set up the coefficient matrix A
+        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHK;
+        ierr = generateA(grid, dx, dy, dz, A);                               CHK;
+    }
+
 
 
     // register a PETSc event for warm-up and solving
@@ -230,7 +269,6 @@ int main(int argc, char **argv)
     {
         ierr = VecDestroy(&x);                                               CHK;
         ierr = VecDestroy(&y);                                               CHK;
-        ierr = VecDestroy(&z);                                               CHK;
         ierr = VecDestroy(&u);                                               CHK;
         ierr = VecDestroy(&rhs);                                             CHK;
         ierr = VecDestroy(&bc);                                              CHK;
@@ -238,6 +276,11 @@ int main(int argc, char **argv)
         ierr = VecDestroy(&err);                                             CHK;
 
         ierr = MatDestroy(&A);                                               CHK;
+
+        if (args.Nz > 0) 
+        {
+            ierr = VecDestroy(&z);                                           CHK;
+        }
 
         ierr = DMDestroy(&grid);                                             CHK;
     }

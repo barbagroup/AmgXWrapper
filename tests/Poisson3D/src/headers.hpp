@@ -26,10 +26,7 @@
 # define CHK CHKERRQ(ierr)
 
 # define c1 2.0*1.0*M_PI
-# define c2 -3.0*c1*c1
 
-
-PetscErrorCode getArgs(StructArgs & args);
 
 PetscErrorCode generateGrid(const DM &grid, 
         const PetscInt &Nx, const PetscInt &Ny, const PetscInt &Nz,
@@ -37,14 +34,29 @@ PetscErrorCode generateGrid(const DM &grid,
         PetscReal &dx, PetscReal &dy, PetscReal &dz,
         Vec &x, Vec &y, Vec &z);
 
+PetscErrorCode generateGrid(const DM &grid, 
+        const PetscInt &Nx, const PetscInt &Ny,
+        const PetscReal &Lx, const PetscReal &Ly,
+        PetscReal &dx, PetscReal &dy,
+        Vec &x, Vec &y);
+
 PetscErrorCode generateRHS(const DM &grid, 
         const Vec &x, const Vec &y, const Vec &z, Vec &rhs);
+
+PetscErrorCode generateRHS(const DM &grid, 
+        const Vec &x, const Vec &y, Vec &rhs);
 
 PetscErrorCode generateExt(const DM &grid, 
         const Vec &x, const Vec &y, const Vec &z, Vec &exact);
 
+PetscErrorCode generateExt(const DM &grid, 
+        const Vec &x, const Vec &y, Vec &exact);
+
 PetscErrorCode generateA(const DM &grid, 
         const PetscReal &dx, const PetscReal &dy, const PetscReal &dz, Mat &A);
+
+PetscErrorCode generateA(const DM &grid, 
+        const PetscReal &dx, const PetscReal &dy, Mat &A);
 
 PetscErrorCode createKSP(KSP &ksp, Mat &A, char *FN);
 
