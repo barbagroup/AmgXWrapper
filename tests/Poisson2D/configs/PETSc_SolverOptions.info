@@ -1,6 +1,0 @@
--ksp_rtol 2e-14
--ksp_atol 2e-8
--pc_type gamg
--pc_gamg_type agg
--pc_gamg_agg_nsmooths 1
--pc_gamg_threshold 0.8
