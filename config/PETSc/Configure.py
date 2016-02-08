@@ -2,6 +2,7 @@ import config.base
 
 import os
 import re
+import cPickle
 
 # The sorted() builtin is not available with python-2.3
 try: sorted
@@ -349,7 +350,7 @@ prepend-path PATH %s
         self.addDefine('HAVE_'+i.PACKAGE.replace('-','_'), 1)  # ONLY list package if it is used directly by PETSc (and not only by another package)
       if not isinstance(i.lib, list):
         i.lib = [i.lib]
-      libs.extend(i.lib)
+      if i.linkedbypetsc: libs.extend(i.lib)
       self.addMakeMacro(i.PACKAGE.replace('-','_')+'_LIB', self.libraries.toStringNoDupes(i.lib))
       if hasattr(i,'include'):
         if not isinstance(i.include,list):
@@ -565,8 +566,9 @@ prepend-path PATH %s
       includes  = []
       libvars   = []
       for pkg in self.framework.packages:
-        extendby(pkg.lib)
-        uniqextend(includes,pkg.include)
+        if pkg.linkedbypetsc:
+          extendby(pkg.lib)
+          uniqextend(includes,pkg.include)
       extendby(self.libraries.math)
       extendby(self.libraries.rt)
       extendby(self.compilers.flibs)
@@ -604,6 +606,8 @@ prepend-path PATH %s
     import sys
     self.cmakeboot_success = False
     if sys.version_info >= (2,4) and hasattr(self.cmake,'cmake'):
+      oldRead = self.argDB.readonly
+      self.argDB.readonly = True
       try:
         import cmakeboot
         self.cmakeboot_success = cmakeboot.main(petscdir=self.petscdir.dir,petscarch=self.arch.arch,argDB=self.argDB,framework=self.framework,log=self.framework.log)
@@ -611,6 +615,7 @@ prepend-path PATH %s
         self.framework.logPrint('Booting CMake in PETSC_ARCH failed:\n' + str(e))
       except (ImportError, KeyError), e:
         self.framework.logPrint('Importing cmakeboot failed:\n' + str(e))
+      self.argDB.readonly = oldRead
       if self.cmakeboot_success:
         if hasattr(self.compilers, 'FC') and self.compilers.fortranIsF90 and not self.setCompilers.fortranModuleOutputFlag:
           self.framework.logPrint('CMake configured successfully, but could not be used by default because of missing fortranModuleOutputFlag\n')
@@ -1015,6 +1020,11 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     if postPackages:
       # ctetgen needs petsc conf files. so attempt to create them early
       self.framework.dumpConfFiles()
+      # tacky fix for dependency of Aluimia on Pflotran; requested via petsc-dev Matt provide a correct fix
+      for i in postPackages:
+        if i.name.upper() in ['PFLOTRAN']:
+          i.postProcess()
+          postPackages.remove(i)
       for i in postPackages: i.postProcess()
     return
 
@@ -1059,9 +1069,13 @@ fprintf(f, "%lu\\n", (unsigned long)sizeof(struct mystruct));
     self.Dump()
     self.dumpConfigInfo()
     self.dumpMachineInfo()
-    self.postProcessPackages()
     self.dumpCMakeConfig()
     self.dumpCMakeLists()
+    # need to save the current state of BuildSystem so that postProcess() packages can read it in and perhaps run make install
+    self.framework.storeSubstitutions(self.framework.argDB)
+    self.framework.argDB['configureCache'] = cPickle.dumps(self.framework)
+    self.framework.argDB.save(force = True)
+    self.postProcessPackages()
     self.cmakeBoot()
     self.DumpPkgconfig()
     self.DumpModule()
