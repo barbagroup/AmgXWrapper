@@ -645,7 +645,7 @@ PetscErrorCode generateA(const DM &grid,
                                col[1].j += 1;
                                col[2].i += 1;
 
-                values[0] = Cd + Cy + Cx + 1;
+                values[0] = Cd + Cy + Cx - 1;
                                 values[1] = Cy;
                                 values[2] = Cx;
            
