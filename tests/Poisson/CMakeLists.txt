@@ -176,6 +176,7 @@ SET(SOURCE
     ${SRC}/generateExt.cpp
     ${SRC}/createKSP.cpp
     ${SRC}/solve.cpp
+    ${SRC}/applyNeumannBC.cpp
     ${AmgXWrapperSRC}/AmgXSolver.cpp)
 
 INCLUDE_DIRECTORIES(
