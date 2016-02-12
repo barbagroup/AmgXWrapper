@@ -186,6 +186,10 @@ int main(int argc, char **argv)
     }
 
 
+    // handle the issue for all-Neumann BC matrix
+    ierr = MPI_Barrier(PETSC_COMM_WORLD);                                    CHK;
+    ierr = applyNeumannBC(A, rhs, u_exact);                                  CHK;
+
 
     // register a PETSc event for warm-up and solving
     ierr = PetscClassIdRegister("SolvingClass", &solvingID);                 CHK;
