@@ -637,8 +637,8 @@ PetscErrorCode generateA(const DM &grid,
             // Corners
             if (j == 0 && i == 0)
             {
-                MatStencil      col[4];
-                PetscScalar     values[4];
+                MatStencil      col[3];
+                PetscScalar     values[3];
 
                 for (int stcl=0; stcl<3; stcl++)  col[stcl] = row;
 
@@ -662,7 +662,7 @@ PetscErrorCode generateA(const DM &grid,
                                col[1].j += 1;
                 col[2].i -= 1;               
 
-                values[0] = Cd +  Cy + Cx;
+                values[0] = Cd + Cy + Cx;
                                 values[1] = Cy;
                 values[2] = Cx;                
            
