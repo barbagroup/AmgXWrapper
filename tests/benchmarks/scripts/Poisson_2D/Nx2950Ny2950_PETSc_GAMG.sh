@@ -5,7 +5,7 @@
 # PETSc + GAMG; Nx = 2950; Ny = 2950;
 #======================================================================
 PART=short
-TIME=00:30:00
+TIME=01:00:00
 TARGET=${PWD}/scripts/launchPoisson.sh
 MODE=PETSc
 ALGORITHM=GAMG
