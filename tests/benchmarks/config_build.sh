@@ -68,12 +68,9 @@ export CXX=g++
 
 rm bin configs cmake_install.cmake CMakeFiles/ CMakeCache.txt Makefile -rf
 
-#cmake ../Poisson                                       \
-#    -DAMGX_DIR=/groups/barbalab/pychuang/AmgX     \
-#    -DCUDA_TOOLKIT_ROOT_DIR=/c1/apps/cuda/toolkit/6.5.14
-cmake ../Poisson                                        \
-        -DAMGX_DIR=/opt/AmgX                            \
-        -DCUDA_TOOLKIT_ROOT_DIR=/opt/cuda65
+cmake ../Poisson                                       	\
+    -DAMGX_DIR=/groups/barbalab/pychuang/AmgX     	\
+    -DCUDA_TOOLKIT_ROOT_DIR=/c1/apps/cuda/toolkit/6.5.14
 make
 
 
