@@ -6,4 +6,4 @@
 -pc_type gamg
 -pc_gamg_type agg
 -pc_gamg_agg_nsmooths 1
-#-pc_gamg_threshold 0.8
+-pc_gamg_threshold 0.0
