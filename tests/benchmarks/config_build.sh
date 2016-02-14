@@ -7,7 +7,9 @@ echo "Start to configure environment"
 #===============================================================================
 echo "Loading neccessary modules/libraries..."
 
-sh ./moduleLoad.sh
+source ./moduleLoad.sh
+
+module list
 
 
 #===============================================================================
