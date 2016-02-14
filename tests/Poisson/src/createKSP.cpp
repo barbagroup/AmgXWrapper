@@ -1,7 +1,7 @@
 # include "headers.hpp"
 
 
-PetscErrorCode createKSP(KSP &ksp, Mat &A, char *FN)
+PetscErrorCode createKSP(KSP &ksp, Mat &A, DM &grid, char *FN)
 {
     PetscErrorCode  ierr;
 
@@ -11,6 +11,8 @@ PetscErrorCode createKSP(KSP &ksp, Mat &A, char *FN)
 
     // create KSP for intermaediate fluxes system
     ierr = KSPCreate(PETSC_COMM_WORLD, &ksp);                           CHKERRQ(ierr);
+    ierr = KSPSetDM(ksp, grid);                                         CHKERRQ(ierr);
+    ierr = KSPSetDMActive(ksp, PETSC_FALSE);                            CHKERRQ(ierr);
     ierr = KSPSetOperators(ksp, A, A);                                  CHKERRQ(ierr);
     ierr = KSPSetInitialGuessNonzero(ksp, PETSC_TRUE);                  CHKERRQ(ierr);
     ierr = KSPSetType(ksp, KSPCG);                                      CHKERRQ(ierr);

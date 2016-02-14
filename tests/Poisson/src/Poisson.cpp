@@ -200,7 +200,7 @@ int main(int argc, char **argv)
     // create a solver and solve based whether it is AmgX or PETSc
     if (std::strcmp(args.mode, "PETSc") == 0) // PETSc mode
     {
-        ierr = createKSP(ksp, A, args.cfgFileName);                          CHK;
+        ierr = createKSP(ksp, A, grid, args.cfgFileName);                    CHK;
 
         ierr = solve(ksp, A, u, rhs, u_exact, err, 
                 args, warmUpEvent, solvingEvent);                            CHK;
