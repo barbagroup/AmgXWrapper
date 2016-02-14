@@ -209,9 +209,9 @@ int main(int argc, char **argv)
         ierr = KSPDestroy(&ksp);                                             CHK;
 
     }
-    else // CPU and GPU modes using AmgX library
+    else // AmgX mode
     {
-        if (std::strcmp(args.mode, "GPU") == 0) // AmgX GPU mode
+        if (std::strcmp(args.mode, "AmgX") == 0) // AmgX GPU mode
             amgx.initialize(PETSC_COMM_WORLD, "dDDI", args.cfgFileName);
         else // AmgX CPU mode (not yet implemented in the wrapper) and other mode
         {   

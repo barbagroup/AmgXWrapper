@@ -31,7 +31,7 @@ class StructArgs
         PetscBool           optFileBool,
                             VTKFileBool;
 
-        char                mode[MAX_LEN],        // either GPU, CPU, or PETSc
+        char                mode[MAX_LEN],        // either AmgX, or PETSc
                             cfgFileName[MAX_LEN], // config file
                             optFileName[MAX_LEN], // output file
                             caseName[MAX_LEN],    // case name
