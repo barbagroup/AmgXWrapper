@@ -57,3 +57,6 @@
 
 # PETSc compilation
 **/forBenchmarks
+
+# benchmarks extra file
+tests/benchmarks/configs
