@@ -60,3 +60,6 @@
 
 # benchmarks extra file
 tests/benchmarks/configs
+tests/benchmarks/logs
+tests/benchmarks/results
+tests/benchmarks/errors
