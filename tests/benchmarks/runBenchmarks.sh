@@ -45,6 +45,9 @@ launchSbatch(){
 		${5}
 }
 
+source ./scripts/debug_gpu.sh
+source ./scripts/debug_cpu.sh
+
 source ./scripts/Poisson_3D/Nx160Ny160Nz160_PETSc_Hypre.sh
 source ./scripts/Poisson_3D/Nx160Ny160Nz160_PETSc_GAMG.sh
 source ./scripts/Poisson_3D/Nx160Ny160Nz160_AmgX_Classical.sh

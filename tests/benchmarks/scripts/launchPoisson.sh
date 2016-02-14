@@ -6,7 +6,7 @@ CASE=Nx${5}Ny${6}Nz${7}_${1}_${2}_${3}
 
 nvidia-smi >> ${RESULT_DIR}/${CASE}.results
 
-mpiexec \
+mpirun \
 	-n ${3} \
 	-map-by ppr:${4}:node \
 	-display-map \
