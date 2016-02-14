@@ -58,7 +58,7 @@ PetscErrorCode generateA(const DM &grid,
 PetscErrorCode generateA(const DM &grid, 
         const PetscScalar &dx, const PetscScalar &dy, Mat &A);
 
-PetscErrorCode createKSP(KSP &ksp, Mat &A, char *FN);
+PetscErrorCode createKSP(KSP &ksp, Mat &A, DM &grid, char *FN);
 
 PetscErrorCode solve(KSP &ksp, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
         StructArgs &args, PetscLogEvent &warmUpEvent, PetscLogEvent &solvingEvent);
