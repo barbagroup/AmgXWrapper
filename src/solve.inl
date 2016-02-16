@@ -15,31 +15,31 @@ int AmgXSolver::solve(Vec &p, Vec &b)
     if (redistScatter != nullptr)
     {
         ierr = VecScatterBegin(redistScatter, 
-                b, redistRhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
+                b, redistRhs, INSERT_VALUES, SCATTER_FORWARD);               CHK;
         ierr = VecScatterEnd(redistScatter, 
-                b, redistRhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
+                b, redistRhs, INSERT_VALUES, SCATTER_FORWARD);               CHK;
 
         ierr = VecScatterBegin(redistScatter, 
-                p, redistLhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
+                p, redistLhs, INSERT_VALUES, SCATTER_FORWARD);               CHK;
         ierr = VecScatterEnd(redistScatter, 
-                p, redistLhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
+                p, redistLhs, INSERT_VALUES, SCATTER_FORWARD);               CHK;
 
         if (gpuWorld != MPI_COMM_NULL)
         {
-            ierr = solve_real(redistLhs, redistRhs); CHK;
+            ierr = solve_real(redistLhs, redistRhs);                         CHK;
         }
         MPI_Barrier(globalCpuWorld);
 
         ierr = VecScatterBegin(redistScatter, 
-                redistLhs, p, INSERT_VALUES, SCATTER_REVERSE); CHK;
+                redistLhs, p, INSERT_VALUES, SCATTER_REVERSE);               CHK;
         ierr = VecScatterEnd(redistScatter, 
-                redistLhs, p, INSERT_VALUES, SCATTER_REVERSE); CHK;
+                redistLhs, p, INSERT_VALUES, SCATTER_REVERSE);               CHK;
     }
     else
     {
         if (gpuWorld != MPI_COMM_NULL)
         {
-            ierr = solve_real(p, b); CHK;
+            ierr = solve_real(p, b);                                         CHK;
         }
         MPI_Barrier(globalCpuWorld);
     }
@@ -72,11 +72,11 @@ int AmgXSolver::solve_real(Vec &p, Vec &b)
     AMGX_SOLVE_STATUS   status;
 
     // get size of local vector (p and b should have the same local size)
-    ierr = VecGetLocalSize(p, &size);                             CHKERRQ(ierr);
+    ierr = VecGetLocalSize(p, &size);                                        CHK;
 
     // get pointers to the raw data of local vectors
-    ierr = VecGetArray(p, &unks);                                 CHKERRQ(ierr);
-    ierr = VecGetArray(b, &rhs);                                  CHKERRQ(ierr);
+    ierr = VecGetArray(p, &unks);                                            CHK;
+    ierr = VecGetArray(b, &rhs);                                             CHK;
 
     // upload vectors to AmgX
     AMGX_vector_upload(AmgXP, size, 1, unks);
@@ -98,8 +98,8 @@ int AmgXSolver::solve_real(Vec &p, Vec &b)
     AMGX_vector_download(AmgXP, unks);
 
     // restore PETSc vectors
-    ierr = VecRestoreArray(p, &unks);                             CHKERRQ(ierr);
-    ierr = VecRestoreArray(b, &rhs);                              CHKERRQ(ierr);
+    ierr = VecRestoreArray(p, &unks);                                        CHK;
+    ierr = VecRestoreArray(b, &rhs);                                         CHK;
 
     return 0;
 }
