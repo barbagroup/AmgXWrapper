@@ -44,14 +44,14 @@ int AmgXSolver::setA(const Mat &A)
 
 
     // Get number of rows in global matrix
-    ierr = MatGetSize(A, &nGlobalRows, nullptr);                   CHKERRQ(ierr);
+    ierr = MatGetSize(A, &nGlobalRows, nullptr);                             CHK;
 
-    ierr = getDevIS(A, devIS); CHKERRQ(ierr);
-    ierr = getLocalA(A, devIS, localA); CHKERRQ(ierr);
-    ierr = getLocalMatRawData(localA, nLocalRows, row, col, data); CHKERRQ(ierr);
-    ierr = destroyLocalA(A, localA); CHKERRQ(ierr);
+    ierr = getDevIS(A, devIS);                                               CHK;
+    ierr = getLocalA(A, devIS, localA);                                      CHK;
+    ierr = getLocalMatRawData(localA, nLocalRows, row, col, data);           CHK;
+    ierr = destroyLocalA(A, localA);                                         CHK;
 
-    ierr = getPartVec(devIS, nGlobalRows, partVec); CHKERRQ(ierr);
+    ierr = getPartVec(devIS, nGlobalRows, partVec);                          CHK;
 
 
     // upload matrix A to AmgX
@@ -85,7 +85,7 @@ int AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
     Mat                 tempA;
 
     // Get the Mat type
-    ierr = MatGetType(A, &type);                                   CHKERRQ(ierr);
+    ierr = MatGetType(A, &type);                                             CHK;
 
     // Check whether the Mat type is supported
     if (std::strcmp(type, MATSEQAIJ) == 0)
@@ -98,7 +98,7 @@ int AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
         redistMat(A, devIS, tempA);
 
         ierr = MatMPIAIJGetLocalMat(
-                tempA, MAT_INITIAL_MATRIX, &localA);   CHKERRQ(ierr);
+                tempA, MAT_INITIAL_MATRIX, &localA);                         CHK;
 
         if (tempA == A) 
         {
@@ -106,7 +106,7 @@ int AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
         }
         else
         {
-            ierr = MatDestroy(&tempA); CHKERRQ(ierr);
+            ierr = MatDestroy(&tempA);                                       CHK;
         }
     }
     else
@@ -124,17 +124,17 @@ int AmgXSolver::getDevIS(const Mat &A, IS &devIS)
 {
     PetscErrorCode      ierr;
 
-    ierr = MatGetOwnershipIS(A, &devIS, nullptr); CHKERRQ(ierr);
+    ierr = MatGetOwnershipIS(A, &devIS, nullptr);                            CHK;
 
     ierr = ISOnComm(devIS, 
-            devWorld, PETSC_USE_POINTER, &devIS); CHKERRQ(ierr);
+            devWorld, PETSC_USE_POINTER, &devIS);                            CHK;
 
-    ierr = ISAllGather(devIS, &devIS); CHKERRQ(ierr);
+    ierr = ISAllGather(devIS, &devIS);                                       CHK;
 
     if (myDevWorldRank != 0) 
-        ierr = ISGeneralSetIndices(devIS, 0, nullptr, PETSC_COPY_VALUES); CHKERRQ(ierr);
+        ierr = ISGeneralSetIndices(devIS, 0, nullptr, PETSC_COPY_VALUES);    CHK;
 
-    ierr = ISSort(devIS); CHKERRQ(ierr);
+    ierr = ISSort(devIS);                                                    CHK;
 
     return 0;
 }
@@ -151,9 +151,9 @@ int AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
     else
     {
         ierr = MatGetSubMatrix(
-            A, devIS, nullptr, MAT_INITIAL_MATRIX, &newA); CHKERRQ(ierr);
+            A, devIS, nullptr, MAT_INITIAL_MATRIX, &newA);                   CHK;
 
-        ierr = getVecScatter(A, newA, devIS); CHK;
+        ierr = getVecScatter(A, newA, devIS);                                CHK;
     }
 
     return 0;
@@ -173,30 +173,30 @@ int AmgXSolver::getPartVec(
 
     PetscScalar         *tempPartVec; 
 
-    ierr = ISGetLocalSize(devIS, &n); CHKERRQ(ierr);
+    ierr = ISGetLocalSize(devIS, &n);                                        CHK;
 
     if (gpuWorld != MPI_COMM_NULL)
     {
-        ierr = VecCreateMPI(gpuWorld, n, N, &tempMPI); CHKERRQ(ierr);
+        ierr = VecCreateMPI(gpuWorld, n, N, &tempMPI);                       CHK;
     
-        ierr = VecISSet(tempMPI, devIS, (PetscScalar) myGpuWorldRank); CHKERRQ(ierr);
+        ierr = VecISSet(tempMPI, devIS, (PetscScalar) myGpuWorldRank);       CHK;
 
-        ierr = VecScatterCreateToAll(tempMPI, &scatter, &tempSEQ); CHKERRQ(ierr);
+        ierr = VecScatterCreateToAll(tempMPI, &scatter, &tempSEQ);           CHK;
         ierr = VecScatterBegin(scatter, 
-                tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+                tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD);           CHK;
         ierr = VecScatterEnd(scatter, 
-                tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD); CHKERRQ(ierr);
+                tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD);           CHK;
 
-        ierr = VecScatterDestroy(&scatter);                           CHKERRQ(ierr);
-        ierr = VecDestroy(&tempMPI);                                  CHKERRQ(ierr);
+        ierr = VecScatterDestroy(&scatter);                                  CHK;
+        ierr = VecDestroy(&tempMPI);                                         CHK;
 
-        ierr = VecGetArray(tempSEQ, &tempPartVec);                    CHKERRQ(ierr);
+        ierr = VecGetArray(tempSEQ, &tempPartVec);                           CHK;
 
         partVec.assign(tempPartVec, tempPartVec+N);
 
-        ierr = VecRestoreArray(tempSEQ, &tempPartVec);                CHKERRQ(ierr);
+        ierr = VecRestoreArray(tempSEQ, &tempPartVec);                       CHK;
 
-        ierr = VecDestroy(&tempSEQ);                                  CHKERRQ(ierr);
+        ierr = VecDestroy(&tempSEQ);                                         CHK;
     }
     MPI_Barrier(globalCpuWorld);
 
@@ -210,7 +210,7 @@ int AmgXSolver::destroyLocalA(const Mat &A, Mat &localA)
     MatType             type;
 
     // Get the Mat type
-    ierr = MatGetType(A, &type);              CHKERRQ(ierr);
+    ierr = MatGetType(A, &type);                                             CHK;
 
     // Check whether the Mat type is supported
     if (std::strcmp(type, MATSEQAIJ) == 0)
@@ -219,7 +219,7 @@ int AmgXSolver::destroyLocalA(const Mat &A, Mat &localA)
     }
     else if (std::strcmp(type, MATMPIAIJ) == 0)
     {
-        ierr = MatDestroy(&localA); CHKERRQ(ierr);
+        ierr = MatDestroy(&localA);                                          CHK;
     }
 
     return 0;
@@ -238,7 +238,7 @@ int AmgXSolver::getLocalMatRawData(Mat &localA, PetscInt &localN,
     PetscBool           done;
 
     ierr = MatGetRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
-            &tempN, &rawRow, &rawCol, &done);                     CHKERRQ(ierr);
+            &tempN, &rawRow, &rawCol, &done);                                CHK;
 
     if (! done)
     {
@@ -246,7 +246,7 @@ int AmgXSolver::getLocalMatRawData(Mat &localA, PetscInt &localN,
         exit(0);
     }
 
-    ierr = MatSeqAIJGetArray(localA, &rawData);                    CHKERRQ(ierr);
+    ierr = MatSeqAIJGetArray(localA, &rawData);                              CHK;
 
     localN = tempN;
 
@@ -256,7 +256,7 @@ int AmgXSolver::getLocalMatRawData(Mat &localA, PetscInt &localN,
 
 
     ierr = MatRestoreRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
-            &tempN, &rawRow, &rawCol, &done);                     CHKERRQ(ierr);
+            &tempN, &rawRow, &rawCol, &done);                                CHK;
 
     // check whether MatRestoreRowIJ worked
     if (! done)
@@ -265,7 +265,7 @@ int AmgXSolver::getLocalMatRawData(Mat &localA, PetscInt &localN,
         exit(0);
     }
 
-    ierr = MatSeqAIJRestoreArray(localA, &rawData);                CHKERRQ(ierr);
+    ierr = MatSeqAIJRestoreArray(localA, &rawData);                          CHK;
 
     return 0;
 }
@@ -277,13 +277,13 @@ int AmgXSolver::getVecScatter(const Mat &A1, const Mat &A2, const IS &devIS)
 
     Vec                 tempV;
 
-    ierr = MatCreateVecs(A1, nullptr, &tempV); CHK;
-    ierr = MatCreateVecs(A2, nullptr, &redistRhs); CHK;
-    ierr = MatCreateVecs(A2, nullptr, &redistLhs); CHK;
+    ierr = MatCreateVecs(A1, nullptr, &tempV);                               CHK;
+    ierr = MatCreateVecs(A2, nullptr, &redistRhs);                           CHK;
+    ierr = MatCreateVecs(A2, nullptr, &redistLhs);                           CHK;
 
     ierr = VecScatterCreate(tempV, devIS, redistLhs, devIS, &redistScatter); CHK;
 
-    ierr = VecDestroy(&tempV); CHK;
+    ierr = VecDestroy(&tempV);                                               CHK;
 
     return 0;
 }
