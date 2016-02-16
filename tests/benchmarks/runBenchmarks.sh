@@ -45,8 +45,8 @@ launchSbatch(){
 		${5}
 }
 
-source ./scripts/debug_gpu.sh
-source ./scripts/debug_cpu.sh
+#source ./scripts/debug_gpu.sh
+#source ./scripts/debug_cpu.sh
 
 source ./scripts/Poisson_3D/Nx160Ny160Nz160_PETSc_Hypre.sh
 source ./scripts/Poisson_3D/Nx160Ny160Nz160_PETSc_GAMG.sh
@@ -68,7 +68,7 @@ source ./scripts/Poisson_3D/Nx300Ny300Nz250_PETSc_GAMG.sh
 source ./scripts/Poisson_3D/Nx300Ny300Nz250_AmgX_Classical.sh
 source ./scripts/Poisson_3D/Nx300Ny300Nz250_AmgX_AGG.sh
 
-source ./scripts/Poisson_2D/Nx2950Ny2950_PETSc_Hypre.sh
-source ./scripts/Poisson_2D/Nx2950Ny2950_PETSc_GAMG.sh
-source ./scripts/Poisson_2D/Nx2950Ny2950_AmgX_Classical.sh
-source ./scripts/Poisson_2D/Nx2950Ny2950_AmgX_AGG.sh
+source ./scripts/Poisson_2D/Nx3000Ny3000_PETSc_Hypre.sh
+source ./scripts/Poisson_2D/Nx3000Ny3000_PETSc_GAMG.sh
+source ./scripts/Poisson_2D/Nx3000Ny3000_AmgX_Classical.sh
+source ./scripts/Poisson_2D/Nx3000Ny3000_AmgX_AGG.sh
