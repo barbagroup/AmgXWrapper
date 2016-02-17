@@ -7,8 +7,6 @@ grabData.py
 import os
 import re
 import numpy
-from Case import Case
-
 
 
 class NoInfoError(Exception):
@@ -23,6 +21,16 @@ class NoInfoError(Exception):
         '''
         '''
         return repr(self.value)
+
+
+def getBenchmarkData(resultPath):
+    '''
+    '''
+
+    resultFiles = findResultFiles(resultPath)
+    caseNames, cases = parseResultFiles(resultFiles)
+
+    return caseNames, cases
 
 
 def findResultFiles(resultPath):
@@ -43,8 +51,8 @@ def parseResultFiles(resultFiles):
     '''
     '''
 
-    caseNames   = []
-    cases       = {}
+    caseNames = []
+    cases = {}
 
     for f in resultFiles:
 
@@ -54,51 +62,66 @@ def parseResultFiles(resultFiles):
         f_handle.close()
 
         try:
+
             print("parsing " + f + " ...")
-            case = parseSingleResultFile(content)
+            caseName, mode, algorithm, nprocs, avgTime = \
+                parseSingleResultFile(content)
 
         except NoInfoError as e:
+
             print("\nIn the file " + f + ": " + e.value + "\n")
+
             choose = input(
-                    "Add extension \".broken\" to the broken file " + 
+                    "Add extension \".broken\" to the broken file " +
                     "and ignore it? (Y/n)")
+
             if choose != "n":
                 os.rename(f, f + ".broken")
             else:
                 raise
 
-        '''
-        cases.append(Case(caseName, mode, algorithm, nprocs, nruns))
-        '''
+        if caseName not in caseNames:
+            caseNames.append(caseName)
+            cases[caseName] = {}
 
-                
+        if mode not in cases[caseName].keys():
+            cases[caseName][mode] = {}
+
+        if algorithm not in cases[caseName][mode].keys():
+            cases[caseName][mode][algorithm] = {}
+
+        cases[caseName][mode][algorithm][int(nprocs)] = float(avgTime)
+
+    return caseNames, cases
+
+
 def parseSingleResultFile(content):
     '''
     '''
     caseInfoKey = \
-            re.compile( 
-                    "=*?" + "\n" + "-*?" + "\n" + 
-                    "Case Name: " + 
-                    "(?P<caseName>Nx(?P<Nx>\d*)Ny(?P<Ny>\d*)Nz(?P<Nz>\d*))" + 
-                    "_" + "(?P<mode>.*?)" + "_" + "(?P<algorithm>.*?)" + "_" + 
-                    "(?P<nprocs>\d*)" + "\n" + 
-                    "Nx: " + "(?P=Nx)" + "\n" + 
-                    "Ny: " + "(?P=Ny)" + "\n" + 
-                    "Nz: " + "(?P=Nz)" + "\n" + 
-                    "Mode: " + "(?P=mode)" + "\n" + 
-                    "Config File: " + ".*?" + "\n" + 
-                    "Number of Solves: " + "(?P<nRuns>\d*?)" + "\n" + 
-                    "Output PETSc Log File \? " + "\d{1}" + "\n" + 
-                    "Output PETSc Log File Name:\ " + "\S*?" + "\n" + 
-                    "Output VTK file \? " + "\d{1}" + "\n" + 
-                    "-*?" + "\n" + "=*?" + "\n" + 
-                    "(?P<timings>.*?)" + "\n" + 
-                    "=*?" + "\n" + "-*?" + "\n" + 
-                    "End of (?P=caseName)_(?P=mode)_(?P=algorithm)_(?P=nprocs)\n" + 
-                    "-*?" + "\n" + "=*?" + "\n", 
-                    re.DOTALL)
+        re.compile(
+                "=*?" + "\n" + "-*?" + "\n" +
+                "Case Name: " +
+                "(?P<caseName>Nx(?P<Nx>\d*)Ny(?P<Ny>\d*)Nz(?P<Nz>\d*))" +
+                "_" + "(?P<mode>.*?)" + "_" + "(?P<algorithm>.*?)" + "_" +
+                "(?P<nprocs>\d*)" + "\n" +
+                "Nx: " + "(?P=Nx)" + "\n" +
+                "Ny: " + "(?P=Ny)" + "\n" +
+                "Nz: " + "(?P=Nz)" + "\n" +
+                "Mode: " + "(?P=mode)" + "\n" +
+                "Config File: " + ".*?" + "\n" +
+                "Number of Solves: " + "(?P<nRuns>\d*?)" + "\n" +
+                "Output PETSc Log File \? " + "\d{1}" + "\n" +
+                "Output PETSc Log File Name:\ " + "\S*?" + "\n" +
+                "Output VTK file \? " + "\d{1}" + "\n" +
+                "-*?" + "\n" + "=*?" + "\n" +
+                "(?P<timings>.*?)" + "\n" +
+                "=*?" + "\n" + "-*?" + "\n" +
+                "End of (?P=caseName)_(?P=mode)_(?P=algorithm)_(?P=nprocs)\n" +
+                "-*?" + "\n" + "=*?" + "\n",
+                re.DOTALL)
 
-    caseInfoMatch   = caseInfoKey.finditer(content)
+    caseInfoMatch = caseInfoKey.finditer(content)
 
     for i, match in enumerate(caseInfoMatch):
         dataBlock = match.groupdict()
@@ -111,48 +134,39 @@ def parseSingleResultFile(content):
     if dataBlock == -1:
         raise NoInfoError("No case info was found!")
 
-    return dataBlock
+    return dataBlock["caseName"], dataBlock["mode"], dataBlock["algorithm"], \
+        dataBlock["nprocs"], dataBlock["timings"]["avgTime"]
 
 
 def parseTimingBlocks(content):
     '''
     '''
-    avgTimeKey      = re.compile(
+    avgTimeKey = re.compile(
             "The averaged solving time is: (?P<avgTime>\d*.\d*)")
 
-    avgTimeMatch    = avgTimeKey.search(content)
+    avgTimeMatch = avgTimeKey.search(content)
 
-    try: 
-        avgTime         = avgTimeMatch.group(1)
+    try:
+        avgTime = avgTimeMatch.group(1)
     except AttributeError:
-        avgTime         = -1
+        avgTime = -1
 
     if avgTime == -1:
         raise NoInfoError("Averaged time was not found!")
 
-
-    timingKey       = re.compile(
+    timingKey = re.compile(
             "Run \# (?P<run>\d*) \.\.\. \n" +
-            ".*\n?" + 
+            ".*\n?" +
             "\tSolve Time: (?P<time>\d*\.\d*)")
 
-    timingMatch     = timingKey.finditer(content)
+    timingMatch = timingKey.finditer(content)
 
-    times           = numpy.zeros(0)
+    times = numpy.zeros(0)
 
     for i, match in enumerate(timingMatch):
-        times   = numpy.append(times, float(match.groupdict()["time"]))
+        times = numpy.append(times, float(match.groupdict()["time"]))
 
     if times.size == 0:
         raise NoInfoError("No timing of any run was found!")
 
     return {"avgTime": avgTime, "times": times}
-
-
-'''
-Tests
-'''
-
-files = findResultFiles("../results")
-parseResultFiles(files)
-
