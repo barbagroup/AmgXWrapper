@@ -23,12 +23,12 @@ class NoInfoError(Exception):
         return repr(self.value)
 
 
-def getBenchmarkData(resultPath):
+def getBenchmarkData(resultPath, output=True):
     '''
     '''
 
     resultFiles = findResultFiles(resultPath)
-    caseNames, cases = parseResultFiles(resultFiles)
+    caseNames, cases = parseResultFiles(resultFiles, output)
 
     return caseNames, cases
 
@@ -47,7 +47,7 @@ def findResultFiles(resultPath):
     return resultFiles
 
 
-def parseResultFiles(resultFiles):
+def parseResultFiles(resultFiles, output=True):
     '''
     '''
 
@@ -63,7 +63,9 @@ def parseResultFiles(resultFiles):
 
         try:
 
-            print("parsing " + f + " ...")
+            if output:
+                print("parsing " + f + " ...")
+
             caseName, mode, algorithm, nprocs, avgTime = \
                 parseSingleResultFile(content)
 
