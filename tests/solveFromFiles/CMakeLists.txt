@@ -63,7 +63,7 @@ SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
 
 MESSAGE("\n===================================================================")
 MESSAGE("Starting generator...")
-PROJECT(Poisson)
+PROJECT(solveFromFiles)
 
 
 MESSAGE("\n===================================================================")
