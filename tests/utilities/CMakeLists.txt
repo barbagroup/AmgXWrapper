@@ -63,7 +63,7 @@ SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
 
 MESSAGE("\n===================================================================")
 MESSAGE("Starting generator...")
-PROJECT(Poisson)
+PROJECT(utilities)
 
 
 MESSAGE("\n===================================================================")
@@ -71,7 +71,7 @@ MESSAGE("Trying to find PETSc...")
 MESSAGE("\nNOTE: If it fails to find PETSc, please set the environment variable")
 MESSAGE("PETSC_DIR in order to notify CMake the location of PETSc\n")
 
-LIST(APPEND CMAKE_MODULE_PATH "../cmake-modules")
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}../extra/cmake-modules")
 
 FIND_PACKAGE(PETSc REQUIRED)
 
