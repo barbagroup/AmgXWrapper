@@ -71,7 +71,7 @@ MESSAGE("Trying to find PETSc...")
 MESSAGE("\nNOTE: If it fails to find PETSc, please set the environment variable")
 MESSAGE("PETSC_DIR in order to notify CMake the location of PETSc\n")
 
-LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../extra/cmake-modules")
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-modules")
 MESSAGE("CMAKE_MODULE_PATH: " "${CMAKE_MODULE_PATH}") 
 
 FIND_PACKAGE(PETSc REQUIRED)
