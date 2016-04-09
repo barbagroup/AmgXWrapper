@@ -1,0 +1,35 @@
+
+Case Name: Nx1000Ny500Nz200_PETSc512
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  15.929483s wall, 15.820000s user + 0.070000s system = 15.890000s CPU (99.8%)
+	L2-Norm: 0.116315
+	Max-Norm: 3.28973e-05
+	Iterations 858
+
+Case Name: Nx1000Ny500Nz200_PETSc512
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  16.052641s wall, 15.950000s user + 0.070000s system = 16.020000s CPU (99.8%)
+	L2-Norm: 0.116315
+	Max-Norm: 3.28973e-05
+	Iterations 858
+
+Case Name: Nx1000Ny500Nz200_PETSc512
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  16.032778s wall, 15.930000s user + 0.070000s system = 16.000000s CPU (99.8%)
+	L2-Norm: 0.116315
+	Max-Norm: 3.28973e-05
+	Iterations 858
+
+Case Name: Nx1000Ny500Nz200_PETSc512
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  16.006794s wall, 15.910000s user + 0.070000s system = 15.980000s CPU (99.8%)
+	L2-Norm: 0.116315
+	Max-Norm: 3.28973e-05
+	Iterations 858
+
+Case Name: Nx1000Ny500Nz200_PETSc512
+	Nx: 1000 Ny: 500 Nz: 200
+	Solve Time:  16.074259s wall, 15.980000s user + 0.070000s system = 16.050000s CPU (99.8%)
+	L2-Norm: 0.116315
+	Max-Norm: 3.28973e-05
+	Iterations 858
