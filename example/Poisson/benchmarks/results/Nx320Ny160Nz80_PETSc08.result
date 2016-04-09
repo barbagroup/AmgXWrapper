@@ -1,0 +1,35 @@
+
+Case Name: Nx320Ny160Nz80_PETSc128
+	Nx: 320 Ny: 160 Nz: 80
+	Solve Time:  1.444880s wall, 1.420000s user + 0.020000s system = 1.440000s CPU (99.7%)
+	L2-Norm: 0.16093
+	Max-Norm: 0.000224706
+	Iterations 318
+
+Case Name: Nx320Ny160Nz80_PETSc128
+	Nx: 320 Ny: 160 Nz: 80
+	Solve Time:  1.428028s wall, 1.400000s user + 0.020000s system = 1.420000s CPU (99.4%)
+	L2-Norm: 0.16093
+	Max-Norm: 0.000224706
+	Iterations 318
+
+Case Name: Nx320Ny160Nz80_PETSc128
+	Nx: 320 Ny: 160 Nz: 80
+	Solve Time:  1.423618s wall, 1.390000s user + 0.020000s system = 1.410000s CPU (99.0%)
+	L2-Norm: 0.16093
+	Max-Norm: 0.000224706
+	Iterations 318
+
+Case Name: Nx320Ny160Nz80_PETSc128
+	Nx: 320 Ny: 160 Nz: 80
+	Solve Time:  1.426022s wall, 1.400000s user + 0.010000s system = 1.410000s CPU (98.9%)
+	L2-Norm: 0.16093
+	Max-Norm: 0.000224706
+	Iterations 318
+
+Case Name: Nx320Ny160Nz80_PETSc128
+	Nx: 320 Ny: 160 Nz: 80
+	Solve Time:  1.433875s wall, 1.400000s user + 0.020000s system = 1.420000s CPU (99.0%)
+	L2-Norm: 0.16093
+	Max-Norm: 0.000224706
+	Iterations 318
