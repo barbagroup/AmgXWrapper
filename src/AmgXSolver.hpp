@@ -1,13 +1,13 @@
 /**
  * @file AmgXSolver.hpp
- * @brief Declaration of the class AmgXSolver
+ * @brief Definition of class AmgXSolver
  * @author Pi-Yueh Chuang (pychuang@gwu.edu)
- * @version alpha
  * @date 2015-09-01
  */
 
 # pragma once
 
+// STL
 # include <iostream>
 # include <string>
 # include <cstring>
@@ -15,50 +15,118 @@
 # include <vector>
 # include <cstdlib>
 
+// CUDA
 # include <cuda_runtime.h>
+
+// AmgX
 # include <amgx_c.h>
 
+// PETSc
 # include <petscmat.h>
 # include <petscvec.h>
 # include <petscis.h>
 
+// others
 # include "check.hpp"
 
 /**
- * @brief A wrapper class for an interface between PETSc and AmgX
+ * @brief A wrapper class for coupling PETSc and AmgX.
  *
- * This class is a wrapper of AmgX library. PETSc user only need to pass 
- * PETSc matrix and vectors into the AmgXSolver instance to solve their problem.
+ * This class is a wrapper of AmgX library for PETSc. PETSc users only need to
+ * pass a PETSc matrix and vectors into the AmgXSolver instance to solve their
+ * problems.
  *
  */
 class AmgXSolver
 {
     public:
 
-        /// default constructor
+        /** \brief default constructor. */
         AmgXSolver() = default;
 
-        /// initialization of instance
-        int initialize(MPI_Comm comm, 
-                const std::string &_mode, const std::string &cfg_file);
 
-        /// finalization
-        int finalize();
+        /** \brief destructor. */
+        ~AmgXSolver() = default;
 
-        /// convert PETSc matrix into AmgX matrix and pass it to solver
-        int setA(const Mat &A);
 
-        /// solve the problem, soultion vector will be updated in the end
-        int solve(Vec &p, Vec &b);
+        /**
+         * \brief initialize a AmgXSolver instance.
+         *
+         * \param comm [in] MPI communicator.
+         * \param mode [in] a string, target mode of AmgX (e.g., dDDI).
+         * \param cfgFile [in] a string indicate the path to AmgX configuration file.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode initialize(MPI_Comm comm,
+                const std::string &mode, const std::string &cfgFile);
 
-        /// Get the number of iterations of last solve phase
-        int getIters();
 
-        /// Get the residual at a specific iteration in last solve phase
-        double getResidual(const int &iter);
+        /**
+         * \brief finalization.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode finalize();
 
-        /// get the memory usage on device
-        int getMemUsage();
+
+        /**
+         * \brief set up the matrix used by AmgX.
+         *
+         * \param A [in] a PETSc Mat.
+         *
+         * This function will automatically convert PETSc matrix to AmgX matrix.
+         * If the AmgX solver is set to be the GPU one, we also redestribute the
+         * matrix in this function and upload it to GPUs.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode setA(const Mat &A);
+
+
+        /**
+         * \brief solve the linear system.
+         *
+         * \param p [in, out] a PETSc Vec object representing unknowns.
+         * \param b [in] a PETSc Vec representing right hand side.
+         *
+         * p vector will be used as initial guess and will be updated to the 
+         * solution in the end of solving.
+         *
+         * For cases that use more MPI processes than the number of GPUs, this 
+         * function will do data gathering before solving and data scattering 
+         * after the solving.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode solve(Vec &p, Vec &b);
+
+
+        /**
+         * \brief get the number of iterations of the last solving.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode getIters();
+
+
+        /**
+         * \brief get the residual at a specific iteration during the last solving.
+         *
+         * \param iter [in] the target iteration.
+         * \param res [out] the returned residual.
+         *
+         * \return 
+         */
+        PetscErrorCode getResidual(const int &iter, double &res);
+
+
+        /**
+         * \brief get the memory usage on devices.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode getMemUsage();
 
 
     private:
