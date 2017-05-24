@@ -1,110 +1,199 @@
 /**
- * @file init.inl
- * @brief Definition of some member functions of the class AmgXSolver
- * @author Pi-Yueh Chuang (pychuang@gwu.edu)
- * @version alpha
- * @date 2016-01-08
+ * \file init.inl
+ * \brief definition of some member functions of the class AmgXSolver.
+ * \author Pi-Yueh Chuang (pychuang@gwu.edu)
+ * \date 2016-01-08
  */
+
+
+// CUDA
+# include <cuda_runtime.h>
+
+// AmgXSolver
 # include "AmgXSolver.hpp"
 
 
-/**
- * @brief Initialization of AmgXSolver instance
- *
- * @param comm MPI communicator for all processes
- * @param _mode The mode this solver will run in. Please refer to AmgX manual.
- * @param cfg_file A file containing the configurations of this solver
- *
- * @return Currently meaningless. May be error codes in the future.
- */
-int AmgXSolver::initialize(MPI_Comm comm, 
-        const std::string &_mode, const std::string &cfg_file)
+/** \copydoc AmgXSolver::AmgXSolver(const MPI_Comm &,
+        const std::string &, const std::string &). */
+AmgXSolver::AmgXSolver(const MPI_Comm &comm,
+        const std::string &_mode, const std::string &cfgFile)
 {
-    // get the number of total cuda devices
-    CHECK(cudaGetDeviceCount(&nDevs));
+    initialize(comm, _mode, cfgFile);
+}
 
-    // Check whether there is at least one CUDA device on this node
-    if (nDevs == 0) 
+
+/** \copydoc AmgXSolver::~AmgXSolver(). */
+AmgXSolver::~AmgXSolver()
+{
+    if (isInitialized) finalize();
+}
+
+
+/** \copydoc AmgXSolver::initialize. */
+PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
+        const std::string &_mode, const std::string &cfgFile)
+{
+    PetscErrorCode      ierr;
+
+    PetscFunctionBeginUser;
+
+    // if this instance has already been initialized, skip
+    if (isInitialized)
     {
-        std::cerr << "There are no CUDA devices on the node " 
-                  << nodeName << " !!" << std::endl;
+        ierr = PetscPrintf(globalCpuWorld,
+                "This AmgXWrapper instance has already been initilized. "
+                "Please finalized it first.\n"); CHK;
 
-        exit(EXIT_FAILURE);
+        PetscFunctionReturn(0);
     }
 
-    // initialize other communicators
-    initMPIcomms(comm);
+    // increase the number of AmgXSolver instances
+    count += 1;
 
-    if (gpuProc == 0) initAmgX(_mode, cfg_file);
+    // get the name of this node
+    int     len;
+    char    name[MPI_MAX_PROCESSOR_NAME];
+    ierr = MPI_Get_processor_name(name, &len); CHK;
+    nodeName = name;
+
+    // get the mode of AmgX solver
+    ierr = setMode(_mode); CHK;
+
+    // initialize communicators and corresponding information
+    ierr = initMPIcomms(comm); CHK;
+
+    // only processes in gpuWorld are required to initialize AmgX
+    if (gpuProc == 0)
+    {
+        ierr = initAmgX(cfgFile); CHK;
+    }
+
+    // a bool indicating if this instance is initialized
+    isInitialized = true;
+
+    PetscFunctionReturn(0);
+}
+
+
+/** \copydoc AmgXSolver::initMPIcomms. */
+PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
+{
+    PetscErrorCode      ierr;
+
+    PetscFunctionBeginUser;
+
+    // duplicate the global communicator
+    ierr = MPI_Comm_dup(comm, &globalCpuWorld); CHK;
+    ierr = MPI_Comm_set_name(globalCpuWorld, "globalCpuWorld"); CHK;
+
+    // get size and rank for global communicator
+    ierr = MPI_Comm_size(globalCpuWorld, &globalSize); CHK;
+    ierr = MPI_Comm_rank(globalCpuWorld, &myGlobalRank); CHK;
+
+
+    // Get the communicator for processors on the same node (local world)
+    ierr = MPI_Comm_split_type(globalCpuWorld, 
+            MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &localCpuWorld); CHK;
+    ierr = MPI_Comm_set_name(localCpuWorld, "localCpuWorld"); CHK;
+
+    // get size and rank for local communicator
+    ierr = MPI_Comm_size(localCpuWorld, &localSize); CHK;
+    ierr = MPI_Comm_rank(localCpuWorld, &myLocalRank); CHK;
+
+
+    // set up the variable nDevs
+    ierr = setDeviceCount(); CHK;
+
+
+    // set up corresponding ID of the device used by each local process
+    ierr = setDeviceIDs(); CHK;
+    ierr = MPI_Barrier(globalCpuWorld); CHK;
+
+
+    // split the global world into a world involved in AmgX and a null world
+    ierr = MPI_Comm_split(globalCpuWorld, gpuProc, 0, &gpuWorld); CHK;
+
+    // get size and rank for the communicator corresponding to gpuWorld
+    if (gpuWorld != MPI_COMM_NULL)
+    {
+        ierr = MPI_Comm_set_name(gpuWorld, "gpuWorld"); CHK;
+        ierr = MPI_Comm_size(gpuWorld, &gpuWorldSize); CHK;
+        ierr = MPI_Comm_rank(gpuWorld, &myGpuWorldRank); CHK;
+    }
+    else // for those can not communicate with GPU devices
+    {
+        gpuWorldSize = MPI_UNDEFINED;
+        myGpuWorldRank = MPI_UNDEFINED;
+    }
+    
+
+    // split local world into worlds corresponding to each CUDA device
+    ierr = MPI_Comm_split(localCpuWorld, devID, 0, &devWorld); CHK;
+    ierr = MPI_Comm_set_name(devWorld, "devWorld"); CHK;
+
+    // get size and rank for the communicator corresponding to myWorld
+    ierr = MPI_Comm_size(devWorld, &devWorldSize); CHK;
+    ierr = MPI_Comm_rank(devWorld, &myDevWorldRank); CHK;
+
+    ierr = MPI_Barrier(globalCpuWorld); CHK;
 
     return 0;
 }
 
 
-/**
- * @brief Initialize different MPI communicators
- *
- * This private initializes all communicators needed:
- *
- * 1. globalCpuWorld is the communicator for all cpu processors, which is 
- *    usually the same with MPI_COMM_WORLD
- * 2. localCpuWorld is the communicaotr for cpu processors located in the same 
- *    node, which can use CUDA devices on that node
- * 3. gpuWorld is the communicator for the cpu processors that involved in AmgX
- *    function calls, i.e., those who will call AmgX functions
- * 4. devWorld is the communicator for the cpu processors that share one CUDA
- *    device. The first processor in this communicator will also be in gpuWorld.
- *    And all other processors in this communicator will transfer their data to 
- *    that fisrt processor.
- * 
- * XXXXXXXSize and XXXXXXXRank represent the size and rank obtained from these
- * communicators.
- *
- * @param comm A communicator for all processes
- *
- * @return Currently meaningless. May be error codes in the future.
- */
-int AmgXSolver::initMPIcomms(MPI_Comm &comm)
+/** \copydoc AmgXSolver::getDeviceCount. */
+PetscErrorCode AmgXSolver::setDeviceCount()
 {
-    // Get the name of this node
-    MPI_Get_processor_name(nodeName, &nodeNameLen);
+    PetscFunctionBeginUser;
 
-    // Copy communicator for all processors
-    globalCpuWorld = comm;
-    MPI_Comm_set_name(globalCpuWorld, "globalCpuWorld");
+    // get the number of devices that AmgX solvers can use
+    switch (mode)
+    {
+        case AMGX_mode_dDDI: // for GPU cases, nDevs is the # of local GPUs
+        case AMGX_mode_dDFI: // for GPU cases, nDevs is the # of local GPUs
+        case AMGX_mode_dFFI: // for GPU cases, nDevs is the # of local GPUs
+            // get the number of total cuda devices
+            CHECK(cudaGetDeviceCount(&nDevs));
 
-    // get size and rank for global communicator
-    MPI_Comm_size(globalCpuWorld, &globalSize);
-    MPI_Comm_rank(globalCpuWorld, &myGlobalRank);
+            // Check whether there is at least one CUDA device on this node
+            if (nDevs == 0) SETERRQ1(MPI_COMM_WORLD, PETSC_ERR_SUP_SYS,
+                    "There is no CUDA device on the node %s !\n", nodeName.c_str());
+            break;
+        case AMGX_mode_hDDI: // for CPU cases, nDevs is the # of local processes
+        case AMGX_mode_hDFI: // for CPU cases, nDevs is the # of local processes
+        case AMGX_mode_hFFI: // for CPU cases, nDevs is the # of local processes
+        default:
+            nDevs = localSize;
+            break;
+    }
 
-    // Get the communicator for processors on the same node (local world)
-    MPI_Comm_split_type(globalCpuWorld, 
-            MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &localCpuWorld);
-    MPI_Comm_set_name(localCpuWorld, "localCpuWorld");
-
-    // get size and rank for local communicator
-    MPI_Comm_size(localCpuWorld, &localSize);
-    MPI_Comm_rank(localCpuWorld, &myLocalRank);
+    PetscFunctionReturn(0);
+}
 
 
-    if (nDevs == localSize)
+/** \copydoc AmgXSolver::setDeviceIDs. */
+PetscErrorCode AmgXSolver::setDeviceIDs()
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    // set the ID of device that each local process will use
+    if (nDevs == localSize) // # of the devices and local precosses are the same
     {
         devID = myLocalRank;
         gpuProc = 0;
     }
-    else if (nDevs > localSize)
+    else if (nDevs > localSize) // there are more devices than processes
     {
-        PetscPrintf(localCpuWorld, 
-                "CUDA devices on the node %s ", nodeName);
-        PetscPrintf(localCpuWorld, 
-                "are more than the MPI processes launched. "); 
-        PetscPrintf(localCpuWorld, 
-                "Only %d CUDA devices will be used.\n", localSize);
+        ierr = PetscPrintf(localCpuWorld, "CUDA devices on the node %s "
+                "are more than the MPI processes launched. Only %d CUDA "
+                "devices will be used.\n", nodeName.c_str(), localSize); CHK;
 
         devID = myLocalRank;
         gpuProc = 0;
     }
-    else
+    else // there more processes than devices
     {
         int     nBasic = localSize / nDevs,
                 nRemain = localSize % nDevs;
@@ -121,55 +210,14 @@ int AmgXSolver::initMPIcomms(MPI_Comm &comm)
         }
     }
 
-    MPI_Barrier(globalCpuWorld);
-
-    // split the global world into a world involved in AmgX and a null world
-    MPI_Comm_split(globalCpuWorld, gpuProc, 0, &gpuWorld);
-    MPI_Comm_set_name(gpuWorld, "gpuWorld");
-
-    // get size and rank for the communicator corresponding to gpuWorld
-    if (gpuWorld != MPI_COMM_NULL)
-    {
-        MPI_Comm_size(gpuWorld, &gpuWorldSize);
-        MPI_Comm_rank(gpuWorld, &myGpuWorldRank);
-    }
-    else
-    {
-        gpuWorldSize = MPI_UNDEFINED;
-        myGpuWorldRank = MPI_UNDEFINED;
-    }
-    
-
-    // split local world into worlds corresponding to each CUDA device
-    MPI_Comm_split(localCpuWorld, devID, 0, &devWorld);
-    MPI_Comm_set_name(devWorld, "devWorld");
-
-    // get size and rank for the communicator corresponding to myWorld
-    MPI_Comm_size(devWorld, &devWorldSize);
-    MPI_Comm_rank(devWorld, &myDevWorldRank);
-
-    MPI_Barrier(globalCpuWorld);
-
-    return 0;
+    PetscFunctionReturn(0);
 }
 
 
-
-/**
- * @brief Initialize the AmgX library
- *
- * This function initializes the current instance (solver). Based on the count, 
- * only the instance initialized first is in charge of initializing AmgX and the 
- * resource instance.
- *
- * @param _mode The mode this solver will run in. Please refer to AmgX manual.
- * @param _cfg A file containing the configurations of this solver
- *
- * @return Currently meaningless. May be error codes in the future.
- */
-int AmgXSolver::initAmgX(const std::string &_mode, const std::string &_cfg)
+/** \copydic AmgXSolver::initAmgX. */
+PetscErrorCode AmgXSolver::initAmgX(const std::string &cfgFile)
 {
-    count += 1;
+    PetscFunctionBeginUser;
 
     // only the first instance (AmgX solver) is in charge of initializing AmgX
     if (count == 1)
@@ -180,34 +228,23 @@ int AmgXSolver::initAmgX(const std::string &_mode, const std::string &_cfg)
         // intialize AmgX plugings
         AMGX_SAFE_CALL(AMGX_initialize_plugins());
 
-        // use user-defined output mechanism. only the master process can output
-        // something on the screen
-        if (myGpuWorldRank == 0) 
-        { 
-            AMGX_SAFE_CALL(
-                AMGX_register_print_callback(&(AmgXSolver::print_callback))); 
-        }
-        else 
-        { 
-            AMGX_SAFE_CALL(
-                AMGX_register_print_callback(&(AmgXSolver::print_none))); 
-        }
+        // only the master process can output something on the screen
+        AMGX_SAFE_CALL(AMGX_register_print_callback(
+                    [](const char *msg, int length)->void
+                    {PetscPrintf(PETSC_COMM_WORLD, "%s", msg);})); 
 
         // let AmgX to handle errors returned
         AMGX_SAFE_CALL(AMGX_install_signal_handler());
     }
 
     // create an AmgX configure object
-    AMGX_SAFE_CALL(AMGX_config_create_from_file(&cfg, _cfg.c_str()));
+    AMGX_SAFE_CALL(AMGX_config_create_from_file(&cfg, cfgFile.c_str()));
 
     // let AmgX handle returned error codes internally
     AMGX_SAFE_CALL(AMGX_config_add_parameters(&cfg, "exception_handling=1"));
 
     // create an AmgX resource object, only the first instance is in charge
     if (count == 1) AMGX_resources_create(&rsrc, cfg, &gpuWorld, 1, &devID);
-
-    // set mode
-    setMode(_mode);
 
     // create AmgX vector object for unknowns and RHS
     AMGX_vector_create(&AmgXP, rsrc, mode);
@@ -222,23 +259,28 @@ int AmgXSolver::initAmgX(const std::string &_mode, const std::string &_cfg)
     // obtain the default number of rings based on current configuration
     AMGX_config_get_default_number_of_rings(cfg, &ring);
 
-    isInitialized = true;
-
-    return 0;
+    PetscFunctionReturn(0);
 }
 
 
-/**
- * @brief Finalizing the instance.
- *
- * This function destroys AmgX data. The instance last destroyed also needs to 
- * destroy shared resource instance and finalizing AmgX.
- *
- * @return Currently meaningless. May be error codes in the future.
- */
-int AmgXSolver::finalize()
+/** \copydoc AmgXSolver::finalize. */
+PetscErrorCode AmgXSolver::finalize()
 {
+    PetscErrorCode      ierr;
 
+    PetscFunctionBeginUser;
+
+    // skip if this instance has not been initialized
+    if (! isInitialized)
+    {
+        ierr = PetscPrintf(PETSC_COMM_WORLD,
+                "This AmgXWrapper has not been initialized. "
+                "Please initialize it before finalization.\n"); CHK;
+
+        PetscFunctionReturn(0);
+    }
+
+    // only processes using GPU are required to destroy AmgX content
     if (gpuProc == 0)
     {
         // destroy solver instance
@@ -265,12 +307,22 @@ int AmgXSolver::finalize()
             AMGX_config_destroy(cfg);
         }
 
-        // change status
-        isInitialized = false;
-
-        count -= 1;
+        // destroy gpuWorld
+        ierr = MPI_Comm_free(&gpuWorld); CHK;
     }
 
-    return 0;
-}
+    // re-set necessary variables in case users want to reuse 
+    // the variable of this instance for a new instance
+    gpuProc = MPI_UNDEFINED;
+    ierr = MPI_Comm_free(&globalCpuWorld); CHK;
+    ierr = MPI_Comm_free(&localCpuWorld); CHK;
+    ierr = MPI_Comm_free(&devWorld); CHK;
 
+    // decrease the number of instances
+    count -= 1;
+
+    // change status
+    isInitialized = false;
+
+    PetscFunctionReturn(0);
+}

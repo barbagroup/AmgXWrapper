@@ -1,34 +1,24 @@
 /**
- * @file setA.inl
- * @brief Definition of some member functions of the class AmgXSolver
- * @author Pi-Yueh Chuang (pychuang@gwu.edu)
- * @version alpha
- * @date 2016-01-08
+ * \file setA.inl
+ * \brief definition of member functions regarding to setting A in AmgXSolver.
+ * \author Pi-Yueh Chuang (pychuang@gwu.edu)
+ * \date 2016-01-08
  */
+
+
+// STD
+# include <cstring>
+
+// AmgXSolver
 # include "AmgXSolver.hpp"
 
 
-/**
- * @brief A function convert PETSc Mat into AmgX matrix and bind it to solver
- *
- * This function will first extract the raw data from PETSc Mat and convert the
- * column index into 64bit integers. It also create a partition vector that is 
- * required by AmgX. Then, it upload the raw data to AmgX. Finally, it binds
- * the AmgX matrix to the AmgX solver.
- *
- * Be cautious! It lacks mechanism to check whether the PETSc Mat is AIJ format
- * and whether the PETSc Mat is using the same MPI communicator as the 
- * AmgXSolver instance.
- *
- * @param A A PETSc Mat. The coefficient matrix of a system of linear equations.
- * The matrix must be AIJ format and using the same MPI communicator as AmgX.
- *
- * @return Currently meaningless. May be error codes in the future.
- */
-int AmgXSolver::setA(const Mat &A)
+/** \copydoc AmgXSolver::setA. */
+PetscErrorCode AmgXSolver::setA(const Mat &A)
 {
-    PetscErrorCode      ierr;
+    PetscFunctionBeginUser;
 
+    PetscErrorCode      ierr;
 
     Mat                 localA;
 
@@ -43,136 +33,265 @@ int AmgXSolver::setA(const Mat &A)
     std::vector<PetscInt>       partVec;
 
 
-    // Get number of rows in global matrix
-    ierr = MatGetSize(A, &nGlobalRows, nullptr);                             CHK;
+    // get number of rows in global matrix
+    ierr = MatGetSize(A, &nGlobalRows, nullptr); CHK;
 
-    ierr = getDevIS(A, devIS);                                               CHK;
-    ierr = getLocalA(A, devIS, localA);                                      CHK;
-    ierr = getLocalMatRawData(localA, nLocalRows, row, col, data);           CHK;
-    ierr = destroyLocalA(A, localA);                                         CHK;
+    // get the row indices of redistributed matrix owned by processes in gpuWorld
+    ierr = getDevIS(A, devIS); CHK;
 
-    ierr = getPartVec(devIS, nGlobalRows, partVec);                          CHK;
+    // get sequential local portion of redistributed matrix
+    ierr = getLocalA(A, devIS, localA); CHK;
+
+    // get compressed row layout of the local Mat
+    ierr = getLocalMatRawData(localA, nLocalRows, row, col, data); CHK;
+
+    // destroy local matrix
+    ierr = destroyLocalA(A, localA); CHK;
+
+    // get a partition vector required by AmgX
+    ierr = getPartVec(devIS, nGlobalRows, partVec); CHK;
 
 
     // upload matrix A to AmgX
     if (gpuWorld != MPI_COMM_NULL)
     {
-        MPI_Barrier(gpuWorld);
+        ierr = MPI_Barrier(gpuWorld); CHK;
+
         AMGX_matrix_upload_all_global(
                 AmgXA, nGlobalRows, nLocalRows, row[nLocalRows], 
                 1, 1, row.data(), col.data(), data.data(), 
                 nullptr, ring, ring, partVec.data());
 
         // bind the matrix A to the solver
-        MPI_Barrier(gpuWorld);
+        ierr = MPI_Barrier(gpuWorld); CHK;
         AMGX_solver_setup(solver, AmgXA);
 
         // connect (bind) vectors to the matrix
         AMGX_vector_bind(AmgXP, AmgXA);
         AMGX_vector_bind(AmgXRHS, AmgXA);
     }
-    MPI_Barrier(globalCpuWorld);
+    ierr = MPI_Barrier(globalCpuWorld); CHK;
 
-    return 0;
+    PetscFunctionReturn(0);
 }
 
 
-int AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
+/** \copydoc AmgXSolver::getDevIS. */
+PetscErrorCode AmgXSolver::getDevIS(const Mat &A, IS &devIS)
 {
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    // get index sets of A locally owned by each process
+    // note that devIS is now a serial IS on each process
+    ierr = MatGetOwnershipIS(A, &devIS, nullptr); CHK;
+
+    // concatenate index sets that belong to the same devWorld
+    // note that now devIS is a parallel IS of communicator devWorld
+    ierr = ISOnComm(devIS, devWorld, PETSC_USE_POINTER, &devIS); CHK;
+
+    // all gather in order to have all indices belong to a devWorld on the 
+    // leading rank of that devWorld. THIS IS NOT EFFICIENT!!
+    // note that now devIS is again a serial IS on each process
+    ierr = ISAllGather(devIS, &devIS); CHK;
+
+    // empty devIS on ranks other than the leading ranks in each devWorld 
+    if (myDevWorldRank != 0) 
+        ierr = ISGeneralSetIndices(devIS, 0, nullptr, PETSC_COPY_VALUES); CHK;
+
+    // devIS is not guaranteed to be sorted. We sort it here.
+    ierr = ISSort(devIS); CHK;
+
+    PetscFunctionReturn(0);
+}
+
+
+/** \copydoc AmgXSolver::getLocalA. */
+PetscErrorCode AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
+{
+    PetscFunctionBeginUser;
+
     PetscErrorCode      ierr;
     MatType             type;
 
-    Mat                 tempA;
+    // get the Mat type
+    ierr = MatGetType(A, &type); CHK;
 
-    // Get the Mat type
-    ierr = MatGetType(A, &type);                                             CHK;
-
-    // Check whether the Mat type is supported
-    if (std::strcmp(type, MATSEQAIJ) == 0)
+    // check whether the Mat type is supported
+    if (std::strcmp(type, MATSEQAIJ) == 0) // sequential AIJ
     {
-        // make localA point to the same memory as A does
+        // make localA point to the same memory space as A does
         localA = A;
     }
     else if (std::strcmp(type, MATMPIAIJ) == 0)
     {
-        redistMat(A, devIS, tempA);
+        Mat                 tempA;
 
-        ierr = MatMPIAIJGetLocalMat(
-                tempA, MAT_INITIAL_MATRIX, &localA);                         CHK;
+        // redistribute matrix and also get corresponding scatters.
+        ierr = redistMat(A, devIS, tempA); CHK;
 
-        if (tempA == A) 
+        // get local matrix from redistributed matrix
+        ierr = MatMPIAIJGetLocalMat(tempA, MAT_INITIAL_MATRIX, &localA); CHK;
+
+        // destroy redistributed matrix
+        if (tempA == A)
         {
             tempA = nullptr;
         }
         else
         {
-            ierr = MatDestroy(&tempA);                                       CHK;
+            ierr = MatDestroy(&tempA); CHK;
         }
     }
     else
     {
-        std::cerr << "Mat type " << type 
-                  << " is not supported!" << std::endl;
-        exit(0);
+        SETERRQ1(globalCpuWorld, PETSC_ERR_ARG_WRONG,
+                "Mat type %s is not supported!\n", type);
     }
 
-    return 0;
+    PetscFunctionReturn(0);
 }
 
 
-int AmgXSolver::getDevIS(const Mat &A, IS &devIS)
+/** \copydoc AmgXSolver::redistMat. */
+PetscErrorCode AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
 {
+    PetscFunctionBeginUser;
+
     PetscErrorCode      ierr;
 
-    // get index sets of A locally owned by each process
-    // note that devIS is now a serial IS on each process
-    ierr = MatGetOwnershipIS(A, &devIS, nullptr);                            CHK;
-
-    // concatenate index sets that belong to the same devWorld
-    // note that now devIS is a parallel IS of communicator devWorld
-    ierr = ISOnComm(devIS, devWorld, PETSC_USE_POINTER, &devIS);             CHK;
-
-    // all gather in order to have all indices belong to a devWorld on the 
-    // leading rank of that devWorld. This is not efficient.
-    // note that now devIS is again a serial IS on each process
-    ierr = ISAllGather(devIS, &devIS);                                       CHK;
-
-    // empty devIS on ranks other than the leading ranks in each devWorld 
-    if (myDevWorldRank != 0) 
-        ierr = ISGeneralSetIndices(devIS, 0, nullptr, PETSC_COPY_VALUES);    CHK;
-
-    // devIS is not guaranteed to be sorted. We sort it here.
-    ierr = ISSort(devIS);                                                    CHK;
-
-    return 0;
-}
-
-
-int AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
-{
-    PetscErrorCode      ierr;
-
-    if (gpuWorldSize == globalSize)
+    if (gpuWorldSize == globalSize) // no redistributation required
     {
         newA = A;
     }
     else
     {
         IS      is;
-        ierr = ISOnComm(devIS, globalCpuWorld, PETSC_USE_POINTER, &is);      CHK;
-        ierr = MatGetSubMatrix(A, is, is, MAT_INITIAL_MATRIX, &newA);        CHK;
 
-        ierr = getVecScatter(A, newA, is);                                   CHK;
-        ierr = ISDestroy(&is);                                               CHK;
+        // re-set the communicator of devIS to globalCpuWorld
+        ierr = ISOnComm(devIS, globalCpuWorld, PETSC_USE_POINTER, &is); CHK;
+
+        // redistribute the matrix A to newA
+        ierr = MatGetSubMatrix(A, is, is, MAT_INITIAL_MATRIX, &newA); CHK;
+
+        // get VecScatters between original data layout and the new one
+        ierr = getVecScatter(A, newA, is); CHK;
+
+        // destroy the temporary IS
+        ierr = ISDestroy(&is); CHK;
     }
 
-    return 0;
+    PetscFunctionReturn(0);
 }
 
 
-int AmgXSolver::getPartVec(
+/** \copydoc AmgXSolver::getVecScatter. */
+PetscErrorCode AmgXSolver::getVecScatter(
+        const Mat &A1, const Mat &A2, const IS &devIS)
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    Vec                 tempLhs;
+    Vec                 tempRhs;
+
+    ierr = MatCreateVecs(A1, &tempLhs, &tempRhs); CHK;
+    ierr = MatCreateVecs(A2, &redistLhs, &redistRhs); CHK;
+
+    ierr = VecScatterCreate(tempLhs, nullptr, redistLhs, devIS, &scatterLhs); CHK;
+    ierr = VecScatterCreate(tempRhs, nullptr, redistRhs, devIS, &scatterRhs); CHK;
+    
+    ierr = VecDestroy(&tempRhs); CHK;
+    ierr = VecDestroy(&tempLhs); CHK;
+
+    PetscFunctionReturn(0);
+}
+
+
+/** \copydoc AmgXSolver::getLocalMatRawData. */
+PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
+        PetscInt &localN, std::vector<PetscInt> &row,
+        std::vector<Petsc64bitInt> &col, std::vector<PetscScalar> &data)
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    const PetscInt      *rawCol, 
+                        *rawRow;
+
+    PetscScalar         *rawData;
+
+    PetscBool           done;
+
+    // get row and column indices in compressed row format
+    ierr = MatGetRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
+            &localN, &rawRow, &rawCol, &done); CHK;
+
+    // check if the function worked
+    if (! done)
+        SETERRQ(globalCpuWorld, PETSC_ERR_SIG, "MatGetRowIJ did not work!");
+
+    // get data
+    ierr = MatSeqAIJGetArray(localA, &rawData); CHK;
+
+    // copy values to STL vector. Note: there is an implicit conversion from 
+    // PetscInt to Petsc64bitInt for the column vector
+    col.assign(rawCol, rawCol+rawRow[localN]);
+    row.assign(rawRow, rawRow+localN+1);
+    data.assign(rawData, rawData+rawRow[localN]);
+
+
+    // return ownership of memory space to PETSc
+    ierr = MatRestoreRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
+            &localN, &rawRow, &rawCol, &done); CHK;
+
+    // check if the function worked
+    if (! done)
+        SETERRQ(globalCpuWorld, PETSC_ERR_SIG, "MatRestoreRowIJ did not work!");
+
+    // return ownership of memory space to PETSc
+    ierr = MatSeqAIJRestoreArray(localA, &rawData); CHK;
+
+    PetscFunctionReturn(0);
+}
+
+
+/** \copydoc AmgXSolver::destroyLocalA. */
+PetscErrorCode AmgXSolver::destroyLocalA(const Mat &A, Mat &localA)
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    MatType             type;
+
+    // Get the Mat type
+    ierr = MatGetType(A, &type); CHK;
+
+    // when A is sequential, we can not destroy the memory space
+    if (std::strcmp(type, MATSEQAIJ) == 0)
+    {
+        localA = nullptr;
+    }
+    // for parallel case, localA can be safely destroyed
+    else if (std::strcmp(type, MATMPIAIJ) == 0)
+    {
+        ierr = MatDestroy(&localA); CHK;
+    }
+
+    PetscFunctionReturn(0);
+}
+
+
+/** \copydoc AmgXSolver::getPartVec. */
+PetscErrorCode AmgXSolver::getPartVec(
         const IS &devIS, const PetscInt &N, std::vector<PetscInt> &partVec)
 {
+    PetscFunctionBeginUser;
+
     PetscErrorCode      ierr;
 
     VecScatter          scatter;
@@ -183,120 +302,34 @@ int AmgXSolver::getPartVec(
 
     PetscScalar         *tempPartVec; 
 
-    ierr = ISGetLocalSize(devIS, &n);                                        CHK;
+    ierr = ISGetLocalSize(devIS, &n); CHK;
 
     if (gpuWorld != MPI_COMM_NULL)
     {
-        ierr = VecCreateMPI(gpuWorld, n, N, &tempMPI);                       CHK;
+        ierr = VecCreateMPI(gpuWorld, n, N, &tempMPI); CHK;
     
         IS      is;
-        ierr = ISOnComm(devIS, gpuWorld, PETSC_USE_POINTER, &is);            CHK;
-        ierr = VecISSet(tempMPI, is, (PetscScalar) myGpuWorldRank);          CHK;
-        ierr = ISDestroy(&is);                                               CHK;
+        ierr = ISOnComm(devIS, gpuWorld, PETSC_USE_POINTER, &is); CHK;
+        ierr = VecISSet(tempMPI, is, (PetscScalar) myGpuWorldRank); CHK;
+        ierr = ISDestroy(&is); CHK;
 
-        ierr = VecScatterCreateToAll(tempMPI, &scatter, &tempSEQ);           CHK;
+        ierr = VecScatterCreateToAll(tempMPI, &scatter, &tempSEQ); CHK;
         ierr = VecScatterBegin(scatter, 
-                tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD);           CHK;
+                tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD); CHK;
         ierr = VecScatterEnd(scatter, 
-                tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD);           CHK;
+                tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD); CHK;
+        ierr = VecScatterDestroy(&scatter); CHK;
+        ierr = VecDestroy(&tempMPI); CHK;
 
-        ierr = VecScatterDestroy(&scatter);                                  CHK;
-        ierr = VecDestroy(&tempMPI);                                         CHK;
-
-        ierr = VecGetArray(tempSEQ, &tempPartVec);                           CHK;
+        ierr = VecGetArray(tempSEQ, &tempPartVec); CHK;
 
         partVec.assign(tempPartVec, tempPartVec+N);
 
-        ierr = VecRestoreArray(tempSEQ, &tempPartVec);                       CHK;
+        ierr = VecRestoreArray(tempSEQ, &tempPartVec); CHK;
 
-        ierr = VecDestroy(&tempSEQ);                                         CHK;
+        ierr = VecDestroy(&tempSEQ); CHK;
     }
-    MPI_Barrier(globalCpuWorld);
+    ierr = MPI_Barrier(globalCpuWorld); CHK;
 
-    return 0;
-}
-
-
-int AmgXSolver::destroyLocalA(const Mat &A, Mat &localA)
-{
-    PetscErrorCode      ierr;
-    MatType             type;
-
-    // Get the Mat type
-    ierr = MatGetType(A, &type);                                             CHK;
-
-    // Check whether the Mat type is supported
-    if (std::strcmp(type, MATSEQAIJ) == 0)
-    {
-        localA = nullptr;
-    }
-    else if (std::strcmp(type, MATMPIAIJ) == 0)
-    {
-        ierr = MatDestroy(&localA);                                          CHK;
-    }
-
-    return 0;
-}
-
-
-int AmgXSolver::getLocalMatRawData(Mat &localA, PetscInt &localN,
-        std::vector<PetscInt> &row, std::vector<Petsc64bitInt> &col,
-        std::vector<PetscScalar> &data)
-{
-    PetscErrorCode      ierr;
-    PetscInt            tempN;
-    const PetscInt      *rawCol, 
-                        *rawRow;
-    PetscScalar         *rawData;
-    PetscBool           done;
-
-    ierr = MatGetRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
-            &tempN, &rawRow, &rawCol, &done);                                CHK;
-
-    if (! done)
-    {
-        std::cerr << "MatGetRowIJ did not work!" << std::endl;
-        exit(0);
-    }
-
-    ierr = MatSeqAIJGetArray(localA, &rawData);                              CHK;
-
-    localN = tempN;
-
-    col.assign(rawCol, rawCol+rawRow[localN]);
-    row.assign(rawRow, rawRow+localN+1);
-    data.assign(rawData, rawData+rawRow[localN]);
-
-
-    ierr = MatRestoreRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
-            &tempN, &rawRow, &rawCol, &done);                                CHK;
-
-    // check whether MatRestoreRowIJ worked
-    if (! done)
-    {
-        std::cerr << "MatRestoreRowIJ did not work!" << std::endl;
-        exit(0);
-    }
-
-    ierr = MatSeqAIJRestoreArray(localA, &rawData);                          CHK;
-
-    return 0;
-}
-
-
-int AmgXSolver::getVecScatter(const Mat &A1, const Mat &A2, const IS &devIS)
-{
-    PetscErrorCode      ierr;
-
-    Vec                 tempV;
-
-    ierr = MatCreateVecs(A1, nullptr, &tempV);                               CHK;
-    ierr = MatCreateVecs(A2, nullptr, &redistRhs);                           CHK;
-    ierr = MatCreateVecs(A2, nullptr, &redistLhs);                           CHK;
-
-    ierr = VecScatterCreate(tempV, devIS, redistLhs, devIS, &redistScatter); CHK;
-    
-    ierr = VecDestroy(&tempV);                                               CHK;
-
-    return 0;
+    PetscFunctionReturn(0);
 }
