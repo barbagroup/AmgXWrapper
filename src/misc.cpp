@@ -1,5 +1,5 @@
 /**
- * \file misc.inl
+ * \file misc.cpp
  * \brief definition of some member functions of the class AmgXSolver.
  * \author Pi-Yueh Chuang (pychuang@gwu.edu)
  * \date 2016-01-08
@@ -10,7 +10,7 @@
 # include "AmgXSolver.hpp"
 
 
-/** \copydoc AmgXSolver::getMode */
+// definition of AmgXSolver::setMode
 PetscErrorCode AmgXSolver::setMode(const std::string &modeStr)
 {
     PetscFunctionBeginUser;
@@ -36,7 +36,7 @@ PetscErrorCode AmgXSolver::setMode(const std::string &modeStr)
 }
 
 
-/** \copydoc AmgXSolver::getIters */
+// definition of AmgXSolver::getIters
 PetscErrorCode AmgXSolver::getIters(int &iter)
 {
     // only processes using AmgX will try to get # of iterations
@@ -47,7 +47,7 @@ PetscErrorCode AmgXSolver::getIters(int &iter)
 }
 
 
-/** \copydoc AmgXSolver::getResidual */
+// definition of AmgXSolver::getResidual
 PetscErrorCode AmgXSolver::getResidual(const int &iter, double &res)
 {
     // only processes using AmgX will try to get residual

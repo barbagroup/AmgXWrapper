@@ -1,5 +1,5 @@
 /**
- * \file init.inl
+ * \file init.cpp
  * \brief definition of some member functions of the class AmgXSolver.
  * \author Pi-Yueh Chuang (pychuang@gwu.edu)
  * \date 2016-01-08
@@ -13,7 +13,7 @@
 # include "AmgXSolver.hpp"
 
 
-/** \copydoc AmgXSolver::AmgXSolver */
+// definition of AmgXSolver::AmgXSolver
 AmgXSolver::AmgXSolver(const MPI_Comm &comm,
         const std::string &modeStr, const std::string &cfgFile)
 {
@@ -21,14 +21,14 @@ AmgXSolver::AmgXSolver(const MPI_Comm &comm,
 }
 
 
-/** \copydoc AmgXSolver::~AmgXSolver */
+// definition of overload AmgXSolver::~AmgXSolver
 AmgXSolver::~AmgXSolver()
 {
     if (isInitialized) finalize();
 }
 
 
-/** \copydoc AmgXSolver::initialize */
+// definition of AmgXSolver::initialize
 PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
         const std::string &modeStr, const std::string &cfgFile)
 {
@@ -74,7 +74,7 @@ PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
 }
 
 
-/** \copydoc AmgXSolver::initMPIcomms */
+// definition of AmgXSolver::initMPIcomms
 PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
 {
     PetscErrorCode      ierr;
@@ -140,7 +140,7 @@ PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
 }
 
 
-/** \copydoc AmgXSolver::getDeviceCount */
+// definition of AmgXSolver::setDeviceCount
 PetscErrorCode AmgXSolver::setDeviceCount()
 {
     PetscFunctionBeginUser;
@@ -170,7 +170,7 @@ PetscErrorCode AmgXSolver::setDeviceCount()
 }
 
 
-/** \copydoc AmgXSolver::setDeviceIDs */
+// definition of AmgXSolver::setDeviceIDs
 PetscErrorCode AmgXSolver::setDeviceIDs()
 {
     PetscFunctionBeginUser;
@@ -213,7 +213,7 @@ PetscErrorCode AmgXSolver::setDeviceIDs()
 }
 
 
-/** \copydic AmgXSolver::initAmgX */
+// definition of AmgXSolver::initAmgX
 PetscErrorCode AmgXSolver::initAmgX(const std::string &cfgFile)
 {
     PetscFunctionBeginUser;
@@ -262,7 +262,7 @@ PetscErrorCode AmgXSolver::initAmgX(const std::string &cfgFile)
 }
 
 
-/** \copydoc AmgXSolver::finalize */
+// definition of AmgXSolver::finalize
 PetscErrorCode AmgXSolver::finalize()
 {
     PetscErrorCode      ierr;

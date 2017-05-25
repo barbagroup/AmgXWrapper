@@ -159,6 +159,26 @@ ENDIF()
 
 MESSAGE("-- Finding AmgX - Success")
 
+
+# =====================================================================
+# Doxygen
+# =====================================================================
+
+MESSAGE("")
+MESSAGE("-- Finding Doxygen")
+
+FIND_PACKAGE(Doxygen)
+
+IF (DOXYGEN_FOUND)
+    MESSAGE("-- Finding Doxygen - Success")
+
+    SET(DOXYGEN_INPUT ${CMAKE_SOURCE_DIR}/doc/Doxyfile)
+    SET(DOXYGEN_OUTPUT ${PROJECT_BINARY_DIR}/doc)
+    FILE(MAKE_DIRECTORY ${DOXYGEN_OUTPUT})
+ELSE()
+    MESSAGE("-- Finding Doxygen - Failed.")
+ENDIF()
+
 # =====================================================================
 # Targets
 # =====================================================================
@@ -192,12 +212,23 @@ ADD_CUSTOM_COMMAND(
     COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/include
     COMMAND ${CMAKE_COMMAND} -E copy ${SRC}/AmgXSolver.hpp ${PROJECT_BINARY_DIR}/include)
 
+# target doc
+IF (DOXYGEN_FOUND)
+    ADD_CUSTOM_TARGET(doc
+        COMMAND ${CMAKE_COMMAND} -E echo "Building API Documentation..."
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_INPUT}
+        COMMAND ${CMAKE_COMMAND} -E echo "Done."
+        WORKING_DIRECTORY ${PROJECT_BINARY_DIR})
+ENDIF()
+
+# installation
 INSTALL(TARGETS AmgXWrapper
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 INSTALL(FILES ${SRC}/AmgXSolver.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+INSTALL(DIRECTORY ${PROJECT_BINARY_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 # =====================================================================
 # Print information
@@ -211,6 +242,7 @@ MESSAGE("")
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 MESSAGE("Build shared library: " ${BUILD_SHARED_LIBS})
+MESSAGE("Doxygen available: " ${DOXYGEN_FOUND})
 MESSAGE("Installation path: " ${CMAKE_INSTALL_PREFIX})
 MESSAGE("")
 

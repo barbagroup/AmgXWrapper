@@ -1,5 +1,5 @@
 /**
- * @file solve.inl
+ * @file solve.cpp
  * @brief definition of member functions regarding to solving in AmgXSolver.
  * @author Pi-Yueh Chuang (pychuang@gwu.edu)
  * @date 2016-01-08
@@ -10,7 +10,7 @@
 # include "AmgXSolver.hpp"
 
 
-/** \copydoc AmgXSolver::solve */
+// definition of AmgXSolver::solve
 PetscErrorCode AmgXSolver::solve(Vec &p, Vec &b)
 {
     PetscFunctionBeginUser;
@@ -53,7 +53,7 @@ PetscErrorCode AmgXSolver::solve(Vec &p, Vec &b)
 }
 
 
-/** \copydoc AmgXSolver::solve_real */
+// definition of AmgXSolver::solve_real
 PetscErrorCode AmgXSolver::solve_real(Vec &p, Vec &b)
 {
     PetscFunctionBeginUser;
@@ -99,4 +99,3 @@ PetscErrorCode AmgXSolver::solve_real(Vec &p, Vec &b)
 
     PetscFunctionReturn(0);
 }
-
