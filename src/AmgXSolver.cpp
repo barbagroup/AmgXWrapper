@@ -27,10 +27,3 @@ int AmgXSolver::count = 0;
  * keep only one instance.
  */
 AMGX_resources_handle AmgXSolver::rsrc = nullptr;
-
-
-// include other source files
-# include "init.inl"
-# include "setA.inl"
-# include "solve.inl"
-# include "misc.inl"

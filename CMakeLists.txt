@@ -164,7 +164,12 @@ MESSAGE("-- Finding AmgX - Success")
 # =====================================================================
 
 SET(SRC ${CMAKE_SOURCE_DIR}/src)
-SET(SOURCE ${SRC}/AmgXSolver.cpp)
+SET(SOURCE
+    ${SRC}/AmgXSolver.cpp
+    ${SRC}/init.cpp
+    ${SRC}/misc.cpp
+    ${SRC}/setA.cpp
+    ${SRC}/solve.cpp)
 
 # target AmgXWrapper
 ADD_LIBRARY(AmgXWrapper ${SOURCE})
