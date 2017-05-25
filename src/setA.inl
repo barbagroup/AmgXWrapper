@@ -13,7 +13,7 @@
 # include "AmgXSolver.hpp"
 
 
-/** \copydoc AmgXSolver::setA. */
+/** \copydoc AmgXSolver::setA */
 PetscErrorCode AmgXSolver::setA(const Mat &A)
 {
     PetscFunctionBeginUser;
@@ -76,7 +76,7 @@ PetscErrorCode AmgXSolver::setA(const Mat &A)
 }
 
 
-/** \copydoc AmgXSolver::getDevIS. */
+/** \copydoc AmgXSolver::getDevIS */
 PetscErrorCode AmgXSolver::getDevIS(const Mat &A, IS &devIS)
 {
     PetscFunctionBeginUser;
@@ -107,7 +107,7 @@ PetscErrorCode AmgXSolver::getDevIS(const Mat &A, IS &devIS)
 }
 
 
-/** \copydoc AmgXSolver::getLocalA. */
+/** \copydoc AmgXSolver::getLocalA */
 PetscErrorCode AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
 {
     PetscFunctionBeginUser;
@@ -154,7 +154,7 @@ PetscErrorCode AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
 }
 
 
-/** \copydoc AmgXSolver::redistMat. */
+/** \copydoc AmgXSolver::redistMat */
 PetscErrorCode AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
 {
     PetscFunctionBeginUser;
@@ -186,7 +186,7 @@ PetscErrorCode AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
 }
 
 
-/** \copydoc AmgXSolver::getVecScatter. */
+/** \copydoc AmgXSolver::getVecScatter */
 PetscErrorCode AmgXSolver::getVecScatter(
         const Mat &A1, const Mat &A2, const IS &devIS)
 {
@@ -210,7 +210,7 @@ PetscErrorCode AmgXSolver::getVecScatter(
 }
 
 
-/** \copydoc AmgXSolver::getLocalMatRawData. */
+/** \copydoc AmgXSolver::getLocalMatRawData */
 PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
         PetscInt &localN, std::vector<PetscInt> &row,
         std::vector<Petsc64bitInt> &col, std::vector<PetscScalar> &data)
@@ -259,7 +259,7 @@ PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
 }
 
 
-/** \copydoc AmgXSolver::destroyLocalA. */
+/** \copydoc AmgXSolver::destroyLocalA */
 PetscErrorCode AmgXSolver::destroyLocalA(const Mat &A, Mat &localA)
 {
     PetscFunctionBeginUser;
@@ -286,7 +286,7 @@ PetscErrorCode AmgXSolver::destroyLocalA(const Mat &A, Mat &localA)
 }
 
 
-/** \copydoc AmgXSolver::getPartVec. */
+/** \copydoc AmgXSolver::getPartVec */
 PetscErrorCode AmgXSolver::getPartVec(
         const IS &devIS, const PetscInt &N, std::vector<PetscInt> &partVec)
 {

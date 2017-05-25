@@ -10,7 +10,7 @@
 # include "AmgXSolver.hpp"
 
 
-/** \copydoc AmgXSolver::solve. */
+/** \copydoc AmgXSolver::solve */
 PetscErrorCode AmgXSolver::solve(Vec &p, Vec &b)
 {
     PetscFunctionBeginUser;
@@ -53,7 +53,7 @@ PetscErrorCode AmgXSolver::solve(Vec &p, Vec &b)
 }
 
 
-/** \copydoc AmgXSolver::solve_real. */
+/** \copydoc AmgXSolver::solve_real */
 PetscErrorCode AmgXSolver::solve_real(Vec &p, Vec &b)
 {
     PetscFunctionBeginUser;

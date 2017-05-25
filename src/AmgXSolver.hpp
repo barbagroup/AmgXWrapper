@@ -43,11 +43,11 @@ class AmgXSolver
          * \brief construct a AmgXSolver instance.
          *
          * \param comm [in] MPI communicator.
-         * \param mode [in] a string, target mode of AmgX (e.g., dDDI).
+         * \param modeStr [in] a string, target mode of AmgX (e.g., dDDI).
          * \param cfgFile [in] a string indicate the path to AmgX configuration file.
          */
         AmgXSolver(const MPI_Comm &comm, 
-                const std::string &mode, const std::string &cfgFile);
+                const std::string &modeStr, const std::string &cfgFile);
 
 
         /** \brief destructor. */
@@ -58,13 +58,13 @@ class AmgXSolver
          * \brief initialize a AmgXSolver instance.
          *
          * \param comm [in] MPI communicator.
-         * \param mode [in] a string, target mode of AmgX (e.g., dDDI).
+         * \param modeStr [in] a string, target mode of AmgX (e.g., dDDI).
          * \param cfgFile [in] a string indicate the path to AmgX configuration file.
          *
          * \return PetscErrorCode.
          */
         PetscErrorCode initialize(const MPI_Comm &comm,
-                const std::string &mode, const std::string &cfgFile);
+                const std::string &modeStr, const std::string &cfgFile);
 
 
         /**
@@ -244,11 +244,11 @@ class AmgXSolver
          *
          * Available modes are: dDDI, dDFI, dFFI, hDDI, hDFI, hFFI.
          *
-         * \param mode [in] a `std::string`.
+         * \param modeStr [in] a `std::string`.
          *
          * \return PetscErrorCode.
          */
-        PetscErrorCode setMode(const std::string &mode);
+        PetscErrorCode setMode(const std::string &modeStr);
 
 
         /**

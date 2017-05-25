@@ -13,25 +13,24 @@
 # include "AmgXSolver.hpp"
 
 
-/** \copydoc AmgXSolver::AmgXSolver(const MPI_Comm &,
-        const std::string &, const std::string &). */
+/** \copydoc AmgXSolver::AmgXSolver */
 AmgXSolver::AmgXSolver(const MPI_Comm &comm,
-        const std::string &_mode, const std::string &cfgFile)
+        const std::string &modeStr, const std::string &cfgFile)
 {
-    initialize(comm, _mode, cfgFile);
+    initialize(comm, modeStr, cfgFile);
 }
 
 
-/** \copydoc AmgXSolver::~AmgXSolver(). */
+/** \copydoc AmgXSolver::~AmgXSolver */
 AmgXSolver::~AmgXSolver()
 {
     if (isInitialized) finalize();
 }
 
 
-/** \copydoc AmgXSolver::initialize. */
+/** \copydoc AmgXSolver::initialize */
 PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
-        const std::string &_mode, const std::string &cfgFile)
+        const std::string &modeStr, const std::string &cfgFile)
 {
     PetscErrorCode      ierr;
 
@@ -57,7 +56,7 @@ PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
     nodeName = name;
 
     // get the mode of AmgX solver
-    ierr = setMode(_mode); CHK;
+    ierr = setMode(modeStr); CHK;
 
     // initialize communicators and corresponding information
     ierr = initMPIcomms(comm); CHK;
@@ -75,7 +74,7 @@ PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
 }
 
 
-/** \copydoc AmgXSolver::initMPIcomms. */
+/** \copydoc AmgXSolver::initMPIcomms */
 PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
 {
     PetscErrorCode      ierr;
@@ -141,7 +140,7 @@ PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
 }
 
 
-/** \copydoc AmgXSolver::getDeviceCount. */
+/** \copydoc AmgXSolver::getDeviceCount */
 PetscErrorCode AmgXSolver::setDeviceCount()
 {
     PetscFunctionBeginUser;
@@ -171,7 +170,7 @@ PetscErrorCode AmgXSolver::setDeviceCount()
 }
 
 
-/** \copydoc AmgXSolver::setDeviceIDs. */
+/** \copydoc AmgXSolver::setDeviceIDs */
 PetscErrorCode AmgXSolver::setDeviceIDs()
 {
     PetscFunctionBeginUser;
@@ -214,7 +213,7 @@ PetscErrorCode AmgXSolver::setDeviceIDs()
 }
 
 
-/** \copydic AmgXSolver::initAmgX. */
+/** \copydic AmgXSolver::initAmgX */
 PetscErrorCode AmgXSolver::initAmgX(const std::string &cfgFile)
 {
     PetscFunctionBeginUser;
@@ -263,7 +262,7 @@ PetscErrorCode AmgXSolver::initAmgX(const std::string &cfgFile)
 }
 
 
-/** \copydoc AmgXSolver::finalize. */
+/** \copydoc AmgXSolver::finalize */
 PetscErrorCode AmgXSolver::finalize()
 {
     PetscErrorCode      ierr;

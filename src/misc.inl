@@ -1,5 +1,5 @@
 /**
- * \file misc.cpp
+ * \file misc.inl
  * \brief definition of some member functions of the class AmgXSolver.
  * \author Pi-Yueh Chuang (pychuang@gwu.edu)
  * \date 2016-01-08
@@ -10,33 +10,33 @@
 # include "AmgXSolver.hpp"
 
 
-/** \copydoc AmgXSolver::getMode. */
-PetscErrorCode AmgXSolver::setMode(const std::string &_mode)
+/** \copydoc AmgXSolver::getMode */
+PetscErrorCode AmgXSolver::setMode(const std::string &modeStr)
 {
     PetscFunctionBeginUser;
 
-    if (_mode == "hDDI")
+    if (modeStr == "hDDI")
         mode = AMGX_mode_hDDI;
-    else if (_mode == "hDFI")
+    else if (modeStr == "hDFI")
         mode = AMGX_mode_hDFI;
-    else if (_mode == "hFFI")
+    else if (modeStr == "hFFI")
         mode = AMGX_mode_hFFI;
-    else if (_mode == "dDDI")
+    else if (modeStr == "dDDI")
         mode = AMGX_mode_dDDI;
-    else if (_mode == "dDFI")
+    else if (modeStr == "dDFI")
         mode = AMGX_mode_dDFI;
-    else if (_mode == "dFFI")
+    else if (modeStr == "dFFI")
         mode = AMGX_mode_dFFI;
     else
         SETERRQ1(MPI_COMM_WORLD, PETSC_ERR_ARG_WRONG,
                 "%s is not an available mode! Available modes are: "
-                "hDDI, hDFI, hFFI, dDDI, dDFI, dFFI.\n", _mode.c_str());
+                "hDDI, hDFI, hFFI, dDDI, dDFI, dFFI.\n", modeStr.c_str());
 
     PetscFunctionReturn(0);
 }
 
 
-/** \copydoc AmgXSolver::getIters. */
+/** \copydoc AmgXSolver::getIters */
 PetscErrorCode AmgXSolver::getIters(int &iter)
 {
     // only processes using AmgX will try to get # of iterations
@@ -47,7 +47,7 @@ PetscErrorCode AmgXSolver::getIters(int &iter)
 }
 
 
-/** \copydoc AmgXSolver::getResidual. */
+/** \copydoc AmgXSolver::getResidual */
 PetscErrorCode AmgXSolver::getResidual(const int &iter, double &res)
 {
     // only processes using AmgX will try to get residual
