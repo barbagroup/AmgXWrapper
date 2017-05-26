@@ -3,6 +3,11 @@
 
 Using AmgX is simple (and this is what we intended to do!).
 
+**Reminder**: before running your application, make sure your executable binary
+can find necessary library (OpenMPI 1.8, CUDA 6.5, AmgX) and the license file 
+for AmgX during runtime. You can use environmental variable `LM_LICENSE_FILE`
+to indicate the path of the license.
+
 ### Step 1
 
 In your PETSc 
@@ -35,7 +40,7 @@ for matrix and vector entries.
 
 3. `configFile` is a `std::string` indicating the path of AmgX configuration file. 
 Please see AmgX Reference Manual for writing configuration files. For example, 
-[here]("../example/Poisson/configs/AmgX_SolverOptions_Classical.info") 
+[here](../example/Poisson/configs/AmgX_SolverOptions_Classical.info) 
 is a typical solver and preconditioner settings we used in PetIBM simulations.
 
 The return values of all AmgXWrapper functions are `PetscErrorCode`, so you can
