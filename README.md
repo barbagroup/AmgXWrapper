@@ -1,5 +1,8 @@
 # AmgXWrapper
 
+## Overview
+------------
+
 This wrapper simplifies the usage of AmgX when using AmgX together with PETSc.
 Though we currently only support PETSc, we hope this wrapper can work with other libraries in the future.
 
@@ -16,16 +19,18 @@ int main(int argc, char **argv)
 
     // create an instance of the solver wrapper
     AmgXSolver    solver;
-    // initialize the instance
-    solver.initialize(...);    
+    // initialize the instance with communicator, executation mode, and config file
+    solver.initialize(comm, mode, file);    
     // set matrix A. Currently it only accept PETSc AIJ matrix
     solver.setA(A);    
     // solve. x and rhs are PETSc vectors. unkns will be the final result in the end
     solver.solve(unks, rhs);    
     // get number of iterations
-    int         iters = solver.getIters();    
-    // get residual at specific iteration
-    double      res = solver.getResidual(iters);    
+    int         iters;
+    solver.getIters(iters);    
+    // get residual at the last iteration
+    double      res;
+    solver.getResidual(iters, res);    
     // finalization
     solver.finalize();
  
@@ -41,7 +46,16 @@ Note, this wrapper was originally designed for our CFD solver -- **[PetIBM](http
 so it may lack some features for other kinds of PETSc-based applications.
 We are trying to make it more general.
 
-## Update: 
+## Document
+-----------
+
+1. [Dependencies](doc/dependencies.md)
+2. [Build and install](doc/install.md)
+3. [Usage](doc/usage.md)
+4. [Examples](example)
+
+## Update 
+----------
 
 ### 01/08/2016
 
@@ -68,10 +82,13 @@ However, the overall performance is much better comparing to calling AmgX solver
 The redistribution method may be naive, but it's working.
 And we have been satisfied with the performance so far.
 
-## Future work:
+## Future work
+----------------
+
 * Add support of updating entry values of the matrix A that is already on CUDA device.
 * Support other matrix format other than AIJ.
 * Add mechanisms for debugging and error handling.
 
 ## Reference
+-------------
 [1] Chuang, Pi-Yueh; Barba, Lorena A. (2017): Using AmgX to Accelerate PETSc-Based CFD Codes. figshare. [https://doi.org/10.6084/m9.figshare.5018774.v1](https://doi.org/10.6084/m9.figshare.5018774.v1)
