@@ -5,7 +5,20 @@
  * @version beta
  * @date 2015-02-01
  */
-# include "headers.hpp"
+
+
+// PETSc
+# include <petscsys.h>
+# include <petscmat.h>
+# include <petscvec.h>
+# include <petscksp.h>
+
+// AmgXWrapper
+# include <AmgXSolver.hpp>
+
+// headers
+# include "StructArgs.hpp"
+# include "io.hpp"
 
 
 int main(int argc, char **argv)
