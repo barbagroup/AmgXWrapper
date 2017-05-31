@@ -65,24 +65,8 @@ int main(int argc, char **argv)
     // get parameters from command-line arguments
     ierr = args.getArgs(); CHKERRQ(ierr);
 
-
-    // pring case information
-    {
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n"); CHKERRQ(ierr);
-        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "=");
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n"); CHKERRQ(ierr);
-        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "-");
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n"); CHKERRQ(ierr);
-
-        ierr = args.print(); CHKERRQ(ierr);
-
-        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "-");
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n"); CHKERRQ(ierr);
-        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "=");
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n"); CHKERRQ(ierr);
-
-    }
-
+    // print case information
+    ierr = printHeader(args); CHKERRQ(ierr);
 
     // create matrix A and load from file
     ierr = readMat(A, args.matrixFileName, "A"); CHKERRQ(ierr);
@@ -175,22 +159,11 @@ int main(int argc, char **argv)
     }
 
 
-    {
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHKERRQ(ierr);
-        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "=");
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHKERRQ(ierr);
-        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "-");
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                "End of %s\n", args.caseName);                               CHKERRQ(ierr);
-        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "-");
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHKERRQ(ierr);
-        for(int i=0; i<72; ++i) ierr = PetscPrintf(PETSC_COMM_WORLD, "=");
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\n");                          CHKERRQ(ierr);
-    }
+    // printer a footer
+    ierr = printFooter(args); CHKERRQ(ierr);
 
     // finalize PETSc
-    ierr = PetscFinalize();                                                  CHKERRQ(ierr);
+    ierr = PetscFinalize(); CHKERRQ(ierr);
 
     return 0;
 }

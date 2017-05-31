@@ -14,6 +14,10 @@
 # include <petscvec.h>
 
 
+// StructArgs
+# include "StructArgs.hpp"
+
+
 /**
  * \brief read a matrix from a PETSc binary file.
  *
@@ -36,3 +40,23 @@ PetscErrorCode readMat(Mat &mat, char *FN, const char *name);
  * \return PetscErrorCode.
  */
 PetscErrorCode readVec(Vec &vec, char *FN, const char *name);
+
+
+/**
+ * \brief print a header containing case info.
+ *
+ * \param args [in] a StructArgs instance.
+ *
+ * \return PetscErrorCode.
+ */
+PetscErrorCode printHeader(StructArgs &args);
+
+
+/**
+ * \brief print a footer.
+ *
+ * \param args [in] a StructArgs instance.
+ *
+ * \return PetscErrorCode.
+ */
+PetscErrorCode printFooter(StructArgs &args);
