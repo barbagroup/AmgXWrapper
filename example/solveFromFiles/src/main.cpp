@@ -23,6 +23,7 @@
 # include "StructArgs.hpp"
 # include "io.hpp"
 # include "createKSP.hpp"
+# include "solve.hpp"
 
 
 int main(int argc, char **argv)
@@ -32,7 +33,7 @@ int main(int argc, char **argv)
 
     Vec                 lhs,    // unknowns
                         rhs,    // RHS
-                        u_exact,// exact solution
+                        exact,  // exact solution
                         err;    // errors
 
     Mat                 A;      // coefficient matrix
@@ -78,8 +79,8 @@ int main(int argc, char **argv)
     // create vector rhs and load from file
     ierr = readVec(rhs, args.rhsFileName, "RHS"); CHKERRQ(ierr);
 
-    // create vector u_exact and load from file
-    ierr = readVec(u_exact, args.exactFileName, "exact solution"); CHKERRQ(ierr);
+    // create vector exact and load from file
+    ierr = readVec(exact, args.exactFileName, "exact solution"); CHKERRQ(ierr);
 
 
     // create vectors based on the matrix and set to zeros
@@ -108,32 +109,31 @@ int main(int argc, char **argv)
     {
         ierr = createKSP(ksp, A, args.cfgFileName); CHKERRQ(ierr);
 
-        ierr = solve(ksp, A, lhs, rhs, u_exact, err, 
-                args, warmUpEvent, solvingEvent);                            CHKERRQ(ierr);
+        ierr = solve(ksp, A, lhs, rhs, exact, err, 
+                args, warmUpEvent, solvingEvent); CHKERRQ(ierr);
 
         // destroy KSP
-        ierr = KSPDestroy(&ksp);                                             CHKERRQ(ierr);
+        ierr = KSPDestroy(&ksp); CHKERRQ(ierr);
 
     }
     else // AmgX mode
     {
-        if (std::strcmp(args.mode, "AmgX") == 0) // AmgX GPU mode
+        if (std::strcmp(args.mode, "AmgX_GPU") == 0) // AmgX GPU mode
             amgx.initialize(PETSC_COMM_WORLD, "dDDI", args.cfgFileName);
-        else // AmgX CPU mode (not yet implemented in the wrapper) and other mode
-        {   
-            std::cerr << "Invalid mode." << std::endl;
-            exit(EXIT_FAILURE);
-        }
+        if (std::strcmp(args.mode, "AmgX_CPU") == 0) // AmgX CPU mode
+            amgx.initialize(PETSC_COMM_WORLD, "hDDI", args.cfgFileName);
+        else SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_UNKNOWN_TYPE,
+                    "Invalid mode: %s\n", args.mode); CHKERRQ(ierr);
 
 
-        ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHKERRQ(ierr);
-        amgx.setA(A);
+        ierr = MPI_Barrier(PETSC_COMM_WORLD); CHKERRQ(ierr);
+        ierr = amgx.setA(A); CHKERRQ(ierr);
 
-        ierr = solve(amgx, A, lhs, rhs, u_exact, err, 
-                args, warmUpEvent, solvingEvent);                            CHKERRQ(ierr);
+        ierr = solve(amgx, A, lhs, rhs, exact, err, 
+                args, warmUpEvent, solvingEvent); CHKERRQ(ierr);
 
         // destroy solver
-        ierr = amgx.finalize();                                              CHKERRQ(ierr);
+        ierr = amgx.finalize(); CHKERRQ(ierr);
 
     }
 
@@ -146,20 +146,19 @@ int main(int argc, char **argv)
         std::strcat(args.optFileName ,".log");
 
         ierr = PetscViewerASCIIOpen(
-                PETSC_COMM_WORLD, args.optFileName, &viewer);                CHKERRQ(ierr);
-        ierr = PetscLogView(viewer);                                         CHKERRQ(ierr);
-        ierr = PetscViewerDestroy(&viewer);                                  CHKERRQ(ierr);
+                PETSC_COMM_WORLD, args.optFileName, &viewer); CHKERRQ(ierr);
+        ierr = PetscLogView(viewer); CHKERRQ(ierr);
+        ierr = PetscViewerDestroy(&viewer); CHKERRQ(ierr);
     }
     
 
     // destroy vectors, matrix, dmda
     {
-        ierr = VecDestroy(&lhs);                                               CHKERRQ(ierr);
-        ierr = VecDestroy(&rhs);                                             CHKERRQ(ierr);
-        ierr = VecDestroy(&u_exact);                                         CHKERRQ(ierr);
-        ierr = VecDestroy(&err);                                             CHKERRQ(ierr);
-
-        ierr = MatDestroy(&A);                                               CHKERRQ(ierr);
+        ierr = VecDestroy(&lhs); CHKERRQ(ierr);
+        ierr = VecDestroy(&rhs); CHKERRQ(ierr);
+        ierr = VecDestroy(&exact); CHKERRQ(ierr);
+        ierr = VecDestroy(&err); CHKERRQ(ierr);
+        ierr = MatDestroy(&A); CHKERRQ(ierr);
     }
 
 

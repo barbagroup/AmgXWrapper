@@ -1,16 +1,23 @@
 /**
  * @file solve.cpp
- * @brief functions of solving behavior
+ * @brief functions of solve.
  * @author Pi-Yueh Chuang (pychuang@gwu.edu)
- * @version alpha
  * @date 2016-02-04
  */
-# include "headers.hpp"
 
 
-PetscErrorCode solve(KSP &ksp, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
+// PETSc
+# include <petsctime.h>
+
+// prototypes
+# include "solve.hpp"
+
+
+// definition of solve (KSP version)
+PetscErrorCode solve(KSP &ksp, Mat &A, Vec &lhs, Vec &rhs, Vec &exact, Vec &err,
         StructArgs &args, PetscLogEvent &warmUpEvent, PetscLogEvent &solvingEvent)
 {
+    PetscFunctionBeginUser;
 
     PetscErrorCode          ierr;
 
@@ -19,110 +26,100 @@ PetscErrorCode solve(KSP &ksp, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
                             avgTime;
 
 
-    auto                    postSolving =
-        [&ierr, &ksp, &u, &u_exact, &err] (PetscLogDouble time) -> PetscErrorCode
-        {
-            KSPConvergedReason      reason; // to store the KSP convergence reason
+    // tasks that will be carried out after each solving
+    auto postSolving = [&ierr, &ksp, &lhs, &exact, &err](PetscLogDouble time)->PetscErrorCode
+    {
+        PetscFunctionBeginUser;
 
-            PetscInt                Niters; // iterations used to converge
+        KSPConvergedReason      reason; // to store the KSP convergence reason
 
-            PetscScalar               norm2,  // L2 norm of solution errors
-                                    normM;  // infinity norm of solution errors
+        PetscInt                Niters; // iterations used to converge
 
-            ierr = KSPGetConvergedReason(ksp, &reason);                      CHK;
+        PetscScalar             norm2,  // L2 norm of solution errors
+                                normM;  // infinity norm of solution errors
 
-            if (reason < 0)
-            {
-                ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                        "\nDiverged: %d\n", reason);                         CHK;
-                exit(EXIT_FAILURE);
-            }
+        ierr = KSPGetConvergedReason(ksp, &reason); CHKERRQ(ierr);
 
-            ierr = KSPGetIterationNumber(ksp, &Niters);                      CHK;
+        if (reason < 0) SETERRQ1(PETSC_COMM_WORLD,
+                PETSC_ERR_CONV_FAILED, "Diverger reason: %d\n", reason);
 
-            // calculate norms of errors
-            ierr = VecCopy(u, err);                                          CHK;
-            ierr = VecAXPY(err, -1.0, u_exact);                              CHK;
-            ierr = VecNorm(err, NORM_2, &norm2);                             CHK;
-            ierr = VecNorm(err, NORM_INFINITY, &normM);                      CHK;
+        ierr = KSPGetIterationNumber(ksp, &Niters); CHKERRQ(ierr);
 
-            // print infromation
-            ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                    "\tSolve Time: %f\n", time);                  CHK;
-            ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                    "\tL2-Norm: %g\n", (double)norm2);                       CHK;
-            ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                    "\tMax-Norm: %g\n", (double)normM);                      CHK;
-            ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                    "\tIterations %D\n", Niters);                            CHK; 
+        // calculate norms of errors
+        ierr = VecCopy(lhs, err); CHKERRQ(ierr);
+        ierr = VecAXPY(err, -1.0, exact); CHKERRQ(ierr);
+        ierr = VecNorm(err, NORM_2, &norm2); CHKERRQ(ierr);
+        ierr = VecNorm(err, NORM_INFINITY, &normM); CHKERRQ(ierr);
 
-            return 0;
-        };
+        // print infromation
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tSolve Time: %f\n", time); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tL2-Norm: %g\n", (double)norm2); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tMax-Norm: %g\n", (double)normM); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tIterations %D\n", Niters); CHKERRQ(ierr); 
+
+        PetscFunctionReturn(0);
+    };
 
 
-    auto                    solving = 
-        [&ierr, &A, &u, &rhs, &ksp, &postSolving] (PetscLogEvent &event) -> PetscLogDouble
-        {
-            PetscLogDouble          bgTime, 
-                                    edTime;
+    // tasks for soving with performance profiling
+    auto solving = [&ierr, &A, &lhs, &rhs, &ksp, &postSolving](PetscLogEvent &event)->PetscLogDouble
+    {
+        PetscLogDouble          bgTime, 
+                                edTime;
 
-            // set all entries as zeros in the vector of unknows
-            ierr = MPI_Barrier(PETSC_COMM_WORLD);                            CHK;
-            ierr = VecSet(u, 0.0);                                           CHK;
+        // set all entries as zeros in the vector of unknows
+        ierr = VecSet(lhs, 0.0); CHKERRQ(ierr);
 
-            // beging logging this solving event
-            ierr = PetscLogEventBegin(event, 
-                (PetscObject) A, (PetscObject) rhs, (PetscObject) u, 0);     CHK;
+        // begin logging this solving event
+        ierr = PetscLogEventBegin(event, (PetscObject) A,
+                (PetscObject) rhs, (PetscObject) lhs, 0); CHKERRQ(ierr);
 
-            // obtain the begining time 
-            ierr = PetscTime(&bgTime);                                       CHK;
+        // obtain the begining time 
+        ierr = PetscTime(&bgTime); CHKERRQ(ierr);
 
-            // solve
-            ierr = KSPSolve(ksp, rhs, u);                                    CHK;
+        // solve
+        ierr = KSPSolve(ksp, rhs, lhs); CHKERRQ(ierr);
 
-            // obtain the ending time 
-            ierr = PetscTime(&edTime);                                       CHK;
+        // obtain the ending time 
+        ierr = PetscTime(&edTime); CHKERRQ(ierr);
 
-            // end logging this solving event
-            ierr = PetscLogEventEnd(event, 
-                (PetscObject) A, (PetscObject) rhs, (PetscObject) u, 0);     CHK;
+        // end logging this solving event
+        ierr = PetscLogEventEnd(event, (PetscObject) A,
+                (PetscObject) rhs, (PetscObject) lhs, 0); CHKERRQ(ierr);
 
-            ierr = postSolving(edTime - bgTime);                             CHK;
+        // post-solving tasks
+        ierr = postSolving(edTime - bgTime); CHKERRQ(ierr);
 
-            return edTime - bgTime;
-        };
-
-
+        return edTime - bgTime;
+    };
 
 
     // start a warm-up cycle
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Warm-up cycle ... \n");            CHK;
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Warm-up cycle ... \n"); CHKERRQ(ierr);
     solving(warmUpEvent);
 
 
     // start `Nruns` runs to get averaged solving time
     for(int i=0; i<args.Nruns; ++i)
     {
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "Run # %d ... \n", i);          CHK;
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "Run # %d ... \n", i); CHKERRQ(ierr);
         totalTime += solving(solvingEvent);
     }
 
     avgTime = totalTime / (double) args.Nruns;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,
-            "\nThe averaged solving time is: %f\n", avgTime);                  CHK;
+            "\nThe averaged solving time is: %f\n", avgTime); CHKERRQ(ierr);
 
-    // destroy KSP
-    ierr = KSPDestroy(&ksp);                                                 CHK;
-
-
-    return 0;
+    PetscFunctionReturn(0);
 }
 
 
-PetscErrorCode solve(AmgXSolver &amgx, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, Vec &err,
+// definition of solve (AmgX version)
+PetscErrorCode solve(AmgXSolver &amgx, Mat &A, Vec &lhs, Vec &rhs, Vec &exact, Vec &err,
         StructArgs &args, PetscLogEvent &warmUpEvent, PetscLogEvent &solvingEvent)
 {
+    PetscFunctionBeginUser;
 
     PetscErrorCode          ierr;
 
@@ -131,86 +128,82 @@ PetscErrorCode solve(AmgXSolver &amgx, Mat &A, Vec &u, Vec &rhs, Vec &u_exact, V
                             avgTime;
 
 
-    auto                    postSolving =
-        [&ierr, &amgx, &u, &u_exact, &err] (PetscLogDouble time) -> PetscErrorCode
-        {
-            PetscInt                Niters; // iterations used to converge
+    // collection of post-solving tasks
+    auto postSolving = [&ierr, &amgx, &lhs, &exact, &err](PetscLogDouble time)->PetscErrorCode
+    {
+        PetscFunctionBeginUser;
 
-            PetscScalar               norm2,  // L2 norm of solution errors
-                                    normM;  // infinity norm of solution errors
+        PetscInt                Niters; // iterations used to converge
 
-            Niters = amgx.getIters();
+        PetscScalar             norm2,  // L2 norm of solution errors
+                                normM;  // infinity norm of solution errors
 
-            // calculate norms of errors
-            ierr = VecCopy(u, err);                                          CHK;
-            ierr = VecAXPY(err, -1.0, u_exact);                              CHK;
-            ierr = VecNorm(err, NORM_2, &norm2);                             CHK;
-            ierr = VecNorm(err, NORM_INFINITY, &normM);                      CHK;
+        ierr = amgx.getIters(Niters); CHKERRQ(ierr);
 
-            // print infromation
-            ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                    "\tSolve Time: %f\n", time);                  CHK;
-            ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                    "\tL2-Norm: %g\n", (double)norm2);                       CHK;
-            ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                    "\tMax-Norm: %g\n", (double)normM);                      CHK;
-            ierr = PetscPrintf(PETSC_COMM_WORLD, 
-                    "\tIterations %D\n", Niters);                            CHK; 
+        // calculate norms of errors
+        ierr = VecCopy(lhs, err); CHKERRQ(ierr);
+        ierr = VecAXPY(err, -1.0, exact); CHKERRQ(ierr);
+        ierr = VecNorm(err, NORM_2, &norm2); CHKERRQ(ierr);
+        ierr = VecNorm(err, NORM_INFINITY, &normM); CHKERRQ(ierr);
 
-            return 0;
-        };
+        // print infromation
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tSolve Time: %f\n", time); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tL2-Norm: %g\n", (double)norm2); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tMax-Norm: %g\n", (double)normM); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tIterations %D\n", Niters); CHKERRQ(ierr); 
+
+        PetscFunctionReturn(0);
+    };
 
 
-    auto                    solving = 
-        [&ierr, &A, &u, &rhs, &amgx, &postSolving] (PetscLogEvent &event) -> PetscLogDouble
-        {
-            PetscLogDouble          bgTime, 
-                                    edTime;
+    // solving tasks with performance profiling
+    auto solving = [&ierr, &A, &lhs, &rhs, &amgx, &postSolving](PetscLogEvent &event)->PetscLogDouble
+    {
+        PetscLogDouble          bgTime, 
+                                edTime;
 
-            // set all entries as zeros in the vector of unknows
-            ierr = MPI_Barrier(PETSC_COMM_WORLD);                            CHK;
-            ierr = VecSet(u, 0.0);                                           CHK;
+        // set all entries as zeros in the vector of unknows
+        ierr = VecSet(lhs, 0.0); CHKERRQ(ierr);
 
-            // beging logging this solving event
-            ierr = PetscLogEventBegin(event, 
-                (PetscObject) A, (PetscObject) rhs, (PetscObject) u, 0);     CHK;
+        // beging logging this solving event
+        ierr = PetscLogEventBegin(event, (PetscObject) A,
+                (PetscObject) rhs, (PetscObject) lhs, 0); CHKERRQ(ierr);
 
-            // obtain the begining time 
-            ierr = PetscTime(&bgTime);                                       CHK;
+        // obtain the begining time 
+        ierr = PetscTime(&bgTime); CHKERRQ(ierr);
 
-            // solve
-            ierr = amgx.solve(u, rhs);                                       CHK;
+        // solve
+        ierr = amgx.solve(lhs, rhs); CHKERRQ(ierr);
 
-            // obtain the ending time 
-            ierr = PetscTime(&edTime);                                       CHK;
+        // obtain the ending time 
+        ierr = PetscTime(&edTime); CHKERRQ(ierr);
 
-            // end logging this solving event
-            ierr = PetscLogEventEnd(event, 
-                (PetscObject) A, (PetscObject) rhs, (PetscObject) u, 0);     CHK;
+        // end logging this solving event
+        ierr = PetscLogEventEnd(event, (PetscObject) A,
+                (PetscObject) rhs, (PetscObject) lhs, 0); CHKERRQ(ierr);
 
-            ierr = postSolving(edTime - bgTime);                             CHK;
+        ierr = postSolving(edTime - bgTime); CHKERRQ(ierr);
 
-            return edTime - bgTime;
-        };
+        return edTime - bgTime;
+    };
 
 
     // start a warm-up cycle
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Warm-up cycle ... \n");            CHK;
+    ierr = PetscPrintf(PETSC_COMM_WORLD, "Warm-up cycle ... \n"); CHKERRQ(ierr);
     solving(warmUpEvent);
 
 
     // start `Nruns` runs to get averaged solving time
     for(int i=0; i<args.Nruns; ++i)
     {
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "Run # %d ... \n", i);          CHK;
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "Run # %d ... \n", i); CHKERRQ(ierr);
         totalTime += solving(solvingEvent);
     }
 
     avgTime = totalTime / (double) args.Nruns;
 
     ierr = PetscPrintf(PETSC_COMM_WORLD,
-            "\nThe averaged solving time is: %f\n", avgTime);                  CHK;
+            "\nThe averaged solving time is: %f\n", avgTime); CHKERRQ(ierr);
 
-
-    return 0;
+    PetscFunctionReturn(0);
 }
