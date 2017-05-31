@@ -7,6 +7,9 @@
  */
 
 
+// STL
+# include <cstring>
+
 // PETSc
 # include <petscsys.h>
 # include <petscmat.h>
@@ -19,6 +22,7 @@
 // headers
 # include "StructArgs.hpp"
 # include "io.hpp"
+# include "createKSP.hpp"
 
 
 int main(int argc, char **argv)
@@ -26,7 +30,7 @@ int main(int argc, char **argv)
     StructArgs          args;   // a structure containing CMD arguments
 
 
-    Vec                 u,      // unknowns
+    Vec                 lhs,    // unknowns
                         rhs,    // RHS
                         u_exact,// exact solution
                         err;    // errors
@@ -78,33 +82,33 @@ int main(int argc, char **argv)
     ierr = readVec(u_exact, args.exactFileName, "exact solution"); CHKERRQ(ierr);
 
 
-    // create vectors u and set to zeros
+    // create vectors based on the matrix and set to zeros
     {
-        ierr = VecDuplicate(rhs, &u);                                        CHKERRQ(ierr);
-        ierr = PetscObjectSetName((PetscObject) u, "unknowns");              CHKERRQ(ierr);
-        ierr = VecSet(u, 0.0);                                               CHKERRQ(ierr);
+        ierr = MatCreateVecs(A, &lhs, nullptr); CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) lhs, "unknowns"); CHKERRQ(ierr);
+        ierr = VecSet(lhs, 0.0); CHKERRQ(ierr);
     }
 
     // create vectors err and set to zeros
     {
-        ierr = VecDuplicate(rhs, &err);                                      CHKERRQ(ierr);
-        ierr = PetscObjectSetName((PetscObject) err, "errors");              CHKERRQ(ierr);
-        ierr = VecSet(err, 0.0);                                             CHKERRQ(ierr);
+        ierr = VecDuplicate(lhs, &err); CHKERRQ(ierr);
+        ierr = PetscObjectSetName((PetscObject) err, "errors"); CHKERRQ(ierr);
+        ierr = VecSet(err, 0.0); CHKERRQ(ierr);
     }
 
 
     // register a PETSc event for warm-up and solving
-    ierr = PetscClassIdRegister("SolvingClass", &solvingID);                 CHKERRQ(ierr);
-    ierr = PetscClassIdRegister("WarmUpClass", &warmUpID);                   CHKERRQ(ierr);
-    ierr = PetscLogEventRegister("Solving", solvingID, &solvingEvent);       CHKERRQ(ierr);
-    ierr = PetscLogEventRegister("WarmUp", warmUpID, &warmUpEvent);          CHKERRQ(ierr);
+    ierr = PetscClassIdRegister("SolvingClass", &solvingID); CHKERRQ(ierr);
+    ierr = PetscClassIdRegister("WarmUpClass", &warmUpID); CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("Solving", solvingID, &solvingEvent); CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("WarmUp", warmUpID, &warmUpEvent); CHKERRQ(ierr);
 
     // create a solver and solve based whether it is AmgX or PETSc
     if (std::strcmp(args.mode, "PETSc") == 0) // PETSc mode
     {
-        ierr = createKSP(ksp, A, args.cfgFileName);                          CHKERRQ(ierr);
+        ierr = createKSP(ksp, A, args.cfgFileName); CHKERRQ(ierr);
 
-        ierr = solve(ksp, A, u, rhs, u_exact, err, 
+        ierr = solve(ksp, A, lhs, rhs, u_exact, err, 
                 args, warmUpEvent, solvingEvent);                            CHKERRQ(ierr);
 
         // destroy KSP
@@ -125,7 +129,7 @@ int main(int argc, char **argv)
         ierr = MPI_Barrier(PETSC_COMM_WORLD);                                CHKERRQ(ierr);
         amgx.setA(A);
 
-        ierr = solve(amgx, A, u, rhs, u_exact, err, 
+        ierr = solve(amgx, A, lhs, rhs, u_exact, err, 
                 args, warmUpEvent, solvingEvent);                            CHKERRQ(ierr);
 
         // destroy solver
@@ -150,7 +154,7 @@ int main(int argc, char **argv)
 
     // destroy vectors, matrix, dmda
     {
-        ierr = VecDestroy(&u);                                               CHKERRQ(ierr);
+        ierr = VecDestroy(&lhs);                                               CHKERRQ(ierr);
         ierr = VecDestroy(&rhs);                                             CHKERRQ(ierr);
         ierr = VecDestroy(&u_exact);                                         CHKERRQ(ierr);
         ierr = VecDestroy(&err);                                             CHKERRQ(ierr);
