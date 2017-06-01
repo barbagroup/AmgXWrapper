@@ -5,11 +5,10 @@
 * [CUDA 6.5](https://developer.nvidia.com/cuda-toolkit-65)
 * [PETSc](https://www.mcs.anl.gov/petsc/) (versions above 3.5 has been tested)
 * [AmgX](https://developer.nvidia.com/amgx)
+  (you can download from [here](https://developer.nvidia.com/rdp/assets/amgx-trial-download))
 * [Doxygen](http://www.stack.nl/~dimitri/doxygen/) (optional)
 
-Currently, NVIDIA AmgX (the one downloaded from 
-[here](https://developer.nvidia.com/rdp/assets/amgx-trial-download))
-only provides compiled binary library. The binary library
+Currently, NVIDIA AmgX only provides compiled binary library. The binary library
 seems to be compiled with OpenMPI 1.8 and CUDA 6.5 before being released by NVIDIA, 
 so the CUDA version is required to be exactly 6.5. However, for OnpeMPI, we have
 tried version 1.10, and it worked. The only one thing of using OpenMPI 1.10 is 
