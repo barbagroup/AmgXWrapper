@@ -1,20 +1,300 @@
-# include "headers.hpp"
-
 /**
- * @brief Generate a matrix for 3D Poisson equation with all-Neumann BCs
- *
- * @param grid
- * @param dx
- * @param dy
- * @param dz
- * @param A
- *
- * @return 
+ * \file factories.cpp
+ * \brief prototypes of functions generating something.
+ * \author Pi-Yueh Chuang (pychuang@gwu.edu)
+ * \date 2017-06-01
  */
-PetscErrorCode generateA(const DM &grid, 
-        const PetscScalar &dx, const PetscScalar &dy, const PetscScalar &dz, Mat &A)
+
+
+// header
+# include "factories.hpp"
+
+
+// macro
+# define c1 2.0*1.0*M_PI
+
+
+// definition of 3D-version generateGrid
+PetscErrorCode generateGrid(const DM &grid, 
+        const PetscInt &Nx, const PetscInt &Ny, const PetscInt &Nz,
+        const PetscScalar &Lx, const PetscScalar &Ly, const PetscScalar &Lz,
+        PetscScalar &dx, PetscScalar &dy, PetscScalar &dz,
+        Vec &x, Vec &y, Vec &z)
 {
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    PetscInt            xbg, xed,
+                        ybg, yed,
+                        zbg, zed;
+
+    PetscScalar         ***x_arry,
+                        ***y_arry,
+                        ***z_arry;
+
+    // calculate spacing
+    dx = Lx / (PetscScalar) Nx;
+    dy = Ly / (PetscScalar) Ny;
+    dz = Lz / (PetscScalar) Nz;
+
+
+    // get indices for left-bottom and right-top corner
+    ierr = DMDAGetCorners(grid, &xbg, &ybg, &zbg, &xed, &yed, &zed); CHKERRQ(ierr);
+
+    xed += xbg;
+    yed += ybg;
+    zed += zbg;
+
+    // generate x coordinates
+    ierr = DMDAVecGetArray(grid, x, &x_arry); CHKERRQ(ierr);
+    for(int k=zbg; k<zed; ++k)
+        for(int j=ybg; j<yed; ++j)
+            for(int i=xbg; i<xed; ++i)
+                x_arry[k][j][i] = (0.5 + (PetscScalar)i) * dx;
+    ierr = DMDAVecRestoreArray(grid, x, &x_arry); CHKERRQ(ierr);
+
+    // generate y coordinates
+    ierr = DMDAVecGetArray(grid, y, &y_arry); CHKERRQ(ierr);
+    for(int k=zbg; k<zed; ++k)
+        for(int j=ybg; j<yed; ++j)
+            for(int i=xbg; i<xed; ++i)
+                y_arry[k][j][i] = (0.5 + (PetscScalar)j) * dy;
+    ierr = DMDAVecRestoreArray(grid, y, &y_arry); CHKERRQ(ierr);
+
+    // generate z coordinates
+    ierr = DMDAVecGetArray(grid, z, &z_arry); CHKERRQ(ierr);
+    for(int k=zbg; k<zed; ++k)
+        for(int j=ybg; j<yed; ++j)
+            for(int i=xbg; i<xed; ++i)
+                z_arry[k][j][i] = (0.5 + (PetscScalar)k) * dz;
+    ierr = DMDAVecRestoreArray(grid, z, &z_arry); CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+
+// definition of 3D-version generateGrid
+PetscErrorCode generateGrid(const DM &grid, 
+        const PetscInt &Nx, const PetscInt &Ny,
+        const PetscScalar &Lx, const PetscScalar &Ly,
+        PetscScalar &dx, PetscScalar &dy, Vec &x, Vec &y)
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    PetscInt            xbg, xed,
+                        ybg, yed;
+
+    PetscScalar         **x_arry,
+                        **y_arry;
+
+    // calculate spacing
+    dx = Lx / (PetscScalar) Nx;
+    dy = Ly / (PetscScalar) Ny;
+
+
+    // get indices for left-bottom and right-top corner
+    ierr = DMDAGetCorners(grid, &xbg, &ybg, nullptr, &xed, &yed, nullptr); CHKERRQ(ierr);
+
+    xed += xbg;
+    yed += ybg;
+
+    // generate x coordinates
+    ierr = DMDAVecGetArray(grid, x, &x_arry); CHKERRQ(ierr);
+    for(int j=ybg; j<yed; ++j)
+        for(int i=xbg; i<xed; ++i)
+            x_arry[j][i] = (0.5 + (PetscScalar)i) * dx;
+    ierr = DMDAVecRestoreArray(grid, x, &x_arry); CHKERRQ(ierr);
+
+    // generate y coordinates
+    ierr = DMDAVecGetArray(grid, y, &y_arry); CHKERRQ(ierr);
+    for(int j=ybg; j<yed; ++j)
+        for(int i=xbg; i<xed; ++i)
+            y_arry[j][i] = (0.5 + (PetscScalar)j) * dy;
+    ierr = DMDAVecRestoreArray(grid, y, &y_arry); CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+
+// definition of 3D-version generateRHS
+PetscErrorCode generateRHS(const DM &grid, 
+        const Vec &x, const Vec &y, const Vec &z, Vec &rhs)
+{
+    PetscFunctionBeginUser;
+
     PetscErrorCode      ierr;   // error codes returned by PETSc routines
+
+    PetscInt            xbg, xed,
+                        ybg, yed,
+                        zbg, zed;
+
+    PetscScalar         ***x_arry,
+                        ***y_arry,
+                        ***z_arry,
+                        ***rhs_arry;
+
+    PetscScalar         c2 = -3.0 * c1 * c1;
+
+    // get indices for left-bottom and right-top corner
+    ierr = DMDAGetCorners(grid, &xbg, &ybg, &zbg, &xed, &yed, &zed); CHKERRQ(ierr);
+
+    xed += xbg;
+    yed += ybg;
+    zed += zbg;
+
+    // generate rhs
+    ierr = DMDAVecGetArray(grid, x, &x_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, y, &y_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, z, &z_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, rhs, &rhs_arry); CHKERRQ(ierr);
+    for(int k=zbg; k<zed; ++k)
+        for(int j=ybg; j<yed; ++j)
+            for(int i=xbg; i<xed; ++i)
+                rhs_arry[k][j][i] = c2 * std::cos(c1 * x_arry[k][j][i]) * 
+                    std::cos(c1 * y_arry[k][j][i]) * std::cos(c1 * z_arry[k][j][i]);
+
+    ierr = DMDAVecRestoreArray(grid, x, &x_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, y, &y_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, z, &z_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, rhs, &rhs_arry); CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+
+// definition of 2D-version generateRHS
+PetscErrorCode generateRHS(const DM &grid, 
+        const Vec &x, const Vec &y, Vec &rhs)
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;   // error codes returned by PETSc routines
+
+    PetscInt            xbg, xed,
+                        ybg, yed;
+
+    PetscScalar         **x_arry,
+                        **y_arry,
+                        **rhs_arry;
+
+    PetscScalar         c2 = -2.0 * c1 * c1;
+
+
+    // get indices for left-bottom and right-top corner
+    ierr = DMDAGetCorners(grid, &xbg, &ybg, nullptr, &xed, &yed, nullptr); CHKERRQ(ierr);
+
+    xed += xbg;
+    yed += ybg;
+
+    // generate rhs
+    ierr = DMDAVecGetArray(grid, x, &x_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, y, &y_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, rhs, &rhs_arry); CHKERRQ(ierr);
+    for(int j=ybg; j<yed; ++j)
+        for(int i=xbg; i<xed; ++i)
+            rhs_arry[j][i] = c2 * 
+                std::cos(c1 * x_arry[j][i]) * std::cos(c1 * y_arry[j][i]);
+
+    ierr = DMDAVecRestoreArray(grid, x, &x_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, y, &y_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, rhs, &rhs_arry); CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+
+// definition of 3D-version generateExt
+PetscErrorCode generateExt(const DM &grid, 
+        const Vec &x, const Vec &y, const Vec &z, Vec &exact)
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    PetscInt            xbg, xed,
+                        ybg, yed,
+                        zbg, zed;
+
+    PetscScalar         ***x_arry,
+                        ***y_arry,
+                        ***z_arry,
+                        ***exact_arry;
+
+
+    // get indices for left-bottom and right-top corner
+    ierr = DMDAGetCorners(grid, &xbg, &ybg, &zbg, &xed, &yed, &zed); CHKERRQ(ierr);
+
+    xed += xbg;
+    yed += ybg;
+    zed += zbg;
+
+    // generate rhs
+    ierr = DMDAVecGetArray(grid, x, &x_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, y, &y_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, z, &z_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, exact, &exact_arry); CHKERRQ(ierr);
+    for(int k=zbg; k<zed; ++k)
+        for(int j=ybg; j<yed; ++j)
+            for(int i=xbg; i<xed; ++i)
+                exact_arry[k][j][i] = std::cos(c1 * x_arry[k][j][i]) * 
+                    std::cos(c1 * y_arry[k][j][i]) * std::cos(c1 * z_arry[k][j][i]);
+    ierr = DMDAVecRestoreArray(grid, x, &x_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, y, &y_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, z, &z_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, exact, &exact_arry); CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+
+// definition of 2D-version generateExt
+PetscErrorCode generateExt(const DM &grid, 
+        const Vec &x, const Vec &y, Vec &exact)
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
+
+    PetscInt            xbg, xed,
+                        ybg, yed;
+
+    PetscScalar         **x_arry,
+                        **y_arry,
+                        **exact_arry;
+
+
+    // get indices for left-bottom and right-top corner
+    ierr = DMDAGetCorners(grid, &xbg, &ybg, nullptr, &xed, &yed, nullptr); CHKERRQ(ierr);
+
+    xed += xbg;
+    yed += ybg;
+
+    // generate rhs
+    ierr = DMDAVecGetArray(grid, x, &x_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, y, &y_arry); CHKERRQ(ierr);
+    ierr = DMDAVecGetArray(grid, exact, &exact_arry); CHKERRQ(ierr);
+    for(int j=ybg; j<yed; ++j)
+        for(int i=xbg; i<xed; ++i)
+            exact_arry[j][i] = 
+                std::cos(c1 * x_arry[j][i]) * std::cos(c1 * y_arry[j][i]);
+    ierr = DMDAVecRestoreArray(grid, x, &x_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, y, &y_arry); CHKERRQ(ierr);
+    ierr = DMDAVecRestoreArray(grid, exact, &exact_arry); CHKERRQ(ierr);
+
+    PetscFunctionReturn(0);
+}
+
+
+// definition of 3D-version generateA
+PetscErrorCode generateA(const DM &grid, const PetscScalar &dx,
+        const PetscScalar &dy, const PetscScalar &dz, Mat &A)
+{
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
 
     PetscInt            xbg, xed,
                         ybg, yed,
@@ -29,15 +309,12 @@ PetscErrorCode generateA(const DM &grid,
                         Cz,
                         Cd;
 
-
-
     // get indices for left-bottom and right-top corner
-    ierr = DMDAGetCorners(grid, &xbg, &ybg, &zbg, 
-            &xed, &yed, &zed);                                     CHKERRQ(ierr);
+    ierr = DMDAGetCorners(grid, &xbg, &ybg, &zbg, &xed, &yed, &zed); CHKERRQ(ierr);
 
     ierr = DMDAGetInfo(grid, nullptr, &Nx, &Ny, &Nz, 
             nullptr, nullptr, nullptr, nullptr, nullptr,
-            nullptr, nullptr, nullptr, nullptr);                   CHKERRQ(ierr);
+            nullptr, nullptr, nullptr, nullptr); CHKERRQ(ierr);
 
     xed += xbg;
     yed += ybg;
@@ -580,26 +857,20 @@ PetscErrorCode generateA(const DM &grid,
         }
     }
 
-    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);                CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);                  CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-    return 0;
+    PetscFunctionReturn(0);
 }
 
-/**
- * @brief Generate a matrix for 2D Poisson equation with all-Neumann BCs
- *
- * @param grid
- * @param dx
- * @param dy
- * @param A
- *
- * @return 
- */
+
+// definition of 2D-version generateA
 PetscErrorCode generateA(const DM &grid, 
         const PetscScalar &dx, const PetscScalar &dy, Mat &A)
 {
-    PetscErrorCode      ierr;   // error codes returned by PETSc routines
+    PetscFunctionBeginUser;
+
+    PetscErrorCode      ierr;
 
     PetscInt            xbg, xed,
                         ybg, yed;
@@ -612,14 +883,12 @@ PetscErrorCode generateA(const DM &grid,
                         Cy,
                         Cd;
 
-
-
     // get indices for left-bottom and right-top corner
     ierr = DMDAGetCorners(grid, &xbg, &ybg, nullptr, &xed, &yed, nullptr); CHKERRQ(ierr);
 
     ierr = DMDAGetInfo(grid, nullptr, &Nx, &Ny, nullptr, 
             nullptr, nullptr, nullptr, nullptr, nullptr,
-            nullptr, nullptr, nullptr, nullptr);                   CHKERRQ(ierr);
+            nullptr, nullptr, nullptr, nullptr); CHKERRQ(ierr);
 
     xed += xbg;
     yed += ybg;
@@ -797,8 +1066,8 @@ PetscErrorCode generateA(const DM &grid,
         }
     }
 
-    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY);                CHKERRQ(ierr);
-    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY);                  CHKERRQ(ierr);
+    ierr = MatAssemblyBegin(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
+    ierr = MatAssemblyEnd(A, MAT_FINAL_ASSEMBLY); CHKERRQ(ierr);
 
-    return 0;
+    PetscFunctionReturn(0);
 }
