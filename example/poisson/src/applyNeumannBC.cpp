@@ -19,11 +19,25 @@ PetscErrorCode applyNeumannBC(Mat &A, Vec &RHS, const Vec &exact)
 
     PetscInt            row[1] = {0};
 
+    PetscInt            n;
+
     PetscReal           scale;
 
-    ierr = MatGetValues(A, 1, row, 1, row, &scale); CHKERRQ(ierr);
+    Vec                 diag;
+
+    ierr = MatCreateVecs(A, nullptr, &diag); CHKERRQ(ierr);
+
+    ierr = MatGetDiagonal(A, diag); CHKERRQ(ierr);
+
+    ierr = VecGetSize(diag, &n); CHKERRQ(ierr);
+
+    ierr = VecSum(diag, &scale); CHKERRQ(ierr);
+
+    scale /= double(n);
 
     ierr = MatZeroRowsColumns(A, 1, row, scale, exact, RHS); CHKERRQ(ierr);
+
+    ierr = VecDestroy(&diag); CHKERRQ(ierr);
 
     PetscFunctionReturn(0);
 }
