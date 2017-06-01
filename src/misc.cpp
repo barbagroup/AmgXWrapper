@@ -39,20 +39,24 @@ PetscErrorCode AmgXSolver::setMode(const std::string &modeStr)
 // definition of AmgXSolver::getIters
 PetscErrorCode AmgXSolver::getIters(int &iter)
 {
+    PetscFunctionBeginUser;
+
     // only processes using AmgX will try to get # of iterations
     if (gpuProc == 0)
         AMGX_solver_get_iterations_number(solver, &iter); 
 
-    return iter;
+    PetscFunctionReturn(0);
 }
 
 
 // definition of AmgXSolver::getResidual
 PetscErrorCode AmgXSolver::getResidual(const int &iter, double &res)
 {
+    PetscFunctionBeginUser;
+
     // only processes using AmgX will try to get residual
     if (gpuProc == 0)
         AMGX_solver_get_iteration_residual(solver, iter, 0, &res);
 
-    return res;
+    PetscFunctionReturn(0);
 }

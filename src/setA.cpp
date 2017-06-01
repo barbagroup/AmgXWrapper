@@ -200,8 +200,8 @@ PetscErrorCode AmgXSolver::getVecScatter(
     ierr = MatCreateVecs(A1, &tempLhs, &tempRhs); CHK;
     ierr = MatCreateVecs(A2, &redistLhs, &redistRhs); CHK;
 
-    ierr = VecScatterCreate(tempLhs, nullptr, redistLhs, devIS, &scatterLhs); CHK;
-    ierr = VecScatterCreate(tempRhs, nullptr, redistRhs, devIS, &scatterRhs); CHK;
+    ierr = VecScatterCreate(tempLhs, devIS, redistLhs, devIS, &scatterLhs); CHK;
+    ierr = VecScatterCreate(tempRhs, devIS, redistRhs, devIS, &scatterRhs); CHK;
     
     ierr = VecDestroy(&tempRhs); CHK;
     ierr = VecDestroy(&tempLhs); CHK;
@@ -224,11 +224,16 @@ PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
 
     PetscScalar         *rawData;
 
+    PetscInt            rawN;
+
     PetscBool           done;
 
     // get row and column indices in compressed row format
     ierr = MatGetRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
-            &localN, &rawRow, &rawCol, &done); CHK;
+            &rawN, &rawRow, &rawCol, &done); CHK;
+
+    // rawN will be returned by MatRestoreRowIJ, so we have to copy it
+    localN = rawN;
 
     // check if the function worked
     if (! done)
@@ -246,7 +251,7 @@ PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
 
     // return ownership of memory space to PETSc
     ierr = MatRestoreRowIJ(localA, 0, PETSC_FALSE, PETSC_FALSE,
-            &localN, &rawRow, &rawCol, &done); CHK;
+            &rawN, &rawRow, &rawCol, &done); CHK;
 
     // check if the function worked
     if (! done)
