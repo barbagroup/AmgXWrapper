@@ -1,7 +1,8 @@
 # Example: poisson
 ------------------------
 
-This example solves a Poisson equation in 2D and 3D. The exact solutions are
+This example solves a Poisson equation in 2D and 3D. We use standard central
+difference with uniform grid within each direction. The exact solutions are
 known, so `poisson` can also serve as a kind of test.
 
 The Poisson equation is
@@ -14,6 +15,14 @@ The exact solutions are
 for 2D, and
 <center>Δu = cos(2πx) cos(2πy) cos(2πz)</center>
 for 3D.
+
+You can solve other Poisson equations with known exact solutions by modifying
+the hard-coded equation in functions `generateRHS` and `generateExt`. The
+computational domain is hard-coded as `Lx=Ly=Lz=1`. You are free to change them.
+
+Most of code is regarding to setting up the Poisson problem with PETSc. If you
+are already familiar with PETSc, you should be able to quickly find out how to
+solve PETSc linear systems with `AmgXWrapper`.
 
 ## Build
 ---------

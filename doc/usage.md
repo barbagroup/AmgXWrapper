@@ -40,7 +40,7 @@ for matrix and vector entries.
 
 3. `configFile` is a `std::string` indicating the path of AmgX configuration file. 
 Please see AmgX Reference Manual for writing configuration files. For example, 
-[here](../example/Poisson/configs/AmgX_SolverOptions_Classical.info) 
+[here](../example/poisson/configs/AmgX_SolverOptions_Classical.info) 
 is a typical solver and preconditioner settings we used in PetIBM simulations.
 
 The return values of all AmgXWrapper functions are `PetscErrorCode`, so you can

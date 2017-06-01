@@ -52,7 +52,8 @@ We are trying to make it more general.
 1. [Dependencies](doc/dependencies.md)
 2. [Build and install](doc/install.md)
 3. [Usage](doc/usage.md)
-4. [Examples](example)
+4. [Test](doc/test.md)
+5. [Examples](example)
 
 ## Update 
 ----------
@@ -82,6 +83,18 @@ However, the overall performance is much better comparing to calling AmgX solver
 The redistribution method may be naive, but it's working.
 And we have been satisfied with the performance so far.
 
+## Limitation
+----------------
+
+* CPU version of AmgX solver doesn't work well. This may due to the different
+  level of supports between CPU and GPU version of AmgX from NVIDIA. And we suggest
+  to use PETSc KSP solver and Hypre preconditioners directly if you want a
+  parallel CPU linear solver wiht classical multigrid preconditioners. We
+  believe the GPU classical multigrid algorith in AmgX is largely based on Hypre.
+
+* Due to our PETSc applications only use AIJ format for sparse matrices, AmgXWrapper
+  currently only support AIJ format.
+
 ## Future work
 ----------------
 
@@ -91,4 +104,6 @@ And we have been satisfied with the performance so far.
 
 ## Reference
 -------------
-[1] Chuang, Pi-Yueh; Barba, Lorena A. (2017): Using AmgX to Accelerate PETSc-Based CFD Codes. figshare. [https://doi.org/10.6084/m9.figshare.5018774.v1](https://doi.org/10.6084/m9.figshare.5018774.v1)
+[1] Chuang, Pi-Yueh; Barba, Lorena A. (2017): Using AmgX to Accelerate PETSc-Based
+CFD Codes. figshare.
+[https://doi.org/10.6084/m9.figshare.5018774.v1](https://doi.org/10.6084/m9.figshare.5018774.v1)
