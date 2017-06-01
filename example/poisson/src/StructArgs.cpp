@@ -77,6 +77,10 @@ PetscErrorCode StructArgs::checkHelp()
                 "\t-Nruns [number of runs in addition to warm-up run]\n"); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\t-optFileName "
                 "[file name for outputing PETSc performance log file]\n"); CHKERRQ(ierr);
+
+        ierr = PetscFinalize(); CHKERRQ(ierr);
+
+        exit(EXIT_SUCCESS);
     }
 
     PetscFunctionReturn(0);
@@ -90,6 +94,8 @@ PetscErrorCode StructArgs::getArgs()
 
     PetscErrorCode      ierr;   // error codes returned by PETSc routines
     PetscBool           set;    // temporary booling variable
+
+    ierr = checkHelp(); CHKERRQ(ierr);
 
     ierr = PetscOptionsGetString(nullptr, nullptr, "-caseName", 
             caseName, PETSC_MAX_PATH_LEN, &set); CHKERRQ(ierr);
