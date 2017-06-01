@@ -23,8 +23,7 @@ public:
 
     PetscInt            Nruns = 10; // number of runs of solving
 
-    PetscBool           optFileBool, // indicates if we will output a performance log.
-                        VTKFileBool; // indicates if we will output a VTK file.
+    PetscBool           optFileBool; // indicates if we will output a performance log.
 
     char                mode[PETSC_MAX_PATH_LEN],        // either AmgX, or PETSc
                         cfgFileName[PETSC_MAX_PATH_LEN], // config file

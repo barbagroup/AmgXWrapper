@@ -42,12 +42,6 @@ PetscErrorCode StructArgs::print()
     if (optFileBool) ierr = PetscPrintf(PETSC_COMM_WORLD,
             "Output PETSc Log File Name: %s\n", optFileName); CHKERRQ(ierr);
 
-    ierr = PetscPrintf(PETSC_COMM_WORLD, "Output VTK file ? %s\n",
-            VTKFileBool?"true":"false"); CHKERRQ(ierr);
-
-    if (VTKFileBool) ierr = PetscPrintf(PETSC_COMM_WORLD,
-            "Output VTK File Name: %s\n", VTKFileName); CHKERRQ(ierr);
-
     PetscFunctionReturn(0);
 }
 
@@ -83,8 +77,6 @@ PetscErrorCode StructArgs::checkHelp()
                 "\t-Nruns [number of runs in addition to warm-up run]\n"); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\t-optFileName "
                 "[file name for outputing PETSc performance log file]\n"); CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\t-VTKFileName "
-                "[file name for outputing VTK file]\n"); CHKERRQ(ierr);
     }
 
     PetscFunctionReturn(0);
@@ -123,9 +115,6 @@ PetscErrorCode StructArgs::getArgs()
 
     ierr = PetscOptionsGetString(nullptr, nullptr, "-optFileName", 
             optFileName, PETSC_MAX_PATH_LEN, &optFileBool); CHKERRQ(ierr);
-
-    ierr = PetscOptionsGetString(nullptr, nullptr, "-VTKFileName", 
-            VTKFileName, PETSC_MAX_PATH_LEN, &VTKFileBool); CHKERRQ(ierr);
 
     PetscFunctionReturn(0);
 }
