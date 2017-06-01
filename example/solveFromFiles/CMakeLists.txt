@@ -7,94 +7,107 @@
 # =====================================================================
 
 
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
 
 
-MESSAGE("===================================================================")
-MESSAGE("Specifying CXX compiler and flags...\n")
-MESSAGE("NOTE: clang++ is default C++ compiler. To use other compiler, ")
-MESSAGE("please define the environment variable CXX\n")
+# =====================================================================
+# Cache variables
+# =====================================================================
 
-IF (NOT DEFINED ENV{CXX})
-    SET(CMAKE_CXX_COMPILER "clang++")
-    MESSAGE("CXX compiler: clang++")
-ELSE()
-    SET(CMAKE_CXX_COMPILER $ENV{CXX})
-    MESSAGE("CXX compiler: " ${CMAKE_CXX_COMPILER})
-ENDIF()
+# set default c++ compilers
+SET(CMAKE_CXX_COMPILER "mpicxx" CACHE STRING "")
 
+# set default c compilers
+SET(CMAKE_C_COMPILER "mpicc" CACHE STRING "")
 
-SET(CMAKE_CXX_FLAGS "-std=c++11" CACHE STRING "")
+# set default flags for release and debug mode
 SET(CMAKE_CXX_FLAGS_DEBUG "-g" CACHE STRING "")
 SET(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG" CACHE STRING "")
-
-
-
-MESSAGE("\n===================================================================")
-MESSAGE("Specifying C compiler and flags...\n")
-MESSAGE("NOTE: clang is default C compiler. To use other compiler, ")
-MESSAGE("please define the environment variable CXX\n")
-
-IF (NOT DEFINED ENV{CC})
-    SET(CMAKE_C_COMPILER "clang")
-    MESSAGE("C compiler: clang")
-ELSE()
-    SET(CMAKE_C_COMPILER $ENV{CC})
-    MESSAGE("C compiler: " ${CMAKE_C_COMPILER})
-ENDIF()
-
-SET(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG" CACHE STRING "")
 SET(CMAKE_C_FLAGS_DEBUG "-g" CACHE STRING "")
+SET(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG" CACHE STRING "")
+SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined" CACHE STRING "")
+
+# set default build type
+SET(CMAKE_BUILD_TYPE RELEASE CACHE STRING "")
+
+SET(PETSC_DIR "" CACHE PATH "The path to PETSc.")
+SET(PETSC_ARCH "" CACHE STRING "The specific build of PETSc under PETSC_DIR.")
+SET(CUDA_DIR "" CACHE PATH "The path to CUDA 6.5.")
+SET(AMGX_DIR "" CACHE PATH "The path to AmgX.")
 
 
+# =====================================================================
+# Project settings
+# =====================================================================
 
-MESSAGE("\n===================================================================")
-MESSAGE("Specifying other variables...")
+MESSAGE("")
+MESSAGE("====================================")
+MESSAGE("Begin configuration")
+MESSAGE("====================================")
+
+# start generator
+PROJECT(solveFromFiles C CXX)
+
+# use GNU standard installation folder heirarchy
+INCLUDE(GNUInstallDirs)
+
+# set the sub folders in build folder
+SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
+
+# force the project to use C++ 11
+SET(CMAKE_CXX_STANDARD 11)
+
+# other cmake setting
 SET(CMAKE_VERBOSE_MAKEFILE ON)
-SET(EXECUTABLE_OUTPUT_PATH ./bin)
+SET(CMAKE_COLOR_MAKEFILE ON)
 
-IF(NOT DEFINED CMAKE_BUILD_TYPE)
-    SET(CMAKE_BUILD_TYPE RELEASE CACHE STRING "")
-ENDIF()
-
-MESSAGE("-- Build type: " ${CMAKE_BUILD_TYPE})
-
-SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined")
-
-MESSAGE("\n===================================================================")
-MESSAGE("Starting generator...")
-PROJECT(solveFromFiles)
+# add cmake-modules to CMake module searching path
+LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../../cmake-modules")
 
 
-MESSAGE("\n===================================================================")
-MESSAGE("Trying to find PETSc...")
-MESSAGE("\nNOTE: If it fails to find PETSc, please set the environment variable")
-MESSAGE("PETSC_DIR in order to notify CMake the location of PETSc\n")
+# =====================================================================
+# PETSc
+# =====================================================================
 
-LIST(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake-modules")
-MESSAGE("CMAKE_MODULE_PATH: " "${CMAKE_MODULE_PATH}") 
+MESSAGE("")
+MESSAGE("-- Finding PETSc")
 
 FIND_PACKAGE(PETSc REQUIRED)
 
 IF(${PETSc_FOUND})
-    MESSAGE("\tPETSC_DIR: " ${PETSC_DIR})
-    MESSAGE("\tPETSC_INCLUDES: " ${PETSC_INCLUDES})
-    MESSAGE("\tPETSC_LIBRARIES: " ${PETSC_LIBRARIES})
+    MESSAGE("-- Finding PETSc - Success")
 ENDIF()
 
 
+# =====================================================================
+# CUDA 6.5
+# =====================================================================
 
-MESSAGE("\n===================================================================")
-MESSAGE("Trying to find AmgX...")
-MESSAGE("\nNOTE: If it fails to find AmgX, please set the environment variable")
-MESSAGE("AMGX_DIR in order to notify CMake the location of AmgX\n")
+MESSAGE("")
+MESSAGE("-- Finding CUDA 6.5")
 
+SET(CUDA_TOOLKIT_ROOT_DIR ${CUDA_DIR} CACHE PATH "" FORCE)
+
+FIND_PACKAGE(CUDA 6.5 EXACT REQUIRED)
+
+IF(${CUDA_FOUND})
+    SET(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
+    MESSAGE("-- Finding CUDA 6.5 - Success")
+ENDIF()
+
+
+# =====================================================================
+# AmgX
+# =====================================================================
+
+MESSAGE("")
+MESSAGE("-- Finding AmgX")
 
 MESSAGE("-- Finding amgx_c.h")
 FIND_PATH(AMGX_INCLUDE_DIRS 
           NAMES amgx_c.h  
           PATHS ${AMGX_DIR} $ENV{AMGX_DIR} 
-          PATH_SUFFIXES "include")
+          PATH_SUFFIXES "include" "examples")
 
 IF(${AMGX_INCLUDE_DIRS} STREQUAL "AMGX_INCLUDE_DIRS-NOTFOUND")
     MESSAGE(FATAL_ERROR "Could not find amgx_c.h!!!")
@@ -141,47 +154,33 @@ ELSE()
     MESSAGE("-- Finding libamgxsh.so - found: " ${AMGX_LIBRARIES})
 ENDIF()
 
+MESSAGE("-- Finding AmgX - Success")
 
-
-MESSAGE("\n===================================================================")
-MESSAGE("Trying to find CUDA 6.5...")
-MESSAGE("\nNOTE: If you have several different versions of CUDA, and if CMake ")
-MESSAGE("can not find CUDA 6.5, please define CUDA_TOOLKIT_ROOT_DIR manually ")
-MESSAGE("when calling CMake. For example:") 
-MESSAGE("\n\t$ cmake . -DCUDA_TOOLKIT_ROOT_DIR=/opt/cuda65\n")
-
-FIND_PACKAGE(CUDA 6.5 EXACT REQUIRED)
-
-IF(${CUDA_FOUND})
-    SET(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-    MESSAGE("\tCUDA_TOOLKIT_ROOT_DIR: " ${CUDA_TOOLKIT_ROOT_DIR})
-    MESSAGE("\tCUDA_VERSION: " ${CUDA_VERSION_STRING})
-    MESSAGE("\tCUDA_INCLUDE_DIRS: " ${CUDA_INCLUDE_DIRS})
-    MESSAGE("\tCUDA_LIBRARY_DIRS: " ${CUDA_LIBRARY_DIRS})
-    MESSAGE("\tCUDA_LIBRARIES: " ${CUDA_LIBRARIES})
-ENDIF()
-
-
-MESSAGE("\n===================================================================")
-MESSAGE("Setting the information for target and source files...")
-
+# =====================================================================
+# Targets
+# =====================================================================
 
 SET(SRC ${CMAKE_SOURCE_DIR}/src)
 SET(AmgXWrapperSRC ${CMAKE_SOURCE_DIR}/../../src)
 
 SET(SOURCE
-    ${SRC}/solveFromFiles.cpp 
+    ${SRC}/main.cpp 
     ${SRC}/createKSP.cpp
+    ${SRC}/io.cpp
     ${SRC}/solve.cpp
-    ${SRC}/readMat.cpp
-    ${SRC}/readVec.cpp
+    ${SRC}/StructArgs.cpp
+    ${AmgXWrapperSRC}/init.cpp
+    ${AmgXWrapperSRC}/misc.cpp
+    ${AmgXWrapperSRC}/setA.cpp
+    ${AmgXWrapperSRC}/solve.cpp
     ${AmgXWrapperSRC}/AmgXSolver.cpp)
 
 INCLUDE_DIRECTORIES(
     ${PETSC_INCLUDES} 
     ${AMGX_INCLUDE_DIRS} 
     ${CUDA_INCLUDE_DIRS} 
-    ${AmgXWrapperSRC})
+    ${AmgXWrapperSRC}
+    ${SRC})
 
 LINK_DIRECTORIES(
     ${CUDA_LIBRARY_DIRS} 
@@ -198,5 +197,50 @@ TARGET_LINK_LIBRARIES(solveFromFiles
 ADD_CUSTOM_COMMAND(
     TARGET solveFromFiles
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory configs
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/configs configs/)
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/configs
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/configs ${PROJECT_BINARY_DIR}/configs/)
+
+# =====================================================================
+# Print information
+# =====================================================================
+
+MESSAGE("")
+MESSAGE("====================================")
+MESSAGE("Config Information:")
+MESSAGE("====================================")
+MESSAGE("")
+
+MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
+MESSAGE("Build shared library: " ${BUILD_SHARED_LIBS})
+MESSAGE("Doxygen available: " ${DOXYGEN_FOUND})
+MESSAGE("Installation path: " ${CMAKE_INSTALL_PREFIX})
+MESSAGE("")
+
+MESSAGE("Compilers:")
+MESSAGE("\tCXX compiler: " ${CMAKE_CXX_COMPILER})
+MESSAGE("\tC compiler: " ${CMAKE_C_COMPILER})
+MESSAGE("")
+
+MESSAGE("Flags:")
+MESSAGE("\tCXX: " ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}})
+MESSAGE("")
+
+MESSAGE("PETSc:")
+MESSAGE("\tPETSc dir: " ${PETSC_DIR})
+MESSAGE("\tHeader path: " ${PETSC_INCLUDES})
+MESSAGE("\tLibraries: " ${PETSC_LIBRARIES})
+MESSAGE("")
+
+MESSAGE("CUDA:")
+MESSAGE("\tCUDA dir: " ${CUDA_TOOLKIT_ROOT_DIR})
+MESSAGE("\tVersion: " ${CUDA_VERSION_STRING})
+MESSAGE("\tHeader path: " ${CUDA_INCLUDE_DIRS})
+MESSAGE("\tLibrary path: " ${CUDA_LIBRARY_DIRS})
+MESSAGE("\tLibraries: " ${CUDA_LIBRARIES})
+MESSAGE("")
+
+MESSAGE("AmgX:")
+MESSAGE("\tAmgX dir: " ${AMGX_DIR})
+MESSAGE("\tHeader path: " ${AMGX_INCLUDE_DIRS})
+MESSAGE("\tLibraries: " ${AMGX_LIBRARIES})
+MESSAGE("")
