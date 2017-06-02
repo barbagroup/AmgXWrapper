@@ -45,8 +45,8 @@ existing PETSc-based CFD code (see reference 1).
 CFD Codes." (2017) figshare.
 [https://doi.org/10.6084/m9.figshare.5018774.v1](https://doi.org/10.6084/m9.figshare.5018774.v1)
 
-2. Balay, Satish, Shrirang Abhyankar, Mark~F. Adams, Jed Brown, Peter Brune,
-Kris Buschelman, Lisandro Dalcin, Victor Eijkhout, William~D. Gropp, Dinesh Kaushik,
-Matthew~G. Knepley, Lois Curfman McInnes, Karl Rupp, Barry~F. Smith, Stefano Zampini,
+2. Balay, Satish, Shrirang Abhyankar, Mark F. Adams, Jed Brown, Peter Brune,
+Kris Buschelman, Lisandro Dalcin, Victor Eijkhout, William D. Gropp, Dinesh Kaushik,
+Matthew G. Knepley, Lois Curfman McInnes, Karl Rupp, Barry F. Smith, Stefano Zampini,
 Hong Zhang, and Hong Zhang. "PETSc web page." (2016) [Online]. Available:
 http://www.mcs.anl.gov/petsc (visited on 07/13/2016).
