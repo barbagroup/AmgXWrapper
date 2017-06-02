@@ -13,6 +13,7 @@ authors:
    orcid: 0000-0001-5812-2711
    affiliation: The George Washington University
 date: 02 June 2017
+bibliography: paper.bib
 ---
 
 # Summary
@@ -20,7 +21,7 @@ date: 02 June 2017
 This code provides access to multi-GPU computing from PETSc-based applications, using NVIDIA's AmgX library.
 The PETSc (Portable, Extensible Toolkit for Scientific Computation) library,
 developed by Argonne National Laboratory, is a very popular
-high-performance software through for scientific applications modeled by partial differential equations.
+high-performance software through for scientific applications modeled by partial differential equations [@petsc-user-ref].
 It executes in distributed systems via message-passing communications with MPI.
 NVIDIA's AmgX library is a multi-GPU linear-algebra package that
 supports multigrid preconditioners and Krylov solvers.
@@ -36,17 +37,8 @@ The wrapper also features implicit data transfer when there are mismatched numbe
 of CPU cores and GPU devices in a computing node.
 This allows exploiting all possible resources on modern heterogeneous platforms.
 We have presented an example of using AmgX and AmgXWrapper to accelerate an
-existing PETSc-based CFD code (see reference 1).
+existing PETSc-based CFD code [@chuang+barba2017].
 
 
 
 # References
-1. Chuang, Pi-Yueh, Lorena A. Barba. "Using AmgX to Accelerate PETSc-Based
-CFD Codes." (2017) figshare.
-[https://doi.org/10.6084/m9.figshare.5018774.v1](https://doi.org/10.6084/m9.figshare.5018774.v1)
-
-2. Balay, Satish, Shrirang Abhyankar, Mark F. Adams, Jed Brown, Peter Brune,
-Kris Buschelman, Lisandro Dalcin, Victor Eijkhout, William D. Gropp, Dinesh Kaushik,
-Matthew G. Knepley, Lois Curfman McInnes, Karl Rupp, Barry F. Smith, Stefano Zampini,
-Hong Zhang, and Hong Zhang. "PETSc web page." (2016) [Online]. Available:
-http://www.mcs.anl.gov/petsc (visited on 07/13/2016).
