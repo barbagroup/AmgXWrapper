@@ -1,5 +1,5 @@
 ---
-title: 'AmgXWrapper: An interface between PETSc and NVIDIA AmgX library'
+title: 'AmgXWrapper: An interface between PETSc and the NVIDIA AmgX library'
 tags:
   - PETSc
   - AmgX
