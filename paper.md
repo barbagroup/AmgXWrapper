@@ -17,24 +17,24 @@ date: 02 June 2017
 
 # Summary
 
-This code provides a capability of multi-GPU computing to PETSc-based applications through NVIDIA's AmgX.
-PETSc (Portable, Extensible Toolkit for Scientific Computation),
-developed by Argonne National Laboratory, is a library for developing
-high-performance parallel scientific software through MPI model. 
-NVIDIA's AmgX is a multi-GPU linear algebra solver library which
+This code provides access to multi-GPU computing from PETSc-based applications, using NVIDIA's AmgX library.
+The PETSc (Portable, Extensible Toolkit for Scientific Computation) library,
+developed by Argonne National Laboratory, is a very popular
+high-performance software through for scientific applications modeled by partial differential equations.
+It executes in distributed systems via message-passing communications with MPI.
+NVIDIA's AmgX library is a multi-GPU linear-algebra package that
 supports multigrid preconditioners and Krylov solvers.
-Because of the lack of support to modern heterogeneous platforms (GPU+CPU) in PETSc,
-AmgX becomes a good option for heterogeneous computing to PETSc applications.
-Nevertheless, it is not a trivial task to incorporate AmgX into PETSc
-applications due to the different designs, underlying data formats, and usages between
-PETSc and AmgX.
-The purpose of this wrapper is to bridge PETSc and AmgX, so that PETSc application
-developers can use AmgX easily and without a thorough understanding of AmgX API.
-The key benefit is that when incorporating AmgX in legacy PETSc applications,
-developers need only a few lines of code modification.
-The wrapper also features implicit data transfer when there are mismatch numbers
-of CPU cores and GPU devices on a computing node.
-This allows us to exploit all possible resources on modern heterogeneous platforms.
+Because PETSc lacks support for modern heterogeneous platforms (GPU+CPU),
+AmgX can be a good option for adding GPU computing to PETSc applications.
+Incorporating AmgX into PETSc applications is not straightforward, however,
+due to the difference between the two libraries in design, underlying data formats, and usage.
+The purpose of AmgXWrapper is to bridge PETSc and AmgX, helping PETSc-application
+developers use AmgX in their software without a thorough understanding of the AmgX API.
+With AmgXWrapper, developers may need only a few lines of code modification to 
+add AmgX solvers in legacy PETSc applications.
+The wrapper also features implicit data transfer when there are mismatched numbers
+of CPU cores and GPU devices in a computing node.
+This allows exploiting all possible resources on modern heterogeneous platforms.
 We have presented an example of using AmgX and AmgXWrapper to accelerate an
 existing PETSc-based CFD code (see reference 1).
 
