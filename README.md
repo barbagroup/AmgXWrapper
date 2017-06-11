@@ -1,7 +1,7 @@
 # AmgXWrapper
 
 ## Overview
-------------
+
 
 This wrapper simplifies the usage of AmgX when using AmgX together with PETSc.
 Though we currently only support PETSc, we hope this wrapper can work with other libraries in the future.
@@ -47,7 +47,7 @@ so it may lack some features for other kinds of PETSc-based applications.
 We are trying to make it more general.
 
 ## Document
------------
+
 
 1. [Dependencies](doc/dependencies.md)
 2. [Build and install](doc/install.md)
@@ -56,7 +56,7 @@ We are trying to make it more general.
 5. [Examples](example)
 
 ## Update 
-----------
+
 
 ### 01/08/2016
 
@@ -84,7 +84,7 @@ The redistribution method may be naive, but it's working.
 And we have been satisfied with the performance so far.
 
 ## Limitation
-----------------
+
 
 * CPU version of AmgX solver doesn't work well. This may due to the different
   level of supports between CPU and GPU version of AmgX from NVIDIA. And we suggest
@@ -96,14 +96,14 @@ And we have been satisfied with the performance so far.
   currently only support AIJ format.
 
 ## Future work
-----------------
+
 
 * Add support of updating entry values of the matrix A that is already on CUDA device.
 * Support other matrix format other than AIJ.
 * Add mechanisms for debugging and error handling.
 
 ## Reference
--------------
+
 [1] Chuang, Pi-Yueh; Barba, Lorena A. (2017): Using AmgX to Accelerate PETSc-Based
 CFD Codes. figshare.
 [https://doi.org/10.6084/m9.figshare.5018774.v1](https://doi.org/10.6084/m9.figshare.5018774.v1)
