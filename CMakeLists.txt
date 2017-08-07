@@ -14,10 +14,14 @@ CMAKE_MINIMUM_REQUIRED(VERSION 3.0.2)
 # =====================================================================
 
 # set default c++ compilers
-SET(CMAKE_CXX_COMPILER "mpicxx" CACHE STRING "")
+IF (NOT DEFINED ENV{CXX})
+    SET(ENV{CXX} mpicxx)
+ENDIF()
 
 # set default c compilers
-SET(CMAKE_C_COMPILER "mpicc" CACHE STRING "")
+IF (NOT DEFINED ENV{CC})
+    SET(ENV{CC} mpicc)
+ENDIF()
 
 # set default flags for release and debug mode
 SET(CMAKE_CXX_FLAGS_DEBUG "-g" CACHE STRING "")
@@ -54,8 +58,17 @@ INCLUDE(GNUInstallDirs)
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
 
-# force the project to use C++ 11
-SET(CMAKE_CXX_STANDARD 11)
+# Not many vendors are supported by CMAKE_CXX_STANDARD variable before cmake 3.9
+# so we decided to check C++11 flag manually
+INCLUDE(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+IF(COMPILER_SUPPORTS_CXX11)
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+ELSE()
+    MESSAGE(FATAL_ERROR
+        "Compiler ${CMAKE_CXX_COMPILER} does not support flag -std=c++11. \
+        Please specify C++11 flag manually through CMAKE_CXX_FLAGS.")
+ENDIF()
 
 # other cmake setting
 SET(CMAKE_VERBOSE_MAKEFILE ON)
