@@ -33,10 +33,10 @@ SET(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined" CACHE STRING "")
 # set default build type
 SET(CMAKE_BUILD_TYPE RELEASE CACHE STRING "")
 
-SET(PETSC_DIR "" CACHE PATH "The path to PETSc.")
-SET(PETSC_ARCH "" CACHE STRING "The specific build of PETSc under PETSC_DIR.")
-SET(CUDA_DIR "" CACHE PATH "The path to CUDA 6.5.")
-SET(AMGX_DIR "" CACHE PATH "The path to AmgX.")
+SET(PETSC_DIR "$ENV{PETSC_DIR}" CACHE PATH "The path to PETSc.")
+SET(PETSC_ARCH "$ENV{PETSC_ARCH}" CACHE STRING "The specific build of PETSc under PETSC_DIR.")
+SET(CUDA_DIR "$ENV{CUDA_DIR}" CACHE PATH "The path to CUDA 6.5.")
+SET(AMGX_DIR "$ENV{AMGX_DIR}" CACHE PATH "The path to AmgX.")
 
 
 # =====================================================================
