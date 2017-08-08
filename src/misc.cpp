@@ -15,22 +15,20 @@ PetscErrorCode AmgXSolver::setMode(const std::string &modeStr)
 {
     PetscFunctionBeginUser;
 
-    if (modeStr == "hDDI")
-        mode = AMGX_mode_hDDI;
-    else if (modeStr == "hDFI")
-        mode = AMGX_mode_hDFI;
-    else if (modeStr == "hFFI")
-        mode = AMGX_mode_hFFI;
-    else if (modeStr == "dDDI")
+    if (modeStr == "dDDI")
         mode = AMGX_mode_dDDI;
     else if (modeStr == "dDFI")
         mode = AMGX_mode_dDFI;
     else if (modeStr == "dFFI")
         mode = AMGX_mode_dFFI;
+    else if (modeStr[0] == 'h')
+        SETERRQ1(MPI_COMM_WORLD, PETSC_ERR_ARG_WRONG,
+                "CPU mode, %s, is not supported in this wrapper!",
+                modeStr.c_str());
     else
         SETERRQ1(MPI_COMM_WORLD, PETSC_ERR_ARG_WRONG,
                 "%s is not an available mode! Available modes are: "
-                "hDDI, hDFI, hFFI, dDDI, dDFI, dFFI.\n", modeStr.c_str());
+                "dDDI, dDFI, dFFI.\n", modeStr.c_str());
 
     PetscFunctionReturn(0);
 }

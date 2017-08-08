@@ -83,4 +83,5 @@ $ mpiexec -n 4 bin/solveFromFiles \
     be exact solutions, if you are not using `solveFromFiles` for benchmarks
     and tests and just want to solve a system.
 
-Note, for argument `-mode`, available options are `PETSc`, `AmgX_GPU`, and `AmgX_CPU`.
+Note, for argument `-mode`, available options are `PETSc` and `AmgX_GPU`.
+CPU version of AmgX solver is not supported in the wrapper and this example.

@@ -118,10 +118,12 @@ int main(int argc, char **argv)
     }
     else // AmgX mode
     {
-        if (std::strcmp(args.mode, "AmgX_GPU") == 0) // AmgX GPU mode
+        // AmgX GPU mode
+        if (std::strcmp(args.mode, "AmgX_GPU") == 0)
             amgx.initialize(PETSC_COMM_WORLD, "dDDI", args.cfgFileName);
-        else if (std::strcmp(args.mode, "AmgX_CPU") == 0) // AmgX CPU mode
-            amgx.initialize(PETSC_COMM_WORLD, "hDDI", args.cfgFileName);
+        // AmgX CPU mode (not supported yet)
+        //else if (std::strcmp(args.mode, "AmgX_CPU") == 0)
+        //    amgx.initialize(PETSC_COMM_WORLD, "hDDI", args.cfgFileName);
         else SETERRQ1(PETSC_COMM_WORLD, PETSC_ERR_ARG_UNKNOWN_TYPE,
                     "Invalid mode: %s\n", args.mode); CHKERRQ(ierr);
 

@@ -25,7 +25,7 @@ public:
 
     PetscBool           optFileBool; // indicates if we will output a performance log.
 
-    char                mode[PETSC_MAX_PATH_LEN],        // either AmgX, or PETSc
+    char                mode[PETSC_MAX_PATH_LEN],        // either AmgX_GPU, or PETSc
                         cfgFileName[PETSC_MAX_PATH_LEN], // config file
                         optFileName[PETSC_MAX_PATH_LEN], // output file
                         caseName[PETSC_MAX_PATH_LEN],    // case name

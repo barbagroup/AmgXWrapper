@@ -86,12 +86,12 @@ And we have been satisfied with the performance so far.
 ## Limitation
 
 
-* CPU version of AmgX solver doesn't work well. This may due to the different
-  level of supports between CPU and GPU version of AmgX from NVIDIA. And we suggest
-  to use PETSc KSP solver and Hypre preconditioners directly if you want a
-  parallel CPU linear solver wiht classical multigrid preconditioners. We
-  believe the GPU classical multigrid algorith in AmgX is largely based on Hypre.
-
+* CPU version of AmgX solver (i.e., `hDDI` mode in AmgX or `AmgX_CPU` option
+  in our Poisson example) is not supported in this wrapper. Some APIs in current
+  AmgX version don't work on CPU, and we are not interested in AmgX's CPU
+  capability, so we left out the support AmgX's CPU solvers. Using PETSc's (or
+  third-party's, like Hypre) solvers and preconditioners may be a better choice
+  for CPU capability.
 * Due to our PETSc applications only use AIJ format for sparse matrices, AmgXWrapper
   currently only support AIJ format.
 
