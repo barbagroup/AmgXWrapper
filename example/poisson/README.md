@@ -16,6 +16,10 @@ for 2D, and
 <center>Δu = cos(2πx) cos(2πy) cos(2πz)</center>
 for 3D.
 
+The boundary condition is all-Neumann BC, except that we pin a point as a reference
+point (i.e., apply Dirichlet BC to that point) to avoid singular matrix. We
+choose the point represented by the first row in matrix A as our reference point.
+
 You can solve other Poisson equations with known exact solutions by modifying
 the hard-coded equation in functions `generateRHS` and `generateExt`. The
 computational domain is hard-coded as `Lx=Ly=Lz=1`. You are free to change them.

@@ -183,7 +183,7 @@ SET(SOURCE
     ${SRC}/io.cpp
     ${SRC}/solve.cpp
     ${SRC}/StructArgs.cpp
-    ${SRC}/applyNeumannBC.cpp
+    ${SRC}/fixSingularMat.cpp
     ${AmgXWrapperSRC}/init.cpp
     ${AmgXWrapperSRC}/misc.cpp
     ${AmgXWrapperSRC}/setA.cpp

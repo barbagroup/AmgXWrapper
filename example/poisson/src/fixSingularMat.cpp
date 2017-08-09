@@ -1,17 +1,17 @@
 /**
- * @file applyNeumannBC.cpp
- * @brief Definition of function applyNeumannBC(...)
+ * @file fixSingularMat.cpp
+ * @brief Definition of function fixSingularMat(...)
  * @author Pi-Yueh Chuang (pychuang@gwu.edu)
  * @date 2016-02-13
  */
 
 
 // header
-# include "applyNeumannBC.hpp"
+# include "fixSingularMat.hpp"
 
 
-// definition of applyNeumannBC
-PetscErrorCode applyNeumannBC(Mat &A, Vec &RHS, const Vec &exact)
+// definition of fixSingularMat
+PetscErrorCode fixSingularMat(Mat &A, Vec &RHS, const Vec &exact)
 {
     PetscFunctionBeginUser;
 

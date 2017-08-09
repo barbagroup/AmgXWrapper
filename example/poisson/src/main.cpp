@@ -2,6 +2,9 @@
  * \file main.cpp
  * \brief An example and benchmark of AmgX and PETSc with Poisson system.
  *
+ * This example solves a Poisson equation in 2D and 3D. We use standard central
+ * difference with uniform grid within each direction. 
+
  * The Poisson equation we solve here is
  *      \nabla^2 u(x, y) = -8\pi^2 \cos{2\pi x} \cos{2\pi y}
  * for 2D. And
@@ -13,6 +16,13 @@
  * for 2D. And
  *      u(x, y, z) = \cos{2\pi x} \cos{2\pi y} \cos{2\pi z}
  * for 3D.
+ *
+ * The domain size is Lx = Ly = Lz = 1.
+ * 
+ * The boundary condition is all-Neumann BC, except that we pin a point as a
+ * reference point (i.e., apply Dirichlet BC to that point) to avoid singular
+ * matrix. We choose the point represented by the first row in matrix A as our 
+ * reference point.
  *
  * \author Pi-Yueh Chuang (pychuang@gwu.edu)
  * \date 2015-02-01
@@ -35,7 +45,7 @@
 # include "StructArgs.hpp"
 # include "io.hpp"
 # include "factories.hpp"
-# include "applyNeumannBC.hpp"
+# include "fixSingularMat.hpp"
 # include "createKSP.hpp"
 # include "solve.hpp"
 
@@ -186,8 +196,8 @@ int main(int argc, char **argv)
 
 
 
-    // handle the issue for all-Neumann BC matrix
-    ierr = applyNeumannBC(A, rhs, u_exact); CHKERRQ(ierr);
+    // pin a point with Dirichlet BC to resolve sinular mat due to all-Neumann BC
+    ierr = fixSingularMat(A, rhs, u_exact); CHKERRQ(ierr);
 
 
 
