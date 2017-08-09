@@ -102,6 +102,10 @@ And we have been satisfied with the performance so far.
 * Support other matrix format other than AIJ.
 * Add mechanisms for debugging and error handling.
 
+## Contributing
+
+To contribute to AmgXWrapper, see [CONTRIBUTING](CONTRIBUTING.md).
+
 ## Reference
 
 [1] Chuang, Pi-Yueh; Barba, Lorena A. (2017): Using AmgX to Accelerate PETSc-Based
