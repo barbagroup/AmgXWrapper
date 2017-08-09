@@ -37,14 +37,8 @@ PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
     PetscFunctionBeginUser;
 
     // if this instance has already been initialized, skip
-    if (isInitialized)
-    {
-        ierr = PetscPrintf(globalCpuWorld,
-                "This AmgXWrapper instance has already been initilized. "
-                "Please finalized it first.\n"); CHK;
-
-        PetscFunctionReturn(0);
-    }
+    if (isInitialized) SETERRQ(PETSC_COMM_SELF, PETSC_ERR_ARG_WRONGSTATE,
+            "This AmgXSolver instance has been initialized on this process.");
 
     // increase the number of AmgXSolver instances
     count += 1;

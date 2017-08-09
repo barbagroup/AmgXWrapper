@@ -224,7 +224,10 @@ int main(int argc, char **argv)
     { 
         // AmgX GPU mode
         if (std::strcmp(args.mode, "AmgX_GPU") == 0)
-            amgx.initialize(PETSC_COMM_WORLD, "dDDI", args.cfgFileName);
+        {
+            ierr = amgx.initialize(PETSC_COMM_WORLD, "dDDI", args.cfgFileName);
+            CHKERRQ(ierr);
+        }
         // AmgX CPU mode (not supported yet)
         //else if (std::strcmp(args.mode, "AmgX_CPU") == 0)
         //    amgx.initialize(PETSC_COMM_WORLD, "hDDI", args.cfgFileName);
