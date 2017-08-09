@@ -12,13 +12,7 @@
 
 // macro for simplicity
 # define CHKMSG(flag, message)                  \
-    if (!flag)                                  \
-    {                                           \
-        PetscPrintf(PETSC_COMM_WORLD, message); \
-        PetscPrintf(PETSC_COMM_WORLD, "\n");    \
-        PetscFinalize();                        \
-        exit(EXIT_FAILURE);                     \
-    }
+    if (!flag) SETERRQ(PETSC_COMM_WORLD, 91, message);
 
 
 // definition of StructArgs::print

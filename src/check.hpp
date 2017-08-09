@@ -15,9 +15,9 @@
     const cudaError_t       error = call;                                   \
     if (error != cudaSuccess)                                               \
     {                                                                       \
-        printf("Error: %s:%d, ", __FILE__, __LINE__);                       \
-        printf("code:%d, reason: %s\n", error, cudaGetErrorString(error));  \
-        exit(1);                                                            \
+        SETERRQ4(PETSC_COMM_WORLD, PETSC_ERR_SIG,                           \
+            "Error: %s:%d, code:%d, reason: %s\n",                          \
+            __FILE__, __LINE__, error, cudaGetErrorString(error));          \
     }                                                                       \
 }
 
