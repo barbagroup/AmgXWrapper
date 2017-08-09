@@ -34,8 +34,9 @@ PetscErrorCode solve(KSP &ksp, Mat &A, Vec &lhs, Vec &rhs, Vec &exact, Vec &err,
         KSPConvergedReason      reason; // to store the KSP convergence reason
 
         PetscInt                Niters; // iterations used to converge
+        PetscInt                N; // Vector size
 
-        PetscScalar             norm2,  // L2 norm of solution errors
+        PetscScalar             norm2,  // 2 norm of solution errors
                                 normM;  // infinity norm of solution errors
 
         ierr = KSPGetConvergedReason(ksp, &reason); CHKERRQ(ierr);
@@ -50,10 +51,11 @@ PetscErrorCode solve(KSP &ksp, Mat &A, Vec &lhs, Vec &rhs, Vec &exact, Vec &err,
         ierr = VecAXPY(err, -1.0, exact); CHKERRQ(ierr);
         ierr = VecNorm(err, NORM_2, &norm2); CHKERRQ(ierr);
         ierr = VecNorm(err, NORM_INFINITY, &normM); CHKERRQ(ierr);
+        ierr = VecGetSize(err, &N); CHKERRQ(ierr);
 
         // print infromation
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\tSolve Time: %f\n", time); CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tL2-Norm: %g\n", (double)norm2); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tL2-Norm: %g\n", (double)norm2/PetscSqrtReal(N)); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\tMax-Norm: %g\n", (double)normM); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\tIterations %D\n", Niters); CHKERRQ(ierr); 
 
@@ -134,8 +136,9 @@ PetscErrorCode solve(AmgXSolver &amgx, Mat &A, Vec &lhs, Vec &rhs, Vec &exact, V
         PetscFunctionBeginUser;
 
         PetscInt                Niters; // iterations used to converge
+        PetscInt                N; // Vector size
 
-        PetscScalar             norm2,  // L2 norm of solution errors
+        PetscScalar             norm2,  // 2 norm of solution errors
                                 normM;  // infinity norm of solution errors
 
         ierr = amgx.getIters(Niters); CHKERRQ(ierr);
@@ -145,10 +148,11 @@ PetscErrorCode solve(AmgXSolver &amgx, Mat &A, Vec &lhs, Vec &rhs, Vec &exact, V
         ierr = VecAXPY(err, -1.0, exact); CHKERRQ(ierr);
         ierr = VecNorm(err, NORM_2, &norm2); CHKERRQ(ierr);
         ierr = VecNorm(err, NORM_INFINITY, &normM); CHKERRQ(ierr);
+        ierr = VecGetSize(err, &N); CHKERRQ(ierr);
 
         // print infromation
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\tSolve Time: %f\n", time); CHKERRQ(ierr);
-        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tL2-Norm: %g\n", (double)norm2); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tL2-Norm: %g\n", (double)norm2/PetscSqrtReal(N)); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\tMax-Norm: %g\n", (double)normM); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\tIterations %D\n", Niters); CHKERRQ(ierr); 
 
