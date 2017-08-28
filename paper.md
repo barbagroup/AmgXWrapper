@@ -8,10 +8,13 @@ tags:
 authors:
  - name: Pi-Yueh Chuang
    orcid: 0000-0001-6330-2709
-   affiliation: The George Washington University
+   affiliation: 1
  - name: Lorena A. Barba
    orcid: 0000-0001-5812-2711
-   affiliation: The George Washington University
+   affiliation: 1
+affiliations:
+ - name: The George Washington University
+   index: 1
 date: 02 June 2017
 bibliography: paper.bib
 ---
