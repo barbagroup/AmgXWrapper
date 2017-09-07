@@ -1,5 +1,8 @@
 # AmgXWrapper
 
+[![DOI_JOSS](http://joss.theoj.org/papers/10.21105/joss.00280/status.svg)](http://joss.theoj.org/papers/10.21105/joss.00280)
+[![CITE_BIB](https://img.shields.io/badge/Cite%20AmgXWrapper-bibtex-blue.svg)](http://www.doi2bib.org/#/doi/10.21105/joss.00280)
+
 ## Overview
 
 
@@ -105,6 +108,28 @@ And we have been satisfied with the performance so far.
 ## Contributing
 
 To contribute to AmgXWrapper, see [CONTRIBUTING](CONTRIBUTING.md).
+
+## How to cite
+
+To cite this code, please use the citation or the BibTeX entry below.
+
+> Pi-Yueh Chuang, & Lorena A. Barba (2017). AmgXWrapper: An interface between PETSc and the NVIDIA AmgX library. _J. Open Source Software_, **2**(16):280, [doi:10.21105/joss.00280](http://dx.doi.org/10.21105/joss.00280)
+
+
+```console
+@article{Chuang2017,
+  doi = {10.21105/joss.00280},
+  url = {https://doi.org/10.21105/joss.00280},
+  year  = {2017},
+  month = {aug},
+  publisher = {The Open Journal},
+  volume = {2},
+  number = {16},
+  author = {Pi-Yueh Chuang and Lorena A. Barba},
+  title = {{AmgXWrapper}: An interface between {PETSc} and the {NVIDIA} {AmgX} library},
+  journal = {The Journal of Open Source Software}
+}
+```
 
 ## Reference
 
