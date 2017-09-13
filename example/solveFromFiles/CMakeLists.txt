@@ -36,7 +36,7 @@ SET(CMAKE_BUILD_TYPE RELEASE CACHE STRING "")
 
 SET(PETSC_DIR "$ENV{PETSC_DIR}" CACHE PATH "The path to PETSc.")
 SET(PETSC_ARCH "$ENV{PETSC_ARCH}" CACHE STRING "The specific build of PETSc under PETSC_DIR.")
-SET(CUDA_DIR "$ENV{CUDA_DIR}" CACHE PATH "The path to CUDA 6.5.")
+SET(CUDA_DIR "$ENV{CUDA_DIR}" CACHE PATH "The path to CUDA.")
 SET(AMGX_DIR "$ENV{AMGX_DIR}" CACHE PATH "The path to AmgX.")
 
 
@@ -93,19 +93,19 @@ ENDIF()
 
 
 # =====================================================================
-# CUDA 6.5
+# CUDA
 # =====================================================================
 
 MESSAGE("")
-MESSAGE("-- Finding CUDA 6.5")
+MESSAGE("-- Finding CUDA")
 
 SET(CUDA_TOOLKIT_ROOT_DIR ${CUDA_DIR} CACHE PATH "" FORCE)
 
-FIND_PACKAGE(CUDA 6.5 EXACT REQUIRED)
+FIND_PACKAGE(CUDA REQUIRED)
 
 IF(${CUDA_FOUND})
     SET(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-    MESSAGE("-- Finding CUDA 6.5 - Success")
+    MESSAGE("-- Finding CUDA - Success")
 ENDIF()
 
 
