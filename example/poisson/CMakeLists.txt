@@ -36,7 +36,7 @@ SET(CMAKE_BUILD_TYPE RELEASE CACHE STRING "")
 
 SET(PETSC_DIR "$ENV{PETSC_DIR}" CACHE PATH "The path to PETSc.")
 SET(PETSC_ARCH "$ENV{PETSC_ARCH}" CACHE STRING "The specific build of PETSc under PETSC_DIR.")
-SET(CUDA_DIR "$ENV{CUDA_DIR}" CACHE PATH "The path to CUDA 6.5.")
+SET(CUDA_DIR "$ENV{CUDA_DIR}" CACHE PATH "The path to CUDA.")
 SET(AMGX_DIR "$ENV{AMGX_DIR}" CACHE PATH "The path to AmgX.")
 
 
@@ -93,19 +93,19 @@ ENDIF()
 
 
 # =====================================================================
-# CUDA 6.5
+# CUDA
 # =====================================================================
 
 MESSAGE("")
-MESSAGE("-- Finding CUDA 6.5")
+MESSAGE("-- Finding CUDA")
 
 SET(CUDA_TOOLKIT_ROOT_DIR ${CUDA_DIR} CACHE PATH "" FORCE)
 
-FIND_PACKAGE(CUDA 6.5 EXACT REQUIRED)
+FIND_PACKAGE(CUDA REQUIRED)
 
 IF(${CUDA_FOUND})
     SET(CUDA_LIBRARY_DIRS ${CUDA_TOOLKIT_ROOT_DIR}/lib64)
-    MESSAGE("-- Finding CUDA 6.5 - Success")
+    MESSAGE("-- Finding CUDA - Success")
 ENDIF()
 
 
@@ -120,25 +120,12 @@ MESSAGE("-- Finding amgx_c.h")
 FIND_PATH(AMGX_INCLUDE_DIRS 
           NAMES amgx_c.h  
           PATHS ${AMGX_DIR} $ENV{AMGX_DIR} 
-          PATH_SUFFIXES "include" "examples")
+          PATH_SUFFIXES "base/include" "examples")
 
 IF(${AMGX_INCLUDE_DIRS} STREQUAL "AMGX_INCLUDE_DIRS-NOTFOUND")
     MESSAGE(FATAL_ERROR "Could not find amgx_c.h!!!")
 ELSE()
     MESSAGE("-- Finding amgx_c.h - found in " ${AMGX_INCLUDE_DIRS})
-ENDIF()
-
-
-MESSAGE("-- Finding amgx_capi.h")
-FIND_FILE(AMGX_CAPI_FOUND 
-          NAMES amgx_capi.h 
-          PATHS ${AMGX_INCLUDE_DIRS} 
-          NO_DEFAULT_PATH)
-
-IF(${AMGX_CAPI_FOUND} STREQUAL "AMGX_CAPI_FOUND-NOTFOUND")
-    MESSAGE(FATAL_ERROR "amgx_capi.h was not found in: " ${AMGX_INCLUDE_DIRS})
-ELSE()
-    MESSAGE("-- Finding amgx_capi.h - found")
 ENDIF()
 
 

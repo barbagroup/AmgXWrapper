@@ -63,3 +63,7 @@ tests/benchmarks/configs
 tests/benchmarks/logs
 tests/benchmarks/results
 tests/benchmarks/errors
+
+# Ignore build and install folders
+build
+install
