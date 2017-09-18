@@ -120,25 +120,12 @@ MESSAGE("-- Finding amgx_c.h")
 FIND_PATH(AMGX_INCLUDE_DIRS 
           NAMES amgx_c.h  
           PATHS ${AMGX_DIR} $ENV{AMGX_DIR} 
-          PATH_SUFFIXES "include" "examples")
+          PATH_SUFFIXES "base/include" "examples")
 
 IF(${AMGX_INCLUDE_DIRS} STREQUAL "AMGX_INCLUDE_DIRS-NOTFOUND")
     MESSAGE(FATAL_ERROR "Could not find amgx_c.h!!!")
 ELSE()
     MESSAGE("-- Finding amgx_c.h - found in " ${AMGX_INCLUDE_DIRS})
-ENDIF()
-
-
-MESSAGE("-- Finding amgx_capi.h")
-FIND_FILE(AMGX_CAPI_FOUND 
-          NAMES amgx_capi.h 
-          PATHS ${AMGX_INCLUDE_DIRS} 
-          NO_DEFAULT_PATH)
-
-IF(${AMGX_CAPI_FOUND} STREQUAL "AMGX_CAPI_FOUND-NOTFOUND")
-    MESSAGE(FATAL_ERROR "amgx_capi.h was not found in: " ${AMGX_INCLUDE_DIRS})
-ELSE()
-    MESSAGE("-- Finding amgx_capi.h - found")
 ENDIF()
 
 
