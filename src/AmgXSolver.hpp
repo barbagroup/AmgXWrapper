@@ -368,7 +368,7 @@ class AmgXSolver
          */
         PetscErrorCode getLocalMatRawData(const Mat &localA, 
                 PetscInt &localN, std::vector<PetscInt> &row, 
-                std::vector<Petsc64bitInt> &col, std::vector<PetscScalar> &data);
+                std::vector<PetscInt64> &col, std::vector<PetscScalar> &data);
 
 
         /**

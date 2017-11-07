@@ -91,6 +91,9 @@ MESSAGE("-- Finding PETSc")
 FIND_PACKAGE(PETSc REQUIRED)
 
 IF(${PETSc_FOUND})
+    IF (${PETSC_VERSION} VERSION_LESS "3.8")
+        MESSAGE(FATAL_ERROR "ERROR: the version of PETSc should >= 3.8")
+    ENDIF()
     MESSAGE("-- Finding PETSc - Success")
 ENDIF()
 

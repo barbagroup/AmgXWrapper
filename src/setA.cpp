@@ -28,7 +28,7 @@ PetscErrorCode AmgXSolver::setA(const Mat &A)
                         nLocalRows;
 
     std::vector<PetscInt>       row;
-    std::vector<Petsc64bitInt>  col;
+    std::vector<PetscInt64>     col;
     std::vector<PetscScalar>    data;
     std::vector<PetscInt>       partVec;
 
@@ -213,7 +213,7 @@ PetscErrorCode AmgXSolver::getVecScatter(
 // definition of AmgXSolver::getLocalMatRawData
 PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
         PetscInt &localN, std::vector<PetscInt> &row,
-        std::vector<Petsc64bitInt> &col, std::vector<PetscScalar> &data)
+        std::vector<PetscInt64> &col, std::vector<PetscScalar> &data)
 {
     PetscFunctionBeginUser;
 
@@ -243,7 +243,7 @@ PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
     ierr = MatSeqAIJGetArray(localA, &rawData); CHK;
 
     // copy values to STL vector. Note: there is an implicit conversion from 
-    // PetscInt to Petsc64bitInt for the column vector
+    // PetscInt to PetscInt64 for the column vector
     col.assign(rawCol, rawCol+rawRow[localN]);
     row.assign(rawRow, rawRow+localN+1);
     data.assign(rawData, rawData+rawRow[localN]);

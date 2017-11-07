@@ -121,6 +121,8 @@ int main(int argc, char **argv)
                 PETSC_DECIDE, PETSC_DECIDE, PETSC_DECIDE,
                 1, 1, nullptr, nullptr, nullptr, &grid); CHKERRQ(ierr);
 
+        ierr = DMSetUp(grid); CHKERRQ(ierr);
+        
         ierr = DMDASetUniformCoordinates(grid, 0., Lx, 0., Ly, 0., Lz); CHKERRQ(ierr);
     }
     else if (args.Nz == 0)
@@ -131,6 +133,8 @@ int main(int argc, char **argv)
                 args.Nx, args.Ny,
                 PETSC_DECIDE, PETSC_DECIDE,
                 1, 1, nullptr, nullptr, &grid); CHKERRQ(ierr);
+
+        ierr = DMSetUp(grid); CHKERRQ(ierr);
 
         ierr = DMDASetUniformCoordinates(grid, 0., Lx, 0., Ly, 0., 0.); CHKERRQ(ierr);
     }
