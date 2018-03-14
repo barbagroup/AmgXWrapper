@@ -304,6 +304,12 @@ PetscErrorCode AmgXSolver::finalize()
         ierr = MPI_Comm_free(&gpuWorld); CHK;
     }
 
+    // destroy PETSc objects
+    ierr = VecScatterDestroy(&scatterLhs); CHK;
+    ierr = VecScatterDestroy(&scatterRhs); CHK;
+    ierr = VecDestroy(&redistLhs); CHK;
+    ierr = VecDestroy(&redistRhs); CHK;
+
     // re-set necessary variables in case users want to reuse 
     // the variable of this instance for a new instance
     gpuProc = MPI_UNDEFINED;
