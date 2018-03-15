@@ -72,6 +72,9 @@ PetscErrorCode AmgXSolver::setA(const Mat &A)
     }
     ierr = MPI_Barrier(globalCpuWorld); CHK;
 
+    // destroy temporary PETSc objects
+    ierr = ISDestroy(&devIS); CHK;
+
     PetscFunctionReturn(0);
 }
 
@@ -82,6 +85,7 @@ PetscErrorCode AmgXSolver::getDevIS(const Mat &A, IS &devIS)
     PetscFunctionBeginUser;
 
     PetscErrorCode      ierr;
+    IS                  tempIS;
 
     // get index sets of A locally owned by each process
     // note that devIS is now a serial IS on each process
@@ -89,12 +93,14 @@ PetscErrorCode AmgXSolver::getDevIS(const Mat &A, IS &devIS)
 
     // concatenate index sets that belong to the same devWorld
     // note that now devIS is a parallel IS of communicator devWorld
-    ierr = ISOnComm(devIS, devWorld, PETSC_USE_POINTER, &devIS); CHK;
+    ierr = ISOnComm(devIS, devWorld, PETSC_USE_POINTER, &tempIS); CHK;
+    ierr = ISDestroy(&devIS); CHK;
 
     // all gather in order to have all indices belong to a devWorld on the 
     // leading rank of that devWorld. THIS IS NOT EFFICIENT!!
     // note that now devIS is again a serial IS on each process
-    ierr = ISAllGather(devIS, &devIS); CHK;
+    ierr = ISAllGather(tempIS, &devIS); CHK;
+    ierr = ISDestroy(&tempIS); CHK;
 
     // empty devIS on ranks other than the leading ranks in each devWorld 
     if (myDevWorldRank != 0) 
