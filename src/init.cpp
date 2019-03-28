@@ -1,8 +1,10 @@
 /**
  * \file init.cpp
- * \brief definition of some member functions of the class AmgXSolver.
+ * \brief Definition of some member functions of the class AmgXSolver.
  * \author Pi-Yueh Chuang (pychuang@gwu.edu)
  * \date 2016-01-08
+ * \copyright Copyright (c) 2015-2019 Pi-Yueh Chuang, Lorena A. Barba.
+ *            This project is released under MIT License.
  */
 
 
@@ -13,7 +15,7 @@
 # include "AmgXSolver.hpp"
 
 
-// definition of AmgXSolver::AmgXSolver
+/* \implements AmgXSolver::AmgXSolver */
 AmgXSolver::AmgXSolver(const MPI_Comm &comm,
         const std::string &modeStr, const std::string &cfgFile)
 {
@@ -21,14 +23,14 @@ AmgXSolver::AmgXSolver(const MPI_Comm &comm,
 }
 
 
-// definition of overload AmgXSolver::~AmgXSolver
+/* \implements AmgXSolver::~AmgXSolver */
 AmgXSolver::~AmgXSolver()
 {
     if (isInitialized) finalize();
 }
 
 
-// definition of AmgXSolver::initialize
+/* \implements AmgXSolver::initialize */
 PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
         const std::string &modeStr, const std::string &cfgFile)
 {
@@ -68,7 +70,7 @@ PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
 }
 
 
-// definition of AmgXSolver::initMPIcomms
+/* \implements AmgXSolver::initMPIcomms */
 PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
 {
     PetscErrorCode      ierr;
@@ -85,7 +87,7 @@ PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
 
 
     // Get the communicator for processors on the same node (local world)
-    ierr = MPI_Comm_split_type(globalCpuWorld, 
+    ierr = MPI_Comm_split_type(globalCpuWorld,
             MPI_COMM_TYPE_SHARED, 0, MPI_INFO_NULL, &localCpuWorld); CHK;
     ierr = MPI_Comm_set_name(localCpuWorld, "localCpuWorld"); CHK;
 
@@ -118,7 +120,7 @@ PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
         gpuWorldSize = MPI_UNDEFINED;
         myGpuWorldRank = MPI_UNDEFINED;
     }
-    
+
 
     // split local world into worlds corresponding to each CUDA device
     ierr = MPI_Comm_split(localCpuWorld, devID, 0, &devWorld); CHK;
@@ -134,7 +136,7 @@ PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
 }
 
 
-// definition of AmgXSolver::setDeviceCount
+/* \implements AmgXSolver::setDeviceCount */
 PetscErrorCode AmgXSolver::setDeviceCount()
 {
     PetscFunctionBeginUser;
@@ -164,7 +166,7 @@ PetscErrorCode AmgXSolver::setDeviceCount()
 }
 
 
-// definition of AmgXSolver::setDeviceIDs
+/* \implements AmgXSolver::setDeviceIDs */
 PetscErrorCode AmgXSolver::setDeviceIDs()
 {
     PetscFunctionBeginUser;
@@ -207,7 +209,7 @@ PetscErrorCode AmgXSolver::setDeviceIDs()
 }
 
 
-// definition of AmgXSolver::initAmgX
+/* \implements AmgXSolver::initAmgX */
 PetscErrorCode AmgXSolver::initAmgX(const std::string &cfgFile)
 {
     PetscFunctionBeginUser;
@@ -224,7 +226,7 @@ PetscErrorCode AmgXSolver::initAmgX(const std::string &cfgFile)
         // only the master process can output something on the screen
         AMGX_SAFE_CALL(AMGX_register_print_callback(
                     [](const char *msg, int length)->void
-                    {PetscPrintf(PETSC_COMM_WORLD, "%s", msg);})); 
+                    {PetscPrintf(PETSC_COMM_WORLD, "%s", msg);}));
 
         // let AmgX to handle errors returned
         AMGX_SAFE_CALL(AMGX_install_signal_handler());
@@ -256,7 +258,7 @@ PetscErrorCode AmgXSolver::initAmgX(const std::string &cfgFile)
 }
 
 
-// definition of AmgXSolver::finalize
+/* \implements AmgXSolver::finalize */
 PetscErrorCode AmgXSolver::finalize()
 {
     PetscErrorCode      ierr;
@@ -310,7 +312,7 @@ PetscErrorCode AmgXSolver::finalize()
     ierr = VecDestroy(&redistLhs); CHK;
     ierr = VecDestroy(&redistRhs); CHK;
 
-    // re-set necessary variables in case users want to reuse 
+    // re-set necessary variables in case users want to reuse
     // the variable of this instance for a new instance
     gpuProc = MPI_UNDEFINED;
     ierr = MPI_Comm_free(&globalCpuWorld); CHK;

@@ -1,5 +1,4 @@
-## Build and install
---------------------------
+# Build and install
 
 We suggest two different ways to build or install AmgXWrapper.
 

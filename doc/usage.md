@@ -1,5 +1,4 @@
-## Usage
----------
+# Usage
 
 Using AmgX is simple (and this is what we intended to do!).
 

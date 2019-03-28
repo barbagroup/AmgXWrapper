@@ -1,5 +1,4 @@
 # Example: solveFromFiles
-------------------------
 
 This example reads binary files of PETSc Mat and Vecs and solve the system. It
 also shows how to directly include the source files of AmgXWrapper in a PETSc

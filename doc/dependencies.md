@@ -1,5 +1,4 @@
-## Dependencies
-----------------
+# Dependencies
 
 * [OpenMPI 1.8](https://www.open-mpi.org/software/ompi/v1.8/)
 * [CUDA 6.5](https://developer.nvidia.com/cuda-toolkit-65)

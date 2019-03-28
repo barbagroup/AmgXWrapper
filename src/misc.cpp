@@ -1,8 +1,10 @@
 /**
  * \file misc.cpp
- * \brief definition of some member functions of the class AmgXSolver.
+ * \brief Definition of some member functions of the class AmgXSolver.
  * \author Pi-Yueh Chuang (pychuang@gwu.edu)
  * \date 2016-01-08
+ * \copyright Copyright (c) 2015-2019 Pi-Yueh Chuang, Lorena A. Barba.
+ *            This project is released under MIT License.
  */
 
 
@@ -10,7 +12,7 @@
 # include "AmgXSolver.hpp"
 
 
-// definition of AmgXSolver::setMode
+/* \implements AmgXSolver::setMode */
 PetscErrorCode AmgXSolver::setMode(const std::string &modeStr)
 {
     PetscFunctionBeginUser;
@@ -34,20 +36,20 @@ PetscErrorCode AmgXSolver::setMode(const std::string &modeStr)
 }
 
 
-// definition of AmgXSolver::getIters
+/* \implements AmgXSolver::getIters */
 PetscErrorCode AmgXSolver::getIters(int &iter)
 {
     PetscFunctionBeginUser;
 
     // only processes using AmgX will try to get # of iterations
     if (gpuProc == 0)
-        AMGX_solver_get_iterations_number(solver, &iter); 
+        AMGX_solver_get_iterations_number(solver, &iter);
 
     PetscFunctionReturn(0);
 }
 
 
-// definition of AmgXSolver::getResidual
+/* \implements AmgXSolver::getResidual */
 PetscErrorCode AmgXSolver::getResidual(const int &iter, double &res)
 {
     PetscFunctionBeginUser;

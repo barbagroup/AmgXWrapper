@@ -1,5 +1,4 @@
-## Test
---------
+# Test
 
 To test the code, you can use the [Poisson example](../example/poisson). This
 example solves a Poisson equation which we already know the exact solution.

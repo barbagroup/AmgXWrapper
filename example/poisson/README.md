@@ -1,5 +1,4 @@
 # Example: poisson
-------------------------
 
 This example solves a Poisson equation in 2D and 3D. We use standard central
 difference with uniform grid within each direction. The exact solutions are
