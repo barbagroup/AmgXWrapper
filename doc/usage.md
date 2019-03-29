@@ -123,6 +123,6 @@ delete solver;
 ```
 
 **Note:**  
-If memory leak is an issue, all `AmgXSolver` instances must be finalized
+If memory leak is a concern, all `AmgXSolver` instances must be finalized
 before calling `PetscFinalize()`. This is because there are some PETSc data
 in `AmgXSolver` instances.
