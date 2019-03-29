@@ -8,11 +8,11 @@
 </a>
 
 AmgXWrapper simplifies the usage of AmgX when using AmgX together with PETSc.
-Specifically when the number of MPI processes is greater than the number of GPU
-devices, this wrapper will do the system consolidation/data scattering/data 
-gathering automatically. So there's always only one MPI process using each GPU 
-and no resource competition. Though we currently only support PETSc, we hope 
-this wrapper can work with other libraries in the future.
+A unique feature is that when the number of MPI processes is greater than the 
+number of GPU devices, this wrapper will do the system consolidation/data 
+scattering/data gathering automatically. So there's always only one MPI process
+using each GPU and no resource competition. Though we currently only support PETSc,
+we hope this wrapper can work with other libraries in the future.
 
 The usage is simple. 
 Just follow the procedure: ***initialize -> set matrix A -> solve -> finalize***. 
@@ -63,34 +63,32 @@ for other kinds of PETSc-based applications. We are trying to make it more gener
 
 ## Feature: system consolidation when the number of MPI processes is greater than number of GPUs
 
-If a user ever tries to using AmgX directly without this wrapper, and when 
+If a user ever tries to use AmgX directly without this wrapper, and when 
 multiple MPI processes are sharing a GPU device, AmgX does not deliver 
-satisfying performance. One feature of this wrapper is to resolve this problem.
+a satisfying performance. One feature of this wrapper is to resolve this problem.
 
-Our solution is to always allow only one MPI process to call AmgX on each GPU.
-In order to achieve this, this wrapper will only call AmgX at certain MPI 
-processes when the number of MPI processes is greater than the number of GPUs. 
-The matrix will be consolidated. Data on other processes will be gathered to 
-those calling AmgX before solving, and then scattered back after.
+Our solution is always to allow only one MPI process to call AmgX on each GPU.
+In other words, only certain MPI processes can talk to GPUs when the number
+of MPI processes is greater than the number of GPUs. The wrapper will consolidate
+matrix. Data on other processes will be gathered to the processes that can talk
+to AmgX before solving, and then scattered back afterward.
 
-For example, if there are totally 18 MPI processes and 6 GPUs (12 MPI processes 
+For example, if there are 18 MPI processes and 6 GPUs (12 MPI processes 
 and 2 GPUs on node 1, and 6 MPI processes and 4 GPUs on node 2), only the rank 0, 6, 
 12, 14, 16, 17 can talk to GPUs and will call AmgX solvers. Data on rank 1-5 
 will be gathered to rank 0; data on rank 7-11 will go to rank 6; data on rank 
-13 and 15 go to rank 12 and 14, respectively; and both rank 16 and 17 enjoys a 
+13 and 15 go to rank 12 and 14, respectively; and both rank 16 and 17 enjoy a 
 single GPU by itself. This causes some penalties on computing time because of 
 communications between processes. However, the overall performance is much 
 better than calling AmgX solvers from all processes directly.
 
-The redistribution method may be naive, but it's working. And we have been 
-satisfied with the performance so far.
+The redistribution method may be naive, but it's working. We are satisfied with
+the performance so far.
 
 ## Limitation
 
 * CPU version of AmgX solver (i.e., `hDDI` mode in AmgX or `AmgX_CPU` option
-  in our Poisson example) is not supported in this wrapper. Some APIs in the current
-  AmgX version don't work on CPU. Also, we are not interested in AmgX's CPU
-  capability, so we left out the support of AmgX's CPU solvers. Using PETSc's (or
+  in our Poisson example) is not supported in this wrapper. Using PETSc's (or
   third-party's, like Hypre) solvers and preconditioners may be a better choice
   for CPU capability.
 * Due to our PETSc applications only use AIJ format for sparse matrices, 
