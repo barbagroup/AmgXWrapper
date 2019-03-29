@@ -7,13 +7,14 @@ We suggest two different ways to build or install AmgXWrapper.
 
 Since AmgXWrapper doesn't have a lot of code or complex hierarchy, it's very 
 easy to include the source code in the building process of your applications.
-The `poisson` and `solveFromFiles` in the folder `example` are this case.
+The `poisson` and `solveFromFiles` in the folder `example` belong to this use 
+case.
 
 ## 2. Build and install AmgXWrapper with CMake
 ------------------------------------------------
 
 AmgXWrapper can be compiled and built as a library and can be installed to a 
-user's prefered path. We provide `CMakeList.txt` for this purpose.
+user's preferred path. We provide `CMakeLists.txt` for this purpose.
 Our CFD solver, [PetIBM](https://github.com/barbagroup/petibm) is an example
 of using AmgXWrapper as a library.
 
@@ -78,8 +79,8 @@ $ make -j <number of threads used to compiling>
 
 ### Step 4 (optional)
 
-If Doxygen exists, and if CMake is able to find Doxygen, the API documentation 
-with can be built with
+If Doxygen exists, and if CMake is able to find Doxygen, the API documentation
+can be built with
 
 ```bash
 $ make doc
