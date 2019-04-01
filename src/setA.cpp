@@ -1,8 +1,10 @@
 /**
  * \file setA.cpp
- * \brief definition of member functions regarding to setting A in AmgXSolver.
+ * \brief Definition of member functions regarding setting A in AmgXSolver.
  * \author Pi-Yueh Chuang (pychuang@gwu.edu)
  * \date 2016-01-08
+ * \copyright Copyright (c) 2015-2019 Pi-Yueh Chuang, Lorena A. Barba.
+ *            This project is released under MIT License.
  */
 
 
@@ -13,7 +15,7 @@
 # include "AmgXSolver.hpp"
 
 
-// definition of AmgXSolver::setA
+/* \implements AmgXSolver::setA */
 PetscErrorCode AmgXSolver::setA(const Mat &A)
 {
     PetscFunctionBeginUser;
@@ -58,8 +60,8 @@ PetscErrorCode AmgXSolver::setA(const Mat &A)
         ierr = MPI_Barrier(gpuWorld); CHK;
 
         AMGX_matrix_upload_all_global(
-                AmgXA, nGlobalRows, nLocalRows, row[nLocalRows], 
-                1, 1, row.data(), col.data(), data.data(), 
+                AmgXA, nGlobalRows, nLocalRows, row[nLocalRows],
+                1, 1, row.data(), col.data(), data.data(),
                 nullptr, ring, ring, partVec.data());
 
         // bind the matrix A to the solver
@@ -79,7 +81,7 @@ PetscErrorCode AmgXSolver::setA(const Mat &A)
 }
 
 
-// definition of AmgXSolver::getDevIS
+/* \implements AmgXSolver::getDevIS */
 PetscErrorCode AmgXSolver::getDevIS(const Mat &A, IS &devIS)
 {
     PetscFunctionBeginUser;
@@ -96,14 +98,14 @@ PetscErrorCode AmgXSolver::getDevIS(const Mat &A, IS &devIS)
     ierr = ISOnComm(devIS, devWorld, PETSC_USE_POINTER, &tempIS); CHK;
     ierr = ISDestroy(&devIS); CHK;
 
-    // all gather in order to have all indices belong to a devWorld on the 
+    // all gather in order to have all indices belong to a devWorld on the
     // leading rank of that devWorld. THIS IS NOT EFFICIENT!!
     // note that now devIS is again a serial IS on each process
     ierr = ISAllGather(tempIS, &devIS); CHK;
     ierr = ISDestroy(&tempIS); CHK;
 
-    // empty devIS on ranks other than the leading ranks in each devWorld 
-    if (myDevWorldRank != 0) 
+    // empty devIS on ranks other than the leading ranks in each devWorld
+    if (myDevWorldRank != 0)
         ierr = ISGeneralSetIndices(devIS, 0, nullptr, PETSC_COPY_VALUES); CHK;
 
     // devIS is not guaranteed to be sorted. We sort it here.
@@ -113,7 +115,7 @@ PetscErrorCode AmgXSolver::getDevIS(const Mat &A, IS &devIS)
 }
 
 
-// definition of AmgXSolver::getLocalA
+/* \implements AmgXSolver::getLocalA */
 PetscErrorCode AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
 {
     PetscFunctionBeginUser;
@@ -160,7 +162,7 @@ PetscErrorCode AmgXSolver::getLocalA(const Mat &A, const IS &devIS, Mat &localA)
 }
 
 
-// definition of AmgXSolver::redistMat
+/* \implements AmgXSolver::redistMat */
 PetscErrorCode AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
 {
     PetscFunctionBeginUser;
@@ -192,7 +194,7 @@ PetscErrorCode AmgXSolver::redistMat(const Mat &A, const IS &devIS, Mat &newA)
 }
 
 
-// definition of AmgXSolver::getVecScatter
+/* \implements AmgXSolver::getVecScatter */
 PetscErrorCode AmgXSolver::getVecScatter(
         const Mat &A1, const Mat &A2, const IS &devIS)
 {
@@ -208,7 +210,7 @@ PetscErrorCode AmgXSolver::getVecScatter(
 
     ierr = VecScatterCreate(tempLhs, devIS, redistLhs, devIS, &scatterLhs); CHK;
     ierr = VecScatterCreate(tempRhs, devIS, redistRhs, devIS, &scatterRhs); CHK;
-    
+
     ierr = VecDestroy(&tempRhs); CHK;
     ierr = VecDestroy(&tempLhs); CHK;
 
@@ -216,7 +218,7 @@ PetscErrorCode AmgXSolver::getVecScatter(
 }
 
 
-// definition of AmgXSolver::getLocalMatRawData
+/* \implements AmgXSolver::getLocalMatRawData */
 PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
         PetscInt &localN, std::vector<PetscInt> &row,
         std::vector<PetscInt64> &col, std::vector<PetscScalar> &data)
@@ -225,7 +227,7 @@ PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
 
     PetscErrorCode      ierr;
 
-    const PetscInt      *rawCol, 
+    const PetscInt      *rawCol,
                         *rawRow;
 
     PetscScalar         *rawData;
@@ -248,7 +250,7 @@ PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
     // get data
     ierr = MatSeqAIJGetArray(localA, &rawData); CHK;
 
-    // copy values to STL vector. Note: there is an implicit conversion from 
+    // copy values to STL vector. Note: there is an implicit conversion from
     // PetscInt to PetscInt64 for the column vector
     col.assign(rawCol, rawCol+rawRow[localN]);
     row.assign(rawRow, rawRow+localN+1);
@@ -270,7 +272,7 @@ PetscErrorCode AmgXSolver::getLocalMatRawData(const Mat &localA,
 }
 
 
-// definition of AmgXSolver::destroyLocalA
+/* \implements AmgXSolver::destroyLocalA */
 PetscErrorCode AmgXSolver::destroyLocalA(const Mat &A, Mat &localA)
 {
     PetscFunctionBeginUser;
@@ -297,7 +299,7 @@ PetscErrorCode AmgXSolver::destroyLocalA(const Mat &A, Mat &localA)
 }
 
 
-// definition of AmgXSolver::getPartVec
+/* \implements AmgXSolver::getPartVec */
 PetscErrorCode AmgXSolver::getPartVec(
         const IS &devIS, const PetscInt &N, std::vector<PetscInt> &partVec)
 {
@@ -308,26 +310,26 @@ PetscErrorCode AmgXSolver::getPartVec(
     VecScatter          scatter;
     Vec                 tempMPI,
                         tempSEQ;
-    
+
     PetscInt            n;
 
-    PetscScalar         *tempPartVec; 
+    PetscScalar         *tempPartVec;
 
     ierr = ISGetLocalSize(devIS, &n); CHK;
 
     if (gpuWorld != MPI_COMM_NULL)
     {
         ierr = VecCreateMPI(gpuWorld, n, N, &tempMPI); CHK;
-    
+
         IS      is;
         ierr = ISOnComm(devIS, gpuWorld, PETSC_USE_POINTER, &is); CHK;
         ierr = VecISSet(tempMPI, is, (PetscScalar) myGpuWorldRank); CHK;
         ierr = ISDestroy(&is); CHK;
 
         ierr = VecScatterCreateToAll(tempMPI, &scatter, &tempSEQ); CHK;
-        ierr = VecScatterBegin(scatter, 
+        ierr = VecScatterBegin(scatter,
                 tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD); CHK;
-        ierr = VecScatterEnd(scatter, 
+        ierr = VecScatterEnd(scatter,
                 tempMPI, tempSEQ, INSERT_VALUES, SCATTER_FORWARD); CHK;
         ierr = VecScatterDestroy(&scatter); CHK;
         ierr = VecDestroy(&tempMPI); CHK;

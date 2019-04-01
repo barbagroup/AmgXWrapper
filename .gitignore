@@ -67,3 +67,7 @@ tests/benchmarks/errors
 # Ignore build and install folders
 build
 install
+
+# Doxygen outputs
+doc/html
+doc/latex

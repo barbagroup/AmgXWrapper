@@ -1,8 +1,10 @@
 /**
  * @file solve.cpp
- * @brief definition of member functions regarding to solving in AmgXSolver.
+ * @brief Definition of member functions regarding solving in AmgXSolver.
  * @author Pi-Yueh Chuang (pychuang@gwu.edu)
  * @date 2016-01-08
+ * \copyright Copyright (c) 2015-2019 Pi-Yueh Chuang, Lorena A. Barba.
+ *            This project is released under MIT License.
  */
 
 
@@ -10,7 +12,7 @@
 # include "AmgXSolver.hpp"
 
 
-// definition of AmgXSolver::solve
+/* \implements AmgXSolver::solve */
 PetscErrorCode AmgXSolver::solve(Vec &p, Vec &b)
 {
     PetscFunctionBeginUser;
@@ -19,14 +21,14 @@ PetscErrorCode AmgXSolver::solve(Vec &p, Vec &b)
 
     if (globalSize != gpuWorldSize)
     {
-        ierr = VecScatterBegin(scatterRhs, 
+        ierr = VecScatterBegin(scatterRhs,
                 b, redistRhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
-        ierr = VecScatterBegin(scatterLhs, 
+        ierr = VecScatterBegin(scatterLhs,
                 p, redistLhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
 
-        ierr = VecScatterEnd(scatterRhs, 
+        ierr = VecScatterEnd(scatterRhs,
                 b, redistRhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
-        ierr = VecScatterEnd(scatterLhs, 
+        ierr = VecScatterEnd(scatterLhs,
                 p, redistLhs, INSERT_VALUES, SCATTER_FORWARD); CHK;
 
         if (gpuWorld != MPI_COMM_NULL)
@@ -35,9 +37,9 @@ PetscErrorCode AmgXSolver::solve(Vec &p, Vec &b)
         }
         ierr = MPI_Barrier(globalCpuWorld); CHK;
 
-        ierr = VecScatterBegin(scatterLhs, 
+        ierr = VecScatterBegin(scatterLhs,
                 redistLhs, p, INSERT_VALUES, SCATTER_REVERSE); CHK;
-        ierr = VecScatterEnd(scatterLhs, 
+        ierr = VecScatterEnd(scatterLhs,
                 redistLhs, p, INSERT_VALUES, SCATTER_REVERSE); CHK;
     }
     else
@@ -53,7 +55,7 @@ PetscErrorCode AmgXSolver::solve(Vec &p, Vec &b)
 }
 
 
-// definition of AmgXSolver::solve_real
+/* \implements AmgXSolver::solve_real */
 PetscErrorCode AmgXSolver::solve_real(Vec &p, Vec &b)
 {
     PetscFunctionBeginUser;
@@ -86,7 +88,7 @@ PetscErrorCode AmgXSolver::solve_real(Vec &p, Vec &b)
     AMGX_solver_get_status(solver, &status);
 
     // check whether the solver successfully solve the problem
-    if (status != AMGX_SOLVE_SUCCESS) SETERRQ1(globalCpuWorld, 
+    if (status != AMGX_SOLVE_SUCCESS) SETERRQ1(globalCpuWorld,
             PETSC_ERR_CONV_FAILED, "AmgX solver failed to solve the system! "
             "The error code is %d.\n", status);
 

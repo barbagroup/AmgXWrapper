@@ -1,5 +1,4 @@
 # Example: solveFromFiles
-------------------------
 
 This example reads binary files of PETSc Mat and Vecs and solve the system. It
 also shows how to directly include the source files of AmgXWrapper in a PETSc
@@ -50,14 +49,14 @@ folder `bin`, and the example of solver configuration files are in the folder
 ## Running `solveFromFiles`
 --------------------------
 
-Assume you are now in the `build` folder we used in the previous section. To
+Assume we are now in the `build` folder. To
 see all command line arguments for `solveFromFiles`, use
 
 ```bash
 $ bin/solveFromFiles -print
 ```
 
-Note, if you use `-help` instead of `-print`, you will get all PETSc arguments.
+Note, if using `-help` instead of `-print`, we will get all PETSc arguments.
 
 To run a test with PETSc and with 4 CPU cores, for example,
 
@@ -84,4 +83,4 @@ $ mpiexec -n 4 bin/solveFromFiles \
     and tests and just want to solve a system.
 
 Note, for argument `-mode`, available options are `PETSc` and `AmgX_GPU`.
-CPU version of AmgX solver is not supported in the wrapper and this example.
+CPU version of AmgX solver is not supported.

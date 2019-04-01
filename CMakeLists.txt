@@ -126,7 +126,7 @@ MESSAGE("-- Finding amgx_c.h")
 FIND_PATH(AMGX_INCLUDE_DIRS 
           NAMES amgx_c.h  
           PATHS ${AMGX_DIR} $ENV{AMGX_DIR} 
-          PATH_SUFFIXES "base/include" "examples")
+          PATH_SUFFIXES "include" "base/include" "examples")
 
 IF(${AMGX_INCLUDE_DIRS} STREQUAL "AMGX_INCLUDE_DIRS-NOTFOUND")
     MESSAGE(FATAL_ERROR "Could not find amgx_c.h!!!")
@@ -152,7 +152,7 @@ MESSAGE("-- Finding libamgxsh.so")
 FIND_LIBRARY(AMGX_LIBRARIES
              NAMES amgxsh
              PATHS ${AMGX_DIR} $ENV{AMGX_DIR}
-             PATH_SUFFIXES "lib")
+             PATH_SUFFIXES "lib" "lib64")
 
 IF(${AMGX_LIBRARIES} STREQUAL "AMGX_LIBRARIES-NOTFOUND")
     MESSAGE(FATAL_ERROR "libamgxsh.so was not found")
