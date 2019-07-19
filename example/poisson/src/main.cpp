@@ -85,10 +85,12 @@ int main(int argc, char **argv)
                         myRank; // rank of current process
 
     PetscClassId        solvingID,
-                        warmUpID;
+                        warmUpID,
+                        setAID;
 
     PetscLogEvent       solvingEvent,
-                        warmUpEvent;
+                        warmUpEvent,
+                        setAEvent;
 
 
 
@@ -208,8 +210,10 @@ int main(int argc, char **argv)
     // register a PETSc event for warm-up and solving
     ierr = PetscClassIdRegister("SolvingClass", &solvingID); CHKERRQ(ierr);
     ierr = PetscClassIdRegister("WarmUpClass", &warmUpID); CHKERRQ(ierr);
+    ierr = PetscClassIdRegister("SetAClass", &setAID); CHKERRQ(ierr);
     ierr = PetscLogEventRegister("Solving", solvingID, &solvingEvent); CHKERRQ(ierr);
     ierr = PetscLogEventRegister("WarmUp", warmUpID, &warmUpEvent); CHKERRQ(ierr);
+    ierr = PetscLogEventRegister("setA", setAID, &setAEvent); CHKERRQ(ierr);
 
 
 
@@ -240,7 +244,9 @@ int main(int argc, char **argv)
 
 
         ierr = MPI_Barrier(PETSC_COMM_WORLD); CHKERRQ(ierr);
+        PetscLogEventBegin(setAEvent, 0, 0, 0, 0);
         ierr = amgx.setA(A); CHKERRQ(ierr);
+        PetscLogEventEnd(setAEvent, 0, 0, 0, 0);
 
         ierr = solve(amgx, A, lhs, rhs, u_exact, err, 
                 args, warmUpEvent, solvingEvent); CHKERRQ(ierr);

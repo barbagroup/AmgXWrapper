@@ -3,12 +3,12 @@
 So far the, the following sets of dependencies and versions have been tested and
 worked with AmgXWrapper:
 
-#### Using AmgX GitHub Repository -- commit 3049527e0c396424df4582e837f9dd89a20f50df
+#### Using AmgX GitHub Repository -- commit aba9132119fd9efde679f41369628c04e3452a14
 
 * [OpenMPI v4.0.0](https://www.open-mpi.org/software/ompi/v4.0/)
 * [CUDA v10.0.130](https://developer.nvidia.com/cuda-10.0-download-archive)
 * [PETSc v3.10.4](https://www.mcs.anl.gov/petsc/download/index.html)
-* [AmgX GitHub commit 3049527](https://github.com/NVIDIA/AMGX/tree/3049527e0c396424df4582e837f9dd89a20f50df)
+* [AmgX GitHub commit aba9132](https://github.com/NVIDIA/AMGX/commit/aba9132119fd9efde679f41369628c04e3452a14)
 
 The C and C++ compilers for this set of dependencies are GCC 7.
 
