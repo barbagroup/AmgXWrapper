@@ -4,6 +4,7 @@
  * \author Pi-Yueh Chuang (pychuang@gwu.edu)
  * \date 2015-09-01
  * \copyright Copyright (c) 2015-2019 Pi-Yueh Chuang, Lorena A. Barba.
+ * \copyright Copyright (c) 2019, NVIDIA CORPORATION. All rights reserved.
  *            This project is released under MIT License.
  */
 
@@ -403,16 +404,34 @@ class AmgXSolver
          */
         PetscErrorCode destroyLocalA(const Mat &A, Mat &localA);
 
+        /** \brief Check whether the global matrix distribution is contiguous
+         *
+         * If the global matrix is distributed such that contiguous chunks of rows are
+         * distributed over the individual ranks in ascending rank order, the partition vector
+         * has trivial structure (i.e. [0, ..., 0, 1, ..., 1, ..., R-1, ..., R-1] for R ranks) and
+         * its calculation can be skipped since all information is available to AmgX through
+         * the number of ranks and the partition *offsets* (i.e. how many rows are on each rank).
+         *
+         * \param devIS [in] PETSc IS representing redistributed row indices.
+         * \param isContiguous [out] Whether the global matrix is contiguously distributed.
+         * \param partOffsets [out] If contiguous, holds the partition offsets for all R ranks
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode checkForContiguousPartitioning(
+            const IS &devIS, PetscBool &isContiguous, std::vector<PetscInt> &partOffsets);
 
-        /** \brief Get a partition vector required by AmgX.
+        /** \brief Get partition data required by AmgX.
          *
          * \param devIS [in] PETSc IS representing redistributed row indices.
          * \param N [in] Total number of rows in global matrix.
-         * \param partVec [out] Partition vector.
+         * \param partData [out] Partition data, either explicit vector or offsets.
+         * \param usesOffsets [out] If PETSC_TRUE, partitioning is contiguous and partData contains
+         *      partition offsets, see checkForContiguousPartitioning(). Otherwise, contains explicit 
+         *      partition vector.
          * \return PetscErrorCode.
          */
-        PetscErrorCode getPartVec(const IS &devIS,
-                const PetscInt &N, std::vector<PetscInt> &partVec);
+        PetscErrorCode getPartData(const IS &devIS,
+                const PetscInt &N, std::vector<PetscInt> &partData, PetscBool &usesOffsets);
 
 
         /** \brief Function that actually solves the system.
