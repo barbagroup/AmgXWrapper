@@ -48,6 +48,7 @@
 # include "fixSingularMat.hpp"
 # include "createKSP.hpp"
 # include "solve.hpp"
+# include "petscToCSR.hpp"
 
 
 int main(int argc, char **argv)
@@ -70,8 +71,8 @@ int main(int argc, char **argv)
                         y,      // y-coordinates
                         z;      // z-coordinates
 
-    Vec                 lhs,      // unknowns
-                        rhs,    // RHS
+    Vec                 lhs_petsc,      // unknowns
+                        rhs_petsc,    // RHS
                         u_exact,// exact solution
                         err;    // errors
 
@@ -148,14 +149,14 @@ int main(int argc, char **argv)
     }
     ierr = DMSetMatType(grid, MATAIJ); CHKERRQ(ierr);
 
-            
+
 
     // create vectors (x, y, p, b, u) and matrix A
     {
         ierr = DMCreateGlobalVector(grid, &x); CHKERRQ(ierr);
         ierr = DMCreateGlobalVector(grid, &y); CHKERRQ(ierr);
-        ierr = DMCreateGlobalVector(grid, &lhs); CHKERRQ(ierr);
-        ierr = DMCreateGlobalVector(grid, &rhs); CHKERRQ(ierr);
+        ierr = DMCreateGlobalVector(grid, &lhs_petsc); CHKERRQ(ierr);
+        ierr = DMCreateGlobalVector(grid, &rhs_petsc); CHKERRQ(ierr);
         ierr = DMCreateGlobalVector(grid, &u_exact); CHKERRQ(ierr);
         ierr = DMCreateGlobalVector(grid, &err); CHKERRQ(ierr);
         ierr = DMCreateMatrix(grid, &A); CHKERRQ(ierr);
@@ -173,7 +174,7 @@ int main(int argc, char **argv)
         ierr = generateGrid(grid, args.Nx, args.Ny, Lx, Ly, dx, dy, x, y); CHKERRQ(ierr);
 
         // set values of RHS -- the vector rhs
-        ierr = generateRHS(grid, x, y, rhs); CHKERRQ(ierr);
+        ierr = generateRHS(grid, x, y, rhs_petsc); CHKERRQ(ierr);
 
         // generate exact solution
         ierr = generateExt(grid, x, y, u_exact); CHKERRQ(ierr);
@@ -191,7 +192,7 @@ int main(int argc, char **argv)
                 Lx, Ly, Lz, dx, dy, dz, x, y, z); CHKERRQ(ierr);
 
         // set values of RHS -- the vector rhs
-        ierr = generateRHS(grid, x, y, z, rhs); CHKERRQ(ierr);
+        ierr = generateRHS(grid, x, y, z, rhs_petsc); CHKERRQ(ierr);
 
         // generate exact solution
         ierr = generateExt(grid, x, y, z, u_exact); CHKERRQ(ierr);
@@ -203,7 +204,7 @@ int main(int argc, char **argv)
 
 
     // pin a point with Dirichlet BC to resolve sinular mat due to all-Neumann BC
-    ierr = fixSingularMat(A, rhs, u_exact); CHKERRQ(ierr);
+    ierr = fixSingularMat(A, rhs_petsc, u_exact); CHKERRQ(ierr);
 
 
 
@@ -222,14 +223,14 @@ int main(int argc, char **argv)
     {
         ierr = createKSP(ksp, A, grid, args.cfgFileName); CHKERRQ(ierr);
 
-        ierr = solve(ksp, A, lhs, rhs, u_exact, err, 
+        ierr = solve(ksp, A, lhs_petsc, rhs_petsc, u_exact, err,
                 args, warmUpEvent, solvingEvent); CHKERRQ(ierr);
 
         // destroy KSP
         ierr = KSPDestroy(&ksp); CHKERRQ(ierr);
     }
-    else // AmgX mode
-    { 
+    else if(std::strcmp(args.mode, "AmgX_GPU") == 0) // AmgX GPU mode
+    {
         // AmgX GPU mode
         if (std::strcmp(args.mode, "AmgX_GPU") == 0)
         {
@@ -248,11 +249,83 @@ int main(int argc, char **argv)
         ierr = amgx.setA(A); CHKERRQ(ierr);
         PetscLogEventEnd(setAEvent, 0, 0, 0, 0);
 
-        ierr = solve(amgx, A, lhs, rhs, u_exact, err, 
+        ierr = solve(amgx, A, lhs_petsc, rhs_petsc, u_exact, err,
                 args, warmUpEvent, solvingEvent); CHKERRQ(ierr);
 
         // destroy solver
         ierr = amgx.finalize(); CHKERRQ(ierr);
+    }
+    else if(std::strcmp(args.mode, "AmgX_CSR") == 0)
+    {
+        // example of passing host resident CSR matrix into AmgXWrapper APIs
+        // performs a solve, then updates the matrix coefficients and re-setup
+        // this code would also work if rowOffsets, colIndices, valus, lhs, and rhs were device pointers
+
+        const PetscInt      *colIndices = nullptr,
+                            *rowOffsets = nullptr;
+
+        PetscScalar         *values;
+
+        PetscInt            nRowsLocal,
+                            nRowsGlobal,
+                            nNz;
+
+        double              *lhs,
+                            *rhs;
+
+        // set all entries as zeros in the vector of unknows
+        ierr = VecSet(lhs_petsc, 0.0); CHKERRQ(ierr);
+
+        // extract the CSR data from the PETSc data structures
+        // in a real world use case, the CSR data can come from any source
+        petscToCSR(A, nRowsLocal, nRowsGlobal, nNz, rowOffsets, colIndices, values, lhs, rhs, lhs_petsc, rhs_petsc);
+
+        // AmgX GPU mode
+        amgx.initialize(PETSC_COMM_WORLD, "dDDI", args.cfgFileName);
+
+        ierr = MPI_Barrier(PETSC_COMM_WORLD); CHKERRQ(ierr);
+
+        // copy matrix and setup
+        ierr = amgx.setA(nRowsGlobal, nRowsLocal, nNz, rowOffsets, colIndices, values, nullptr); CHKERRQ(ierr);
+
+        // first solve
+        ierr = amgx.solve(lhs, rhs, nRowsLocal); CHKERRQ(ierr);
+
+        // ...
+        // update matrix A coefficients
+        // ...
+
+        // update AmgX matrix with new coefficients
+        ierr = amgx.updateA(nRowsLocal, nNz, values); CHKERRQ(ierr);
+
+        // second solve
+        ierr = amgx.solve(lhs, rhs, nRowsLocal); CHKERRQ(ierr);
+
+        // restore PETSc vectors
+        ierr = VecRestoreArray(lhs_petsc, &lhs); CHK;
+        ierr = VecRestoreArray(rhs_petsc, &rhs); CHK;
+
+        PetscInt                Niters; // iterations used to converge
+
+        PetscScalar             norm2,  // 2 norm of solution errors
+                                normM;  // infinity norm of solution errors
+
+        ierr = amgx.getIters(Niters); CHKERRQ(ierr);
+
+        // calculate norms of errors
+        ierr = VecCopy(lhs_petsc, err); CHKERRQ(ierr);
+        ierr = VecAXPY(err, -1.0, u_exact); CHKERRQ(ierr);
+        ierr = VecNorm(err, NORM_2, &norm2); CHKERRQ(ierr);
+        ierr = VecNorm(err, NORM_INFINITY, &normM); CHKERRQ(ierr);
+
+        // print infromation
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\t2-Norm: %g\n", (double)norm2); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tMax-Norm: %g\n", (double)normM); CHKERRQ(ierr);
+        ierr = PetscPrintf(PETSC_COMM_WORLD, "\tIterations %D\n", Niters); CHKERRQ(ierr);
+
+        // destroy solver
+        ierr = amgx.finalize(); CHKERRQ(ierr);
+
     }
 
 
@@ -268,14 +341,14 @@ int main(int argc, char **argv)
         ierr = PetscLogView(viewer); CHKERRQ(ierr);
         ierr = PetscViewerDestroy(&viewer); CHKERRQ(ierr);
     }
-    
+
 
     // destroy vectors, matrix, dmda
     {
         ierr = VecDestroy(&x); CHKERRQ(ierr);
         ierr = VecDestroy(&y); CHKERRQ(ierr);
-        ierr = VecDestroy(&lhs); CHKERRQ(ierr);
-        ierr = VecDestroy(&rhs); CHKERRQ(ierr);
+        ierr = VecDestroy(&lhs_petsc); CHKERRQ(ierr);
+        ierr = VecDestroy(&rhs_petsc); CHKERRQ(ierr);
         ierr = VecDestroy(&u_exact); CHKERRQ(ierr);
         ierr = VecDestroy(&err); CHKERRQ(ierr);
         ierr = MatDestroy(&A); CHKERRQ(ierr);

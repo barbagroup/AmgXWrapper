@@ -11,6 +11,9 @@
 
 # pragma once
 
+// CUDA
+#include <cuda_runtime.h>
+
 // STL
 # include <string>
 # include <vector>
@@ -142,6 +145,49 @@ class AmgXSolver
         PetscErrorCode setA(const Mat &A);
 
 
+        /** \brief Set up the matrix used by AmgX.
+         *
+         * This function sets up the AmgX matrix from the provided CSR data
+         * structures and partition data.
+         *
+         * \param nGlobalRows [in] The number of global rows.
+         * \param nLocalRows [in] The number of local rows on this rank.
+         * \param nLocalNz [in] The total number of non zero entries locally.
+         * \param rowOffsets [in] The local CSR matrix row offsets.
+         * \param colIndicesGlobal [in] The global CSR matrix column indices.
+         * \param values [in] The local CSR matrix values.
+         * \param partData [in] Array of length nGlobalRows containing the rank
+         * id of the owning rank for each row.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode setA(
+            const PetscInt nGlobalRows,
+            const PetscInt nLocalRows,
+            const PetscInt nLocalNz,
+            const PetscInt* rowOffsets,
+            const PetscInt* colIndicesGlobal,
+            const PetscScalar* values,
+            const PetscInt* partData);
+
+
+        /** \brief Re-sets up an existing AmgX matrix.
+         *
+         * Replaces the matrix coefficients with the provided values and performs
+         * a resetup for the AmgX matrix.
+         *
+         * \param nLocalRows [in] The number of local rows on this rank.
+         * \param nLocalNz [in] The total number of non zero entries locally.
+         * \param values [in] The local CSR matrix values.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode updateA(
+            const PetscInt nLocalRows,
+            const PetscInt nLocalNz,
+            const PetscScalar* values);
+
+
         /** \brief Solve the linear system.
          *
          * \p p vector will be used as an initial guess and will be updated to the
@@ -157,6 +203,24 @@ class AmgXSolver
          * \return PetscErrorCode.
          */
         PetscErrorCode solve(Vec &p, Vec &b);
+
+
+        /** \brief Solve the linear system.
+         *
+         * \p p vector will be used as an initial guess and will be updated to the
+         * solution by the end of solving.
+         *
+         * For cases that use more MPI processes than the number of GPUs, this
+         * function will do data gathering before solving and data scattering
+         * after the solving.
+         *
+         * \param p [in, out] The unknown array.
+         * \param b [in] The RHS array.
+         * \param nRows [in] The number of rows in this rank.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode solve(PetscScalar *p, const PetscScalar *b, const int nRows);
 
 
         /** \brief Get the number of iterations of the last solving.
@@ -274,8 +338,108 @@ class AmgXSolver
          */
         static AMGX_resources_handle   rsrc;
 
+        /** \brief Initialize consolidation, if required. Allocates space to hold
+         * consolidated CSR matrix and solution/RHS vectors on the root rank and,
+         * if device pointer consolidation, allocates and opens IPC memory handles.
+         * Calculates and stores consolidated sizes and displacements.
+         *
+         * \param nLocalRows [in] The number of rows owned by this rank.
+         * \param nLocalNz [in] The number of non-zeros owned by this rank.
+         * \param values [in] The values of the CSR matrix A.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode initializeConsolidation(
+            const PetscInt nLocalRows,
+            const PetscInt nLocalNz,
+            const PetscScalar *values);
 
+        /** \brief Realise consolidation, if required. This copies data from multiple ranks
+         * that share a single GPU, so a single consolidated CSR matrix can be passed to
+         * AmgX. As such, users can efficiently execute with more MPI ranks than GPUs,
+         * potentially improving performance where un-accelerated components of an application
+         * require CPU resources. CUDA IPC is leveraged to avoid buffering data onto the host,
+         * rather enabling fast intra-GPU copies if the local CSR matrices are already on the GPU.
+         *
+         * \param nLocalRows [in] The number of rows owned by this rank.
+         * \param nLocalNz [in] The number of non-zeros owned by this rank.
+         * \param rowOffsets [in] The row offsets of the CSR matrix A.
+         * \param colIndicesGlobal [in] The global column indices of the CSR matrix A.
+         * \param values [in] The values of the CSR matrix A.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode consolidateMatrix(
+            const PetscInt nLocalRows,
+            const PetscInt nLocalNz,
+            const PetscInt *rowOffsets,
+            const PetscInt *colIndicesGlobal,
+            const PetscScalar *values);
 
+        /** \brief Re-consolidates the values of the CSR matrix from multiple ranks.
+         *
+         * \param nLocalNz [in] The number of non-zeros owned by this rank.
+         * \param values [in] The values of the CSR matrix A.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode reconsolidateValues(
+            const PetscInt nLocalNz,
+            const PetscScalar *values);
+
+        /** \brief De-allocates consolidated data structures, if any, after the AmgX matrix
+         * has been constructed and the duplicate data becomes redundant.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode freeConsStructure();
+
+        /** \brief De-allocates all consolidated matrix structures.
+         *
+         * \return PetscErrorCode.
+         */
+        PetscErrorCode finalizeConsolidation();
+
+        /** \brief Enumeration for the status of matrix consolidation for the solver.*/
+        enum class ConsolidationStatus {
+            Uninitialized,
+            None,
+            Host,
+            Device
+        } consolidationStatus;
+
+        /** \brief The number of non-zeros consolidated from multiple ranks to a device.*/
+        int nConsNz = 0;
+
+        /** \brief The number of rows consolidated from multiple ranks to a device.*/
+        int nConsRows = 0;
+
+        /** \brief The row offsets consolidated onto a single device.*/
+        PetscInt *rowOffsetsCons = nullptr;
+
+        /** \brief The global column indices consolidated onto a single device.*/
+        PetscInt *colIndicesGlobalCons = nullptr;
+
+        /** \brief The values consolidated onto a single device.*/
+        PetscScalar* valuesCons = nullptr;
+
+        /** \brief The solution vector consolidated onto a single device.*/
+        PetscScalar* pCons = nullptr;
+
+        /** \brief The RHS vector consolidated onto a single device.*/
+        PetscScalar* rhsCons = nullptr;
+
+        /** \brief The number of rows per rank associated with a single device.*/
+        std::vector<int> nRowsInDevWorld;
+
+        /** \brief The number of non-zeros per rank associated with a single device.*/
+        std::vector<int> nnzInDevWorld;
+
+        /** \brief The row displacements per rank associated with a single device.*/
+        std::vector<int> rowDispls;
+
+        /** \brief The non-zero displacements per rank associated with a single device.*/
+        std::vector<int> nzDispls;
 
         /** \brief A VecScatter for gathering/scattering between original PETSc
          *         Vec and temporary redistributed PETSc Vec.*/
@@ -426,7 +590,7 @@ class AmgXSolver
          * \param N [in] Total number of rows in global matrix.
          * \param partData [out] Partition data, either explicit vector or offsets.
          * \param usesOffsets [out] If PETSC_TRUE, partitioning is contiguous and partData contains
-         *      partition offsets, see checkForContiguousPartitioning(). Otherwise, contains explicit 
+         *      partition offsets, see checkForContiguousPartitioning(). Otherwise, contains explicit
          *      partition vector.
          * \return PetscErrorCode.
          */

@@ -99,7 +99,7 @@ $ mpiexec -n 4 bin/poisson \
     the monitor and can serve as a keyword when parsing the results in post-processing.
 2. `${PATH_TO_KSP_SETTING_FILE}` is the file containing the setting to KSP solver.
 
-Note, for argument `-mode`, available options are `PETSc` and `AmgX_GPU`.
+Note, for argument `-mode`, available options are `PETSc`, `AmgX_GPU`, and `AmgX_CSR`.
 CPU version of AmgX solver is not supported.
 
 To run a test with AmgX and with 4 CPU cores plus GPUs to solve the 3D Poisson,
