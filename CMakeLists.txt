@@ -49,7 +49,7 @@ MESSAGE("Begin configuration")
 MESSAGE("====================================")
 
 # start generator
-PROJECT(AmgxWrapper C CXX)
+PROJECT(AmgxWrapper C CXX CUDA)
 
 # use GNU standard installation folder heirarchy
 INCLUDE(GNUInstallDirs)
@@ -192,7 +192,9 @@ SET(SOURCE
     ${SRC}/init.cpp
     ${SRC}/misc.cpp
     ${SRC}/setA.cpp
-    ${SRC}/solve.cpp)
+    ${SRC}/solve.cpp
+    ${SRC}/consolidate.cu
+)
 
 # target AmgXWrapper
 ADD_LIBRARY(AmgXWrapper ${SOURCE})

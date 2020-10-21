@@ -10,7 +10,7 @@ pcgf:max_iters=10000
 pcgf:convergence=ABSOLUTE
 pcgf:tolerance=1e-8
 pcgf:norm=L2
-pcgf:print_solve_stats=0
+pcgf:print_solve_stats=1
 pcgf:monitor_residual=1
 pcgf:obtain_timings=0
 
@@ -30,7 +30,7 @@ prec:coarse_solver(c_solver)=DENSE_LU_SOLVER
 prec:dense_lu_num_rows=2
 
 prec:algorithm=CLASSICAL
-prec:selector=HMIS
+prec:selector=PMIS
 prec:interpolator=D2
 prec:strength=AHAT
 

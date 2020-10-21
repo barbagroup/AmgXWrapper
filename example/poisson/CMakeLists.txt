@@ -50,7 +50,7 @@ MESSAGE("Begin configuration")
 MESSAGE("====================================")
 
 # start generator
-PROJECT(poisson C CXX)
+PROJECT(poisson C CXX CUDA)
 
 # use GNU standard installation folder heirarchy
 INCLUDE(GNUInstallDirs)
@@ -173,12 +173,14 @@ SET(SOURCE
     ${SRC}/io.cpp
     ${SRC}/solve.cpp
     ${SRC}/StructArgs.cpp
+    ${SRC}/petscToCSR.cpp
     ${SRC}/fixSingularMat.cpp
     ${AmgXWrapperSRC}/init.cpp
     ${AmgXWrapperSRC}/misc.cpp
     ${AmgXWrapperSRC}/setA.cpp
     ${AmgXWrapperSRC}/solve.cpp
-    ${AmgXWrapperSRC}/AmgXSolver.cpp)
+    ${AmgXWrapperSRC}/AmgXSolver.cpp
+    ${AmgXWrapperSRC}/consolidate.cu)
 
 INCLUDE_DIRECTORIES(
     ${PETSC_INCLUDES} 

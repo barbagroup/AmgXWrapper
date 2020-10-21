@@ -66,6 +66,8 @@ PetscErrorCode AmgXSolver::initialize(const MPI_Comm &comm,
     // a bool indicating if this instance is initialized
     isInitialized = true;
 
+    consolidationStatus = ConsolidationStatus::Uninitialized;
+
     PetscFunctionReturn(0);
 }
 
@@ -120,7 +122,6 @@ PetscErrorCode AmgXSolver::initMPIcomms(const MPI_Comm &comm)
         gpuWorldSize = MPI_UNDEFINED;
         myGpuWorldRank = MPI_UNDEFINED;
     }
-
 
     // split local world into worlds corresponding to each CUDA device
     ierr = MPI_Comm_split(localCpuWorld, devID, 0, &devWorld); CHK;
@@ -204,6 +205,9 @@ PetscErrorCode AmgXSolver::setDeviceIDs()
             if ((myLocalRank - (nBasic+1)*nRemain) % nBasic == 0) gpuProc = 0;
         }
     }
+
+    // Set the device for each rank
+    cudaSetDevice(devID);
 
     PetscFunctionReturn(0);
 }
@@ -305,6 +309,8 @@ PetscErrorCode AmgXSolver::finalize()
         // destroy gpuWorld
         ierr = MPI_Comm_free(&gpuWorld); CHK;
     }
+
+    finalizeConsolidation();
 
     // destroy PETSc objects
     ierr = VecScatterDestroy(&scatterLhs); CHK;

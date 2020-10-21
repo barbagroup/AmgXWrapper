@@ -72,6 +72,7 @@ PetscErrorCode AmgXSolver::setA(const Mat &A)
         } else {
             AMGX_distribution_set_partition_data(dist, AMGX_DIST_PARTITION_VECTOR, partData.data());
         }
+
         AMGX_matrix_upload_distributed(
                 AmgXA, nGlobalRows, nLocalRows, row[nLocalRows],
                 1, 1, row.data(), col.data(), data.data(),
@@ -391,6 +392,97 @@ PetscErrorCode AmgXSolver::getPartData(
             ierr = VecDestroy(&tempSEQ); CHK;
         }
     }
+    ierr = MPI_Barrier(globalCpuWorld); CHK;
+
+    PetscFunctionReturn(0);
+}
+
+
+/* \implements AmgXSolver::setA */
+PetscErrorCode AmgXSolver::setA(
+    const PetscInt nGlobalRows,
+    const PetscInt nLocalRows,
+    const PetscInt nLocalNz,
+    const PetscInt* rowOffsets,
+    const PetscInt* colIndicesGlobal,
+    const PetscScalar* values,
+    const PetscInt* partData)
+{
+    PetscFunctionBeginUser;
+
+    // Merge the distributed matrix for MPI processes sharing a GPU
+    consolidateMatrix(nLocalRows, nLocalNz, rowOffsets, colIndicesGlobal, values);
+
+    int ierr;
+
+    // upload matrix A to AmgX
+    if (gpuWorld != MPI_COMM_NULL)
+    {
+        ierr = MPI_Barrier(gpuWorld); CHK;
+
+        if (consolidationStatus == ConsolidationStatus::None)
+        {
+            AMGX_matrix_upload_all_global_32(
+                AmgXA, nGlobalRows, nLocalRows, nLocalNz,
+                1, 1, rowOffsets, colIndicesGlobal, values,
+                nullptr, ring, ring, partData);
+        }
+        else
+        {
+            AMGX_matrix_upload_all_global_32(
+                AmgXA, nGlobalRows, nConsRows, nConsNz,
+                1, 1, rowOffsetsCons, colIndicesGlobalCons, valuesCons,
+                nullptr, ring, ring, partData);
+
+            // The rowOffsets and colIndices are no longer needed
+            freeConsStructure();
+        }
+
+        // bind the matrix A to the solver
+        ierr = MPI_Barrier(gpuWorld); CHK;
+        AMGX_solver_setup(solver, AmgXA);
+
+        // connect (bind) vectors to the matrix
+        AMGX_vector_bind(AmgXP, AmgXA);
+        AMGX_vector_bind(AmgXRHS, AmgXA);
+    }
+    ierr = MPI_Barrier(globalCpuWorld); CHK;
+
+    PetscFunctionReturn(0);
+}
+
+/* \implements AmgXSolver::updateA */
+PetscErrorCode AmgXSolver::updateA(
+    const PetscInt nLocalRows,
+    const PetscInt nLocalNz,
+    const PetscScalar* values)
+{
+    PetscFunctionBeginUser;
+
+    // Merges the values from multiple MPI processes sharing a single GPU
+    reconsolidateValues(nLocalNz, values);
+
+    int ierr;
+    // Replace the coefficients for the CSR matrix A within AmgX
+    if (gpuWorld != MPI_COMM_NULL)
+    {
+        ierr = MPI_Barrier(gpuWorld); CHK;
+
+        if (consolidationStatus == ConsolidationStatus::None)
+        {
+            AMGX_matrix_replace_coefficients(AmgXA, nLocalRows, nLocalNz, values, nullptr);
+        }
+        else
+        {
+            AMGX_matrix_replace_coefficients(AmgXA, nConsRows, nConsNz, valuesCons, nullptr);
+        }
+
+        ierr = MPI_Barrier(gpuWorld); CHK;
+
+        // Re-setup the solver (a reduced overhead setup that accounts for consistent matrix structure)
+        AMGX_solver_resetup(solver, AmgXA);
+    }
+
     ierr = MPI_Barrier(globalCpuWorld); CHK;
 
     PetscFunctionReturn(0);

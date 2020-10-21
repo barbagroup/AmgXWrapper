@@ -50,7 +50,7 @@ MESSAGE("Begin configuration")
 MESSAGE("====================================")
 
 # start generator
-PROJECT(solveFromFiles C CXX)
+PROJECT(solveFromFiles C CXX CUDA)
 
 # use GNU standard installation folder heirarchy
 INCLUDE(GNUInstallDirs)
@@ -176,6 +176,7 @@ SET(SOURCE
     ${AmgXWrapperSRC}/misc.cpp
     ${AmgXWrapperSRC}/setA.cpp
     ${AmgXWrapperSRC}/solve.cpp
+    ${AmgXWrapperSRC}/consolidate.cu
     ${AmgXWrapperSRC}/AmgXSolver.cpp)
 
 INCLUDE_DIRECTORIES(

@@ -55,7 +55,7 @@ PetscErrorCode StructArgs::checkHelp()
         ierr = PetscPrintf(PETSC_COMM_WORLD, "Necessary Parameters:\n"); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD, "\t-caseName [string]\n"); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,
-                "\t-mode [PETSc or AmgX_GPU]\n"); CHKERRQ(ierr);
+                "\t-mode [PETSc or AmgX_GPU or AmgX_CSR]\n"); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,
                 "\t-cfgFileName [config file for solver]\n"); CHKERRQ(ierr);
         ierr = PetscPrintf(PETSC_COMM_WORLD,
