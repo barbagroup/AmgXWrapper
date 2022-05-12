@@ -127,8 +127,12 @@ set(SOURCE
 )
 
 add_library(AmgXWrapper ${SOURCE})
-set_target_properties(AmgXWrapper PROPERTIES CUDA_ARCHITECTURES "all")
-set_target_properties(AmgXWrapper PROPERTIES CXX_STANDARD 14)
+
+set_target_properties(AmgXWrapper PROPERTIES
+    CUDA_ARCHITECTURES "all"
+    CXX_STANDARD 14
+    PUBLIC_HEADER ${SRC}/AmgXSolver.hpp
+)
 
 target_include_directories(AmgXWrapper
     PRIVATE ${AMGX_INCLUDE_DIRS}
@@ -150,22 +154,13 @@ target_link_libraries(AmgXWrapper
     PRIVATE ${PETSC_LIBRARIES}
 )
 
-add_custom_command(
-    TARGET AmgXWrapper
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/include
-    COMMAND ${CMAKE_COMMAND} -E copy ${SRC}/AmgXSolver.hpp ${PROJECT_BINARY_DIR}/include
-)
-
-# installation
 install(
     TARGETS AmgXWrapper
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-
-install(FILES ${SRC}/AmgXSolver.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # =====================================================================
 # Target doc
@@ -184,6 +179,11 @@ if (DOXYGEN_FOUND)
 else()
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX})
 endif()
+
+# =====================================================================
+# Target poisson
+# =====================================================================
+add_subdirectory(example/poisson)
 
 # =====================================================================
 # Print information
