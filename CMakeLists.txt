@@ -115,15 +115,10 @@ find_package(Doxygen)
 # =====================================================================
 # Target libAmgxWrapper.so
 # =====================================================================
-set(SRC ${CMAKE_SOURCE_DIR}/src)
-
-set(SOURCE
-    ${SRC}/AmgXSolver.cpp
-    ${SRC}/init.cpp
-    ${SRC}/misc.cpp
-    ${SRC}/setA.cpp
-    ${SRC}/solve.cpp
-    ${SRC}/consolidate.cu
+file(GLOB_RECURSE SOURCE CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/src/*.hpp"
+    "${CMAKE_SOURCE_DIR}/src/*.cpp"
+    "${CMAKE_SOURCE_DIR}/src/*.cu"
 )
 
 add_library(AmgXWrapper ${SOURCE})
@@ -131,14 +126,14 @@ add_library(AmgXWrapper ${SOURCE})
 set_target_properties(AmgXWrapper PROPERTIES
     CUDA_ARCHITECTURES "all"
     CXX_STANDARD 14
-    PUBLIC_HEADER ${SRC}/AmgXSolver.hpp
+    PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/AmgXSolver.hpp
 )
 
 target_include_directories(AmgXWrapper
     PRIVATE ${AMGX_INCLUDE_DIRS}
     PRIVATE ${MPI_CXX_INCLUDE_DIRS}
     PRIVATE ${PETSC_INCLUDE_DIRS}
-    PRIVATE ${SRC}
+    PRIVATE ${CMAKE_SOURCE_DIR}/src
 )
 
 target_link_options(AmgXWrapper
@@ -181,9 +176,10 @@ else()
 endif()
 
 # =====================================================================
-# Target poisson
+# Examples
 # =====================================================================
 add_subdirectory(example/poisson)
+add_subdirectory(example/solveFromFiles)
 
 # =====================================================================
 # Print information

@@ -6,11 +6,14 @@
 # @date 2015-09-01
 # =====================================================================
 
-set(SRC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+file(GLOB_RECURSE SOURCE CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+)
 
-file(GLOB_RECURSE SOURCE CONFIGURE_DEPENDS "${SRC}/*.h" "${SRC}/*.cpp")
-file(GLOB_RECURSE CFGFILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/configs/*.info")
-
+file(GLOB_RECURSE CFGFILES CONFIGURE_DEPENDS
+    "${CMAKE_CURRENT_SOURCE_DIR}/configs/*.info"
+)
 
 add_executable(poisson ${SOURCE})
 
@@ -24,7 +27,6 @@ set_target_properties(poisson PROPERTIES
 target_include_directories(poisson
     PRIVATE ${PETSC_INCLUDE_DIRS} 
     PRIVATE ${PROJECT_SOURCE_DIR}/src
-    PRIVATE ${SRC}
 )
 
 target_link_directories(poisson
