@@ -8,25 +8,6 @@
 cmake_minimum_required(VERSION 3.18.0)
 
 # =====================================================================
-# Cache variables
-# =====================================================================
-# set default flags for release and debug mode
-set(CMAKE_CXX_FLAGS_DEBUG "-g" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG" CACHE STRING "")
-set(CMAKE_C_FLAGS_DEBUG "-g" CACHE STRING "")
-set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG" CACHE STRING "")
-set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--no-undefined" CACHE STRING "")
-
-# set default build type
-set(CMAKE_BUILD_TYPE RELEASE CACHE STRING "")
-
-# set default searching paths for dependencies
-set(PETSC_DIR "$ENV{PETSC_DIR}" CACHE PATH "The path to PETSc.")
-set(PETSC_ARCH "$ENV{PETSC_ARCH}" CACHE STRING "The specific build of PETSc under PETSC_DIR.")
-set(CUDA_DIR "$ENV{CUDA_DIR}" CACHE PATH "The path to CUDA.")
-set(AMGX_DIR "$ENV{AMGX_DIR}" CACHE PATH "The path to AmgX.")
-
-# =====================================================================
 # Project settings
 # =====================================================================
 message("\n====================================")
@@ -38,6 +19,17 @@ project(AmgXWrapper CUDA CXX)
 
 # use GNU standard installation folder heirarchy
 include(GNUInstallDirs)
+
+# set default build type
+if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY VALUE "Release")
+endif()
+
+# set default searching paths for dependencies
+set(PETSC_DIR "$ENV{PETSC_DIR}" CACHE PATH "The path to PETSc.")
+set(PETSC_ARCH "$ENV{PETSC_ARCH}" CACHE STRING "The specific build of PETSc under PETSC_DIR.")
+set(CUDA_DIR "$ENV{CUDA_DIR}" CACHE PATH "The path to CUDA.")
+set(AMGX_DIR "$ENV{AMGX_DIR}" CACHE PATH "The path to AmgX.")
 
 # set the sub folders in build folder
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
@@ -53,19 +45,19 @@ option(BUILD_SHARED_LIBS "Whether to build shared library." ON)
 # =====================================================================
 # pkg-config
 # =====================================================================
-message("-- Finding pkg-config")
+message(STATUS "Finding pkg-config")
 find_package(PkgConfig REQUIRED)
 
 # =====================================================================
 # MPI
 # =====================================================================
-message("-- Finding MPI")
+message(STATUS "Finding MPI")
 find_package(MPI REQUIRED)
 
 # =====================================================================
 # PETSc
 # =====================================================================
-message("-- Finding PETSc")
+message(STATUS "Finding PETSc")
 set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
 PKG_SEARCH_MODULE(PETSC REQUIRED NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH IMPORTED_TARGET petsc)
 
@@ -73,7 +65,7 @@ PKG_SEARCH_MODULE(PETSC REQUIRED NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH IMPORTE
 # =====================================================================
 # CUDA
 # =====================================================================
-message("-- Finding CUDA Toolkit")
+message(STATUS "Finding CUDA Toolkit")
 
 set(CUDA_TOOLKIT_ROOT_DIR ${CUDA_DIR} CACHE PATH "" FORCE)
 find_package(CUDAToolkit REQUIRED)
@@ -81,23 +73,24 @@ find_package(CUDAToolkit REQUIRED)
 # =====================================================================
 # AmgX
 # =====================================================================
-message("-- Finding AmgX")
+message(STATUS "Finding AmgX")
 
-message("-- Finding amgx_c.h")
+message(STATUS "Finding amgx_c.h")
 find_path(
     AMGX_INCLUDE_DIRS NAMES amgx_c.h
     PATHS ${AMGX_DIR} $ENV{AMGX_DIR} PATH_SUFFIXES "include" "base/include" "examples"
     REQUIRED
 )
+message(STATUS "Found amgx_c.h in ${AMGX_INCLUDE_DIRS}")
 
-message("-- Finding amgx_config.h")
+message(STATUS "Finding amgx_config.h")
 find_file(
     AMGX_CONFIG_FOUND NAMES amgx_config.h
     PATHS ${AMGX_INCLUDE_DIRS}
     REQUIRED NO_DEFAULT_PATH
 )
 
-message("-- Finding libamgxsh.so")
+message(STATUS "Finding libamgxsh.so")
 find_library(
     AMGX_LIBRARIES NAMES amgxsh
     PATHS ${AMGX_DIR} $ENV{AMGX_DIR} PATH_SUFFIXES "lib" "lib64"
@@ -109,7 +102,7 @@ get_filename_component(AMGX_LIBRARY_DIR "${AMGX_LIBRARIES}" PATH)
 # =====================================================================
 # Doxygen
 # =====================================================================
-message("-- Finding Doxygen")
+message(STATUS "Finding Doxygen")
 find_package(Doxygen)
 
 # =====================================================================
@@ -127,11 +120,11 @@ set_target_properties(AmgXWrapper PROPERTIES
     CUDA_ARCHITECTURES "all"
     CXX_STANDARD 14
     PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/AmgXSolver.hpp
+    POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
 )
 
 target_include_directories(AmgXWrapper
     PRIVATE ${AMGX_INCLUDE_DIRS}
-    PRIVATE ${MPI_CXX_INCLUDE_DIRS}
     PRIVATE ${PETSC_INCLUDE_DIRS}
     PRIVATE ${CMAKE_SOURCE_DIR}/src
 )
@@ -140,8 +133,11 @@ target_link_options(AmgXWrapper
     PRIVATE "-L${CUDAToolkit_LIBRARY_DIR}"
     PRIVATE "-L${AMGX_LIBRARY_DIR}"
     PRIVATE ${MPI_CXX_LINK_FLAGS}
-    PRIVATE "-L${PETSC_LIBARAY_DIR}"
-)
+    PRIVATE "-L${PETSC_LIBRARY_DIRS}"
+    PRIVATE "-Wl,--as-needed"
+    PRIVATE "-Wl,--no-allow-shlib-undefined"
+    PRIVATE "-Wl,--no-undefined"
+)  # only for shared library
 
 target_link_libraries(AmgXWrapper
     PRIVATE ${AMGX_LIBRARIES}
@@ -198,7 +194,9 @@ message("\tCMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
 message("\tCMAKE_C_COMPILER: ${CMAKE_C_COMPILER}\n")
 
 message("Flags:")
-message("\tCMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}: ${CMAKE_CXX_FLAGS_${CMAKE_BUILD_TYPE}}\n")
+string(TOUPPER ${CMAKE_BUILD_TYPE} BUILDSTR)
+message("\tCMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}\n")
+message("\tCMAKE_CXX_FLAGS_${BUILDSTR}: ${CMAKE_CXX_FLAGS_${BUILDSTR}}\n")
 
 message("MPI")
 message("\tMPI_CXX_VERSION: ${MPI_CXX_VERSION}")

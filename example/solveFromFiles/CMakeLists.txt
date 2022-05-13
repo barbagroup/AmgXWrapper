@@ -25,6 +25,7 @@ set_target_properties(solveFromFiles PROPERTIES
 )
 
 target_include_directories(solveFromFiles
+    PRIVATE ${AMGX_INCLUDE_DIRS}
     PRIVATE ${PETSC_INCLUDE_DIRS} 
     PRIVATE ${PROJECT_SOURCE_DIR}/src
 )

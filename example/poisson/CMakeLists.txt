@@ -25,6 +25,7 @@ set_target_properties(poisson PROPERTIES
 )
 
 target_include_directories(poisson
+    PRIVATE ${AMGX_INCLUDE_DIRS}
     PRIVATE ${PETSC_INCLUDE_DIRS} 
     PRIVATE ${PROJECT_SOURCE_DIR}/src
 )
