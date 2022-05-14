@@ -7,8 +7,6 @@ We suggest two different ways to build or install AmgXWrapper.
 
 Since AmgXWrapper doesn't have a lot of code or complex hierarchy, it's very 
 easy to include the source code in the building process of your applications.
-The `poisson` and `solveFromFiles` in the folder `example` belong to this use 
-case.
 
 ## 2. Build and install AmgXWrapper with CMake
 ------------------------------------------------

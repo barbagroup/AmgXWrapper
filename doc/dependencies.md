@@ -5,10 +5,10 @@ worked with AmgXWrapper:
 
 #### Using AmgX GitHub Repository -- commit aba9132119fd9efde679f41369628c04e3452a14
 
-* [OpenMPI v4.0.0](https://www.open-mpi.org/software/ompi/v4.0/)
-* [CUDA v10.0.130](https://developer.nvidia.com/cuda-10.0-download-archive)
-* [PETSc v3.10.4](https://www.mcs.anl.gov/petsc/download/index.html)
-* [AmgX GitHub commit aba9132](https://github.com/NVIDIA/AMGX/commit/aba9132119fd9efde679f41369628c04e3452a14)
+* OpenMPI v4.1.3
+* CUDA v11.4.2
+* PETSc v3.16.6
+* AmgX v2.2.0
 
 The C and C++ compilers for this set of dependencies are GCC 7.
 
