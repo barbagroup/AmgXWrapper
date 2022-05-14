@@ -31,58 +31,21 @@ solve PETSc linear systems with AmgXWrapper.
 ## Build
 ---------
 
-We use CMake to build this example.
-
-### Step 1: create a directory for build
------------------------------------------
-
-Create a folder to accommodate the compiled binary executable and go into
-it. For example:
-
-```bash
-$ mkdir ${HOME}/build
-$ cd ${HOME}/build
-```
-
-### Step 2: generate Makefile with CMake
------------------------------------------
-
-```bash
-$ cmake \
-    -DPETSC_DIR=${PATH_TO_PETSC_INSTALLATION} \
-    -DPETSC_ARCH=${NAME_OF_PETSC_BUILD_DESIRED} \
-    -DCUDA_DIR=${PATH_TO_CUDA6.5} \
-    -DAMGX_DIR=${PATH_TO_AMGX} \
-    ${PATH_TO_THE_FOLDER_OF_EXAMPLE_poisson}
-```
-
-See the installation instruction of AmgXWrapper for other optional CMake parameters.
-
-### Step 3: run make
----------------------
-
-Run `make` to build the binary executable.
-
-```bash
-$ make -j <number of threads used for compiling>
-```
-
-After compilation, the binary executable file `poisson` will be in the
-folder `bin`, and the samples of solver configuration files are in the folder
-`configs`.
+The example is built and installed along with the main AmgXWrapper library. It will be at
+`<installation prefix>/share/AmgXWrapper/example/poisson`.
 
 
 ## Running `poisson`
 --------------------------
 
-Assume we are now in the `build` folder. To see all command line arguments for
-`poisson`, use
+Assume we are now in `<installation prefix>/share/AmgXWrapper/example/poisson`. To see all command
+line arguments for `poisson`, use
 
 ```bash
 $ bin/poisson -print
 ```
 
-Note, if using `-help` instead of `-print`, what all PETSc arguments will be printed.
+Note, if using `-help` instead of `-print`, all PETSc arguments will be printed.
 
 To run a test with PETSc and with 4 CPU cores to solve the 2D Poisson equation, for example,
 

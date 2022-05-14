@@ -7,49 +7,13 @@ application and compile them.
 ## Build
 ---------
 
-We use CMake to build this example.
-
-### Step 1: create a directory for build
------------------------------------------
-
-Create a folder to accommodate the compiled binary executable and go into it.
-For example:
-
-```bash
-$ mkdir ${HOME}/build
-$ cd ${HOME}/build
-```
-
-### Step 2: generate Makefile with CMake
------------------------------------------
-
-```bash
-$ cmake \
-    -DPETSC_DIR=${PATH_TO_PETSC_INSTALLATION} \
-    -DPETSC_ARCH=${NAME_OF_PETSC_BUILD_DESIRED} \
-    -DCUDA_DIR=${PATH_TO_CUDA6.5} \
-    -DAMGX_DIR=${PATH_TO_AMGX} \
-    ${PATH_TO_THE_FOLDER_OF_EXAMPLE_solveFromFiles}
-```
-
-### Step 3: run make
----------------------
-
-Run `make` to build the binary executable.
-
-```bash
-$ make
-```
-
-After compilation, the binary executable file `solveFromFiles` will be in the
-folder `bin`, and the example of solver configuration files are in the folder
-`configs`.
-
+The example is built and installed along with the main AmgXWrapper library. It will be at
+`<installation prefix>/share/AmgXWrapper/example/solveFromFiles`.
 
 ## Running `solveFromFiles`
 --------------------------
 
-Assume we are now in the `build` folder. To
+Assume we are now in the `<installation prefix>/share/AmgXWrapper/example/solveFromFiles`. To
 see all command line arguments for `solveFromFiles`, use
 
 ```bash
