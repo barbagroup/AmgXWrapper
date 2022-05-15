@@ -15,15 +15,25 @@ message("Begin configuration")
 message("====================================")
 
 # start generator
-project(AmgXWrapper CUDA CXX)
+project(AmgXWrapper
+    VERSION 1.6
+    HOMEPAGE_URL https://github.com/barbagroup/AmgXWrapper
+    LANGUAGES CUDA CXX
+)
 
 # use GNU standard installation folder heirarchy
 include(GNUInstallDirs)
+
+# to help generate config file for downstream projects
+include(CMakePackageConfigHelpers)
 
 # set default build type
 if (NOT CMAKE_BUILD_TYPE OR CMAKE_BUILD_TYPE STREQUAL "")
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY VALUE "Release")
 endif()
+
+# add options
+option(BUILD_SHARED_LIBS "Whether to build shared library." ON)
 
 # set default searching paths for dependencies
 set(PETSC_DIR "$ENV{PETSC_DIR}" CACHE PATH "The path to PETSc.")
@@ -31,79 +41,57 @@ set(PETSC_ARCH "$ENV{PETSC_ARCH}" CACHE STRING "The specific build of PETSc unde
 set(CUDA_DIR "$ENV{CUDA_DIR}" CACHE PATH "The path to CUDA.")
 set(AMGX_DIR "$ENV{AMGX_DIR}" CACHE PATH "The path to AmgX.")
 
-# set the sub folders in build folder
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR})
-set(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR})
+# hardcoded configuration
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# other cmake setting
-set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_COLOR_MAKEFILE ON)
+# combine PETSC_DIR and PETSC_ARCH into a single variable
+set(PETSC_DIR "${PETSC_DIR}/${PETSC_ARCH}")
 
-# add options
-option(BUILD_SHARED_LIBS "Whether to build shared library." ON)
+# configure extra paths to find cmake/pkg-config modules/configs
+set(CMAKE_PREFIX_PATH ${PETSC_DIR} ${CMAKE_PREFIX_PATH})
+set(CMAKE_PREFIX_PATH ${AMGX_DIR} ${CMAKE_PREFIX_PATH})
 
-# =====================================================================
-# pkg-config
-# =====================================================================
-message(STATUS "Finding pkg-config")
-find_package(PkgConfig REQUIRED)
-
-# =====================================================================
-# MPI
-# =====================================================================
-message(STATUS "Finding MPI")
-find_package(MPI REQUIRED)
-
-# =====================================================================
-# PETSc
-# =====================================================================
-message(STATUS "Finding PETSc")
-set(ENV{PKG_CONFIG_PATH} "${PETSC_DIR}/${PETSC_ARCH}/lib/pkgconfig:$ENV{PKG_CONFIG_PATH}")
-PKG_SEARCH_MODULE(PETSC REQUIRED NO_CMAKE_PATH NO_CMAKE_ENVIRONMENT_PATH IMPORTED_TARGET petsc)
-
-
-# =====================================================================
-# CUDA
-# =====================================================================
-message(STATUS "Finding CUDA Toolkit")
-
+# force FindCUDAToolkit to use CUDA_DIR
 set(CUDA_TOOLKIT_ROOT_DIR ${CUDA_DIR} CACHE PATH "" FORCE)
+
+# =====================================================================
+# Find pkg-config, doxygen, MPI, and CUDA Toolkit
+# =====================================================================
+find_package(PkgConfig REQUIRED)
+find_package(Doxygen)
+find_package(MPI REQUIRED)
 find_package(CUDAToolkit REQUIRED)
 
 # =====================================================================
-# AmgX
+# Find PETSc
 # =====================================================================
-message(STATUS "Finding AmgX")
+pkg_search_module(PETSC REQUIRED IMPORTED_TARGET petsc)
+message(STATUS "Found PETSc version ${PETSC_VERSION} at ${PETSC_PREFIX}")
 
-message(STATUS "Finding amgx_c.h")
-find_path(
-    AMGX_INCLUDE_DIRS NAMES amgx_c.h
-    PATHS ${AMGX_DIR} $ENV{AMGX_DIR} PATH_SUFFIXES "include" "base/include" "examples"
-    REQUIRED
-)
-message(STATUS "Found amgx_c.h in ${AMGX_INCLUDE_DIRS}")
+# =====================================================================
+# Find AmgX
+# =====================================================================
+find_path(AMGX_INCLUDE_DIRS NAMES amgx_c.h REQUIRED)
+message(STATUS "Found amgx_c.h at ${AMGX_INCLUDE_DIRS}")
 
-message(STATUS "Finding amgx_config.h")
-find_file(
-    AMGX_CONFIG_FOUND NAMES amgx_config.h
-    PATHS ${AMGX_INCLUDE_DIRS}
-    REQUIRED NO_DEFAULT_PATH
-)
+find_file(AMGX_CONFIG_FOUND NAMES amgx_config.h REQUIRED)
+message(STATUS "Found amgx_config.h: ${AMGX_CONFIG_FOUND}")
 
-message(STATUS "Finding libamgxsh.so")
-find_library(
-    AMGX_LIBRARIES NAMES amgxsh
-    PATHS ${AMGX_DIR} $ENV{AMGX_DIR} PATH_SUFFIXES "lib" "lib64"
-    REQUIRED
-)
+find_library(AMGX_LIBRARIES NAMES amgxsh REQUIRED)
+message(STATUS "Found libamgxsh.so: ${AMGX_LIBRARIES}")
+
 get_filename_component(AMGX_LIBRARY_DIR "${AMGX_LIBRARIES}" PATH)
+message(STATUS "Found AmgX lib dir: ${AMGX_LIBRARY_DIR}")
 
+# make it an imported target
+add_library(amgxwrapper::_amgx UNKNOWN IMPORTED)
 
-# =====================================================================
-# Doxygen
-# =====================================================================
-message(STATUS "Finding Doxygen")
-find_package(Doxygen)
+set_target_properties(amgxwrapper::_amgx PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES ${AMGX_INCLUDE_DIRS}
+    IMPORTED_LOCATION ${AMGX_LIBRARIES}
+)
 
 # =====================================================================
 # Target libAmgxWrapper.so
@@ -117,40 +105,70 @@ file(GLOB_RECURSE SOURCE CONFIGURE_DEPENDS
 add_library(AmgXWrapper ${SOURCE})
 
 set_target_properties(AmgXWrapper PROPERTIES
-    CUDA_ARCHITECTURES "all"
-    CXX_STANDARD 14
+    CUDA_RUNTIME_LIBRARY Shared
     PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/AmgXSolver.hpp
     POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
+    INSTALL_RPATH "${PETSC_LIBRARY_DIRS};${AMGX_LIBRARY_DIR}"
 )
 
 target_include_directories(AmgXWrapper
-    PRIVATE ${AMGX_INCLUDE_DIRS}
-    PRIVATE ${PETSC_INCLUDE_DIRS}
-    PRIVATE ${CMAKE_SOURCE_DIR}/src
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_compile_options(AmgXWrapper
+    PRIVATE -Wno-deprecated-declarations
+)
+
+target_link_libraries(AmgXWrapper
+    PRIVATE MPI::MPI_CXX
+    PRIVATE PkgConfig::PETSC
+    PUBLIC amgxwrapper::_amgx
 )
 
 target_link_options(AmgXWrapper
-    PRIVATE "-L${CUDAToolkit_LIBRARY_DIR}"
-    PRIVATE "-L${AMGX_LIBRARY_DIR}"
-    PRIVATE ${MPI_CXX_LINK_FLAGS}
-    PRIVATE "-L${PETSC_LIBRARY_DIRS}"
     PRIVATE "-Wl,--as-needed"
     PRIVATE "-Wl,--no-allow-shlib-undefined"
     PRIVATE "-Wl,--no-undefined"
-)  # only for shared library
+)
 
-target_link_libraries(AmgXWrapper
-    PRIVATE ${AMGX_LIBRARIES}
-    PRIVATE ${MPI_CXX_LIBRARIES}
-    PRIVATE ${PETSC_LIBRARIES}
+# generate AmgXWrapperConfig.cmake for cmake's `find_package`
+configure_package_config_file(
+    ${CMAKE_PROJECT_NAME}Config.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
+    PATH_VARS
+        CMAKE_INSTALL_LIBDIR
+        CMAKE_INSTALL_INCLUDEDIR
+        AMGX_LIBRARIES
+)
+
+# generate a AmgXWrapperVersion.cmake for cmake's `find_package`
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Version.cmake
+    COMPATIBILITY ExactVersion
 )
 
 install(
     TARGETS AmgXWrapper
+    EXPORT AmgXWrapperTarget
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(
+    EXPORT AmgXWrapperTarget NAMESPACE AmgXWrapper::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
+)
+
+install(
+    FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Config.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_PROJECT_NAME}Version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${CMAKE_PROJECT_NAME}
 )
 
 # =====================================================================
@@ -166,9 +184,9 @@ if (DOXYGEN_FOUND)
         COMMAND ${CMAKE_COMMAND} -E echo "Done."
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
     )
-    install(DIRECTORY ${PROJECT_BINARY_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install(DIRECTORY ${PROJECT_BINARY_DIR}/doc TYPE DOC)
 else()
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc DESTINATION ${CMAKE_INSTALL_PREFIX})
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/doc TYPE DOC)
 endif()
 
 # =====================================================================
@@ -176,47 +194,3 @@ endif()
 # =====================================================================
 add_subdirectory(example/poisson)
 add_subdirectory(example/solveFromFiles)
-
-# =====================================================================
-# Print information
-# =====================================================================
-message("\n====================================")
-message("Config Information:")
-message("====================================\n")
-
-message("Build type: ${CMAKE_BUILD_TYPE}")
-message("Build shared library: ${BUILD_SHARED_LIBS}")
-message("Doxygen available: ${DOXYGEN_FOUND}")
-message("Installation path: ${CMAKE_INSTALL_PREFIX}\n")
-
-message("Compilers:")
-message("\tCMAKE_CXX_COMPILER: ${CMAKE_CXX_COMPILER}")
-message("\tCMAKE_C_COMPILER: ${CMAKE_C_COMPILER}\n")
-
-message("Flags:")
-string(TOUPPER ${CMAKE_BUILD_TYPE} BUILDSTR)
-message("\tCMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}\n")
-message("\tCMAKE_CXX_FLAGS_${BUILDSTR}: ${CMAKE_CXX_FLAGS_${BUILDSTR}}\n")
-
-message("MPI")
-message("\tMPI_CXX_VERSION: ${MPI_CXX_VERSION}")
-message("\tMPI_CXX_INCLUDE_DIRS: ${MPI_CXX_INCLUDE_DIRS}")
-message("\tMPI_CXX_LIBRARIES: ${MPI_CXX_LIBRARIES}")
-message("\tMPI_CXX_LINK_FLAGS: ${MPI_CXX_LINK_FLAGS}\n")
-
-message("PETSc:")
-message("\tPETSC_DIR: ${PETSC_DIR}")
-message("\tPETSC_VERSION: ${PETSC_VERSION}")
-message("\tPETSC_INCLUDE_DIRS: ${PETSC_INCLUDE_DIRS}")
-message("\tPETSC_LIBRARY_DIRS: ${PETSC_LIBRARY_DIRS}")
-message("\tPETSC_LIBRARIES: ${PETSC_LIBRARIES}\n")
-
-message("CUDA:")
-message("\tCUDA_TOOLKIT_ROOT_DIR: ${CUDA_TOOLKIT_ROOT_DIR}")
-message("\tCUDAToolkit_LIBRARY_DIR: ${CUDAToolkit_LIBRARY_DIR}\n")
-
-message("AmgX:")
-message("\tAMGX_DIR: ${AMGX_DIR}")
-message("\tAMGX_INCLUDE_DIRS: ${AMGX_INCLUDE_DIRS}")
-message("\tAMGX_LIBRARY_DIR: ${AMGX_LIBRARY_DIR}")
-message("\tAMGX_LIBRARIES: ${AMGX_LIBRARIES}\n")

@@ -1,0 +1,32 @@
+# - Config file for the yaml-cpp package
+# It provides an imported target AmgXWrapper::AmgXWrapper for modern cmake-based
+# projects.
+#
+# For legacy cmake projects, it also defines the following variables
+#     AMGXWRAPPER_INCLUDE_DIR: include directory
+#     AMGXWRAPPER_LIBRARY_DIR: library directory
+#     AMGXWRAPPER_LIBRARIES: library to link against
+
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+find_dependency(MPI)
+find_dependency(PkgConfig)
+pkg_search_module(PETSC REQUIRED IMPORTED_TARGET petsc)
+
+# manually make amgxwrapper::_amgx
+add_library(amgxwrapper::_amgx UNKNOWN IMPORTED)
+
+set_target_properties(amgxwrapper::_amgx PROPERTIES
+    IMPORTED_LOCATION @PACKAGE_AMGX_LIBRARIES@
+)
+
+include(@PACKAGE_CMAKE_INSTALL_LIBDIR@/cmake/AmgXWrapper/AmgXWrapperTarget.cmake)
+
+set_and_check(AMGXWRAPPER_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
+set_and_check(AMGXWRAPPER_LIBRARY_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
+
+get_target_property(AMGXWRAPPER_LIBRARIES AmgXWrapper::AmgXWrapper LOCATION)
+set_and_check(AMGXWRAPPER_LIBRARIES ${AMGXWRAPPER_LIBRARIES})
+
+check_required_components(AmgXWrapper)
