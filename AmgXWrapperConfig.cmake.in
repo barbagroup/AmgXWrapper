@@ -19,6 +19,7 @@ add_library(amgxwrapper::_amgx UNKNOWN IMPORTED)
 
 set_target_properties(amgxwrapper::_amgx PROPERTIES
     IMPORTED_LOCATION @PACKAGE_AMGX_LIBRARIES@
+    INTERFACE_INCLUDE_DIRECTORIES @PACKAGE_AMGX_INCLUDE_DIRS@
 )
 
 include(@PACKAGE_CMAKE_INSTALL_LIBDIR@/cmake/AmgXWrapper/AmgXWrapperTarget.cmake)

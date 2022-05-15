@@ -142,6 +142,7 @@ configure_package_config_file(
         CMAKE_INSTALL_LIBDIR
         CMAKE_INSTALL_INCLUDEDIR
         AMGX_LIBRARIES
+        AMGX_INCLUDE_DIRS
 )
 
 # generate a AmgXWrapperVersion.cmake for cmake's `find_package`
