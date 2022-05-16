@@ -14,7 +14,7 @@ message(STATUS "Begin AmgXWrapper configuration")
 
 # start generator
 project(AmgXWrapper
-    VERSION 1.6
+    VERSION 1.6.1
     HOMEPAGE_URL https://github.com/barbagroup/AmgXWrapper
     LANGUAGES CUDA CXX
 )
@@ -100,42 +100,42 @@ file(GLOB_RECURSE SOURCE CONFIGURE_DEPENDS
     "${PROJECT_SOURCE_DIR}/src/*.cu"
 )
 
-add_library(AmgXWrapper ${SOURCE})
+add_library(amgxwrapper ${SOURCE})
 
-set_target_properties(AmgXWrapper PROPERTIES
+set_target_properties(amgxwrapper PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
     PUBLIC_HEADER ${PROJECT_SOURCE_DIR}/src/AmgXSolver.hpp
     POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
     INSTALL_RPATH "${PETSC_LIBRARY_DIRS};${AMGX_LIBRARY_DIR}"
 )
 
-target_include_directories(AmgXWrapper
+target_include_directories(amgxwrapper
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
-target_compile_options(AmgXWrapper
+target_compile_options(amgxwrapper
     PRIVATE -Wno-deprecated-declarations
 )
 
-target_link_libraries(AmgXWrapper
+target_link_libraries(amgxwrapper
     PRIVATE MPI::MPI_CXX
     PRIVATE PkgConfig::PETSC
     PUBLIC amgxwrapper::_amgx
 )
 
-target_link_options(AmgXWrapper
+target_link_options(amgxwrapper
     PRIVATE "-Wl,--as-needed"
     PRIVATE "-Wl,--no-allow-shlib-undefined"
     PRIVATE "-Wl,--no-undefined"
 )
 
-# generate AmgXWrapperConfig.cmake for cmake's `find_package`
+# generate amgxwrapper-config.cmake for cmake's `find_package`
 configure_package_config_file(
-    ${PROJECT_NAME}Config.cmake.in
-    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    amgxwrapper-config.cmake.in
+    ${PROJECT_BINARY_DIR}/amgxwrapper-config.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/amgxwrapper
     PATH_VARS
         CMAKE_INSTALL_LIBDIR
         CMAKE_INSTALL_INCLUDEDIR
@@ -143,15 +143,15 @@ configure_package_config_file(
         AMGX_INCLUDE_DIRS
 )
 
-# generate a AmgXWrapperVersion.cmake for cmake's `find_package`
+# generate a amgxwrapper-config-version.cmake for cmake's `find_package`
 write_basic_package_version_file(
-    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    ${PROJECT_BINARY_DIR}/amgxwrapper-config-version.cmake
     COMPATIBILITY AnyNewerVersion
 )
 
 install(
-    TARGETS AmgXWrapper
-    EXPORT AmgXWrapperTarget
+    TARGETS amgxwrapper
+    EXPORT amgxwrapper-target
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -159,15 +159,15 @@ install(
 )
 
 install(
-    EXPORT AmgXWrapperTarget NAMESPACE AmgXWrapper::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    EXPORT amgxwrapper-target NAMESPACE amgxwrapper::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/amgxwrapper
 )
 
 install(
     FILES
-    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
+    ${PROJECT_BINARY_DIR}/amgxwrapper-config.cmake
+    ${PROJECT_BINARY_DIR}/amgxwrapper-config-version.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/amgxwrapper
 )
 
 # =====================================================================

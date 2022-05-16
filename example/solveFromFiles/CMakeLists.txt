@@ -28,11 +28,11 @@ target_include_directories(solveFromFiles PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(solveFromFiles 
     PRIVATE MPI::MPI_CXX
     PRIVATE PkgConfig::PETSC 
-    PRIVATE AmgXWrapper
+    PRIVATE amgxwrapper
 )
 
 install(
     TARGETS solveFromFiles
-    RUNTIME DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/example/solveFromFiles
-    RESOURCE DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/example/solveFromFiles/configs
+    RUNTIME DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/amgxwrapper/example/solveFromFiles
+    RESOURCE DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/amgxwrapper/example/solveFromFiles/configs
 )

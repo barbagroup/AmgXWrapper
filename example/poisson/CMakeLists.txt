@@ -28,11 +28,11 @@ target_include_directories(poisson PRIVATE ${PROJECT_SOURCE_DIR}/src)
 target_link_libraries(poisson 
     PRIVATE MPI::MPI_CXX
     PRIVATE PkgConfig::PETSC 
-    PRIVATE AmgXWrapper
+    PRIVATE amgxwrapper
 )
 
 install(
     TARGETS poisson
-    RUNTIME DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/example/poisson
-    RESOURCE DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/example/poisson/configs
+    RUNTIME DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/amgxwrapper/example/poisson
+    RESOURCE DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/amgxwrapper/example/poisson/configs
 )
