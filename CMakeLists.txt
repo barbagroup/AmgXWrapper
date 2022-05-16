@@ -97,23 +97,23 @@ set_target_properties(amgxwrapper::_amgx PROPERTIES
 # Target libAmgxWrapper.so
 # =====================================================================
 file(GLOB_RECURSE SOURCE CONFIGURE_DEPENDS
-    "${CMAKE_SOURCE_DIR}/src/*.hpp"
-    "${CMAKE_SOURCE_DIR}/src/*.cpp"
-    "${CMAKE_SOURCE_DIR}/src/*.cu"
+    "${PROJECT_SOURCE_DIR}/src/*.hpp"
+    "${PROJECT_SOURCE_DIR}/src/*.cpp"
+    "${PROJECT_SOURCE_DIR}/src/*.cu"
 )
 
 add_library(AmgXWrapper ${SOURCE})
 
 set_target_properties(AmgXWrapper PROPERTIES
     CUDA_RUNTIME_LIBRARY Shared
-    PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/src/AmgXSolver.hpp
+    PUBLIC_HEADER ${PROJECT_SOURCE_DIR}/src/AmgXSolver.hpp
     POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
     INSTALL_RPATH "${PETSC_LIBRARY_DIRS};${AMGX_LIBRARY_DIR}"
 )
 
 target_include_directories(AmgXWrapper
     PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
@@ -136,7 +136,7 @@ target_link_options(AmgXWrapper
 # generate AmgXWrapperConfig.cmake for cmake's `find_package`
 configure_package_config_file(
     ${PROJECT_NAME}Config.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
     INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
     PATH_VARS
         CMAKE_INSTALL_LIBDIR
@@ -147,7 +147,7 @@ configure_package_config_file(
 
 # generate a AmgXWrapperVersion.cmake for cmake's `find_package`
 write_basic_package_version_file(
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
     COMPATIBILITY AnyNewerVersion
 )
 
@@ -167,8 +167,8 @@ install(
 
 install(
     FILES
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
-    ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}
 )
 
@@ -176,7 +176,7 @@ install(
 # Target doc
 # =====================================================================
 if (DOXYGEN_FOUND)
-    set(DOXYGEN_INPUT ${CMAKE_SOURCE_DIR}/doc/Doxyfile)
+    set(DOXYGEN_INPUT ${PROJECT_SOURCE_DIR}/doc/Doxyfile)
     set(DOXYGEN_OUTPUT ${PROJECT_BINARY_DIR}/doc)
     file(MAKE_DIRECTORY ${DOXYGEN_OUTPUT})
     add_custom_target(doc
