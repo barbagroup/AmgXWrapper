@@ -10,9 +10,7 @@ cmake_minimum_required(VERSION 3.18.0)
 # =====================================================================
 # Project settings
 # =====================================================================
-message("\n====================================")
-message("Begin configuration")
-message("====================================")
+message(STATUS "Begin AmgXWrapper configuration")
 
 # start generator
 project(AmgXWrapper
