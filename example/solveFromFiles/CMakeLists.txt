@@ -18,27 +18,16 @@ file(GLOB_RECURSE CFGFILES CONFIGURE_DEPENDS
 add_executable(solveFromFiles ${SOURCE})
 
 set_target_properties(solveFromFiles PROPERTIES
-    CXX_STANDARD 14
     RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     RESOURCE "${CFGFILES}"
-    INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR}
+    INSTALL_RPATH "${CMAKE_INSTALL_FULL_LIBDIR};${PETSC_LIBRARY_DIRS}"
 )
 
-target_include_directories(solveFromFiles
-    PRIVATE ${AMGX_INCLUDE_DIRS}
-    PRIVATE ${PETSC_INCLUDE_DIRS} 
-    PRIVATE ${PROJECT_SOURCE_DIR}/src
-)
-
-target_link_directories(solveFromFiles
-    PRIVATE ${AMGX_LIBRARY_DIRS}
-    PRIVATE ${PETSC_LIBRARY_DIRS}
-)
+target_include_directories(solveFromFiles PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 target_link_libraries(solveFromFiles 
-    PRIVATE ${AMGX_LIBRARIES} 
-    PRIVATE ${MPI_CXX_LIBRARIES}
-    PRIVATE ${PETSC_LIBRARIES} 
+    PRIVATE MPI::MPI_CXX
+    PRIVATE PkgConfig::PETSC 
     PRIVATE AmgXWrapper
 )
 
