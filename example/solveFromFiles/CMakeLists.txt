@@ -33,6 +33,6 @@ target_link_libraries(solveFromFiles
 
 install(
     TARGETS solveFromFiles
-    RUNTIME DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}/example/solveFromFiles
-    RESOURCE DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${CMAKE_PROJECT_NAME}/example/solveFromFiles/configs
+    RUNTIME DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/example/solveFromFiles
+    RESOURCE DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/example/solveFromFiles/configs
 )
