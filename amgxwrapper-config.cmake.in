@@ -1,5 +1,5 @@
-# - Config file for the yaml-cpp package
-# It provides an imported target AmgXWrapper::AmgXWrapper for modern cmake-based
+# - Config file for the AmgXWrapper package
+# It provides an imported target amgxwrapper::amgxwrapper for modern cmake-based
 # projects.
 #
 # For legacy cmake projects, it also defines the following variables
@@ -22,12 +22,12 @@ set_target_properties(amgxwrapper::_amgx PROPERTIES
     INTERFACE_INCLUDE_DIRECTORIES @PACKAGE_AMGX_INCLUDE_DIRS@
 )
 
-include(@PACKAGE_CMAKE_INSTALL_LIBDIR@/cmake/AmgXWrapper/AmgXWrapperTarget.cmake)
+include(@PACKAGE_CMAKE_INSTALL_LIBDIR@/cmake/amgxwrapper/amgxwrapper-target.cmake)
 
 set_and_check(AMGXWRAPPER_INCLUDE_DIR "@PACKAGE_CMAKE_INSTALL_INCLUDEDIR@")
 set_and_check(AMGXWRAPPER_LIBRARY_DIR "@PACKAGE_CMAKE_INSTALL_LIBDIR@")
 
-get_target_property(AMGXWRAPPER_LIBRARIES AmgXWrapper::AmgXWrapper LOCATION)
+get_target_property(AMGXWRAPPER_LIBRARIES amgxwrapper::amgxwrapper LOCATION)
 set_and_check(AMGXWRAPPER_LIBRARIES ${AMGXWRAPPER_LIBRARIES})
 
-check_required_components(AmgXWrapper)
+check_required_components(amgxwrapper)
