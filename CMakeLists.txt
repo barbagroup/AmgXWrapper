@@ -113,6 +113,7 @@ target_include_directories(amgxwrapper
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    PUBLIC ${CUDAToolkit_INCLUDE_DIRS}
 )
 
 target_compile_options(amgxwrapper
